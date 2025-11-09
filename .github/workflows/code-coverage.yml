@@ -34,6 +34,6 @@ jobs:
     - name: Code Coverage
       uses: codecov/codecov-action@v5
       with:
-        token: ${{ secrets.CODECOV_KEY }}
+        token: ${{ secrets.CODECOV_TOKEN }}
         files: coverage/lcov.info
 
