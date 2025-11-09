@@ -1,0 +1,39 @@
+name: code-coverage
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+permissions:
+  contents: read
+
+jobs:
+  code-coverage:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 22
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Install Dependencies
+      run: npm install -g pnpm && pnpm install
+
+    - name: Build    
+      run: pnpm build
+
+    - name: Testing    
+      run: pnpm test:ci
+
+    - name: Code Coverage
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_KEY }}
+        files: coverage/lcov.info
+

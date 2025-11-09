@@ -1,2 +1,2 @@
 # hashery
-Object Hashing for Nodejs
+Browser Compatible Object Hashing
