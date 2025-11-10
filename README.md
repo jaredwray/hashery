@@ -12,5 +12,4 @@ Browser Compatible Object Hashing
 - Built using `WebCrypto` for Browser and Nodejs!
 - Easily replace JSON `parse` and `stringify`
 - `SafeString` parsing enabled by default
--  
 - Maintained on a Regular Basis!
