@@ -17,18 +17,34 @@ export class Hashery extends Hookified {
 		}
 	}
 
+	/**
+	 * Gets the parse function used to deserialize stored values.
+	 * @returns The current parse function (defaults to JSON.parse)
+	 */
 	public get parse(): ParseFn {
 		return this._parse;
 	}
 
+	/**
+	 * Sets the parse function used to deserialize stored values.
+	 * @param value - The parse function to use for deserialization
+	 */
 	public set parse(value: ParseFn) {
 		this._parse = value;
 	}
 
+	/**
+	 * Gets the stringify function used to serialize values for storage.
+	 * @returns The current stringify function (defaults to JSON.stringify)
+	 */
 	public get stringify(): StringifyFn {
 		return this._stringify;
 	}
 
+	/**
+	 * Sets the stringify function used to serialize values for storage.
+	 * @param value - The stringify function to use for serialization
+	 */
 	public set stringify(value: StringifyFn) {
 		this._stringify = value;
 	}
