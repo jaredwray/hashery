@@ -1,5 +1,10 @@
 import { Hookified } from "hookified";
-import type { HasheryOptions, ParseFn, StringifyFn } from "./types.js";
+import type {
+	HashAlgorithm,
+	HasheryOptions,
+	ParseFn,
+	StringifyFn,
+} from "./types.js";
 
 export class Hashery extends Hookified {
 	private _parse: ParseFn = JSON.parse;
@@ -48,6 +53,47 @@ export class Hashery extends Hookified {
 	public set stringify(value: StringifyFn) {
 		this._stringify = value;
 	}
+
+	/**
+	 * Generates a cryptographic hash of the provided data using the Web Crypto API.
+	 * The data is first stringified using the configured stringify function, then hashed.
+	 *
+	 * @param data - The data to hash (will be stringified before hashing)
+	 * @param algorithm - The hash algorithm to use (defaults to 'SHA-256')
+	 * @returns A Promise that resolves to the hexadecimal string representation of the hash
+	 *
+	 * @example
+	 * ```ts
+	 * const hashery = new Hashery();
+	 * const hash = await hashery.toHash({ name: 'John', age: 30 });
+	 * console.log(hash); // "a1b2c3d4..."
+	 *
+	 * // Using a different algorithm
+	 * const hash512 = await hashery.toHash({ name: 'John' }, 'SHA-512');
+	 * ```
+	 */
+	public async toHash(
+		data: unknown,
+		algorithm: HashAlgorithm = "SHA-256",
+	): Promise<string> {
+		// Stringify the data using the configured stringify function
+		const stringified = this._stringify(data);
+
+		// Convert the string to a Uint8Array
+		const encoder = new TextEncoder();
+		const dataBuffer = encoder.encode(stringified);
+
+		// Hash the data using Web Crypto API
+		const hashBuffer = await crypto.subtle.digest(algorithm, dataBuffer);
+
+		// Convert the hash to a hexadecimal string
+		const hashArray = Array.from(new Uint8Array(hashBuffer));
+		const hashHex = hashArray
+			.map((byte) => byte.toString(16).padStart(2, "0"))
+			.join("");
+
+		return hashHex;
+	}
 }
 
-export type { HasheryOptions, ParseFn, StringifyFn };
+export type { HashAlgorithm, HasheryOptions, ParseFn, StringifyFn };
