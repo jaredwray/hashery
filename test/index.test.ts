@@ -328,4 +328,202 @@ describe("Hashery", () => {
 			expect(emptyObjectHash).not.toBe(emptyArrayHash);
 		});
 	});
+
+	describe("toNumber method", () => {
+		test("should generate a number within the specified range", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test", value: 42 };
+			const min = 1;
+			const max = 100;
+
+			const num = await hashery.toNumber(data, min, max);
+
+			expect(num).toBeDefined();
+			expect(typeof num).toBe("number");
+			expect(num).toBeGreaterThanOrEqual(min);
+			expect(num).toBeLessThanOrEqual(max);
+			expect(Number.isInteger(num)).toBe(true);
+		});
+
+		test("should generate consistent numbers for same data", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test", value: 42 };
+			const min = 1;
+			const max = 100;
+
+			const num1 = await hashery.toNumber(data, min, max);
+			const num2 = await hashery.toNumber(data, min, max);
+
+			expect(num1).toBe(num2);
+		});
+
+		test("should generate different numbers for different data", async () => {
+			const hashery = new Hashery();
+			const data1 = { name: "test1" };
+			const data2 = { name: "test2" };
+			const min = 1;
+			const max = 1000;
+
+			const num1 = await hashery.toNumber(data1, min, max);
+			const num2 = await hashery.toNumber(data2, min, max);
+
+			// Very unlikely to be the same with a range of 1000
+			expect(num1).not.toBe(num2);
+		});
+
+		test("should work with min and max being the same", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+			const value = 42;
+
+			const num = await hashery.toNumber(data, value, value);
+
+			expect(num).toBe(value);
+		});
+
+		test("should work with range of 0 to 1", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			const num = await hashery.toNumber(data, 0, 1);
+
+			expect(num).toBeDefined();
+			expect(num === 0 || num === 1).toBe(true);
+		});
+
+		test("should throw error when min is greater than max", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			await expect(hashery.toNumber(data, 100, 1)).rejects.toThrow(
+				"min cannot be greater than max",
+			);
+		});
+
+		test("should work with negative ranges", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+			const min = -100;
+			const max = -1;
+
+			const num = await hashery.toNumber(data, min, max);
+
+			expect(num).toBeGreaterThanOrEqual(min);
+			expect(num).toBeLessThanOrEqual(max);
+		});
+
+		test("should work with ranges spanning negative and positive", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+			const min = -50;
+			const max = 50;
+
+			const num = await hashery.toNumber(data, min, max);
+
+			expect(num).toBeGreaterThanOrEqual(min);
+			expect(num).toBeLessThanOrEqual(max);
+		});
+
+		test("should support different hash algorithms", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+			const min = 1;
+			const max = 1000;
+
+			const num256 = await hashery.toNumber(data, min, max, "SHA-256");
+			const num512 = await hashery.toNumber(data, min, max, "SHA-512");
+
+			// Different algorithms should produce different results
+			expect(num256).not.toBe(num512);
+			expect(num256).toBeGreaterThanOrEqual(min);
+			expect(num256).toBeLessThanOrEqual(max);
+			expect(num512).toBeGreaterThanOrEqual(min);
+			expect(num512).toBeLessThanOrEqual(max);
+		});
+
+		test("should work with large ranges", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+			const min = 1;
+			const max = 1000000;
+
+			const num = await hashery.toNumber(data, min, max);
+
+			expect(num).toBeGreaterThanOrEqual(min);
+			expect(num).toBeLessThanOrEqual(max);
+			expect(Number.isInteger(num)).toBe(true);
+		});
+
+		test("should use custom stringify function", async () => {
+			const customStringify = (data: unknown) => {
+				// Sort keys to ensure consistent hashing
+				return JSON.stringify(data, Object.keys(data as object).sort());
+			};
+
+			const hashery = new Hashery({ stringify: customStringify });
+
+			// These two objects have the same content but different key order
+			const data1 = { b: 2, a: 1 };
+			const data2 = { a: 1, b: 2 };
+			const min = 1;
+			const max = 100;
+
+			const num1 = await hashery.toNumber(data1, min, max);
+			const num2 = await hashery.toNumber(data2, min, max);
+
+			expect(num1).toBe(num2);
+		});
+
+		test("should distribute numbers across the range", async () => {
+			const hashery = new Hashery();
+			const min = 1;
+			const max = 10;
+			const numbers: number[] = [];
+
+			// Generate numbers for different inputs
+			for (let i = 0; i < 100; i++) {
+				const num = await hashery.toNumber({ value: i }, min, max);
+				numbers.push(num);
+			}
+
+			// Check that we have some distribution (not all the same number)
+			const uniqueNumbers = new Set(numbers);
+			expect(uniqueNumbers.size).toBeGreaterThan(1);
+
+			// All numbers should be in range
+			for (const num of numbers) {
+				expect(num).toBeGreaterThanOrEqual(min);
+				expect(num).toBeLessThanOrEqual(max);
+			}
+		});
+
+		test("should work with zero in range", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+			const min = 0;
+			const max = 10;
+
+			const num = await hashery.toNumber(data, min, max);
+
+			expect(num).toBeGreaterThanOrEqual(min);
+			expect(num).toBeLessThanOrEqual(max);
+		});
+
+		test("should handle primitive types", async () => {
+			const hashery = new Hashery();
+			const min = 1;
+			const max = 100;
+
+			const stringNum = await hashery.toNumber("test string", min, max);
+			const numberNum = await hashery.toNumber(42, min, max);
+			const booleanNum = await hashery.toNumber(true, min, max);
+
+			expect(stringNum).toBeGreaterThanOrEqual(min);
+			expect(stringNum).toBeLessThanOrEqual(max);
+			expect(numberNum).toBeGreaterThanOrEqual(min);
+			expect(numberNum).toBeLessThanOrEqual(max);
+			expect(booleanNum).toBeGreaterThanOrEqual(min);
+			expect(booleanNum).toBeLessThanOrEqual(max);
+		});
+	});
 });
