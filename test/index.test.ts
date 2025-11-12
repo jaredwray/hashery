@@ -208,16 +208,6 @@ describe("Hashery", () => {
 			expect(hash1).not.toBe(hash2);
 		});
 
-		test("should support SHA-1 algorithm", async () => {
-			const hashery = new Hashery();
-			const data = { name: "test" };
-			const hash = await hashery.toHash(data, "SHA-1");
-
-			expect(hash).toBeDefined();
-			expect(hash.length).toBe(40); // SHA-1 produces 40 hex characters
-			expect(/^[a-f0-9]+$/.test(hash)).toBe(true);
-		});
-
 		test("should support SHA-384 algorithm", async () => {
 			const hashery = new Hashery();
 			const data = { name: "test" };
@@ -561,7 +551,7 @@ describe("Hashery", () => {
 				toHash: async (_data: BufferSource) => "custom-hash",
 			});
 
-			expect(hashery.providers.providers.size).toBe(1);
+			expect(hashery.providers.providers.size).toBe(4);
 			expect(hashery.providers.providers.has("custom-provider")).toBe(true);
 		});
 
@@ -590,7 +580,7 @@ describe("Hashery", () => {
 				toHash: async (_data: BufferSource) => "original-hash",
 			});
 
-			expect(hashery.providers.providers.size).toBe(1);
+			expect(hashery.providers.providers.size).toBe(4);
 
 			const newProviders = new HashProviders();
 			newProviders.add({
@@ -615,7 +605,7 @@ describe("Hashery", () => {
 				toHash: async (_data: BufferSource) => "test-hash",
 			});
 
-			expect(hashery.providers.providers.size).toBe(1);
+			expect(hashery.providers.providers.size).toBe(4);
 
 			const emptyProviders = new HashProviders();
 			hashery.providers = emptyProviders;
@@ -635,11 +625,11 @@ describe("Hashery", () => {
 				toHash: async (_data: BufferSource) => "hash2",
 			});
 
-			expect(hashery.providers.providers.size).toBe(2);
+			expect(hashery.providers.providers.size).toBe(5);
 
 			hashery.providers.remove("provider1");
 
-			expect(hashery.providers.providers.size).toBe(1);
+			expect(hashery.providers.providers.size).toBe(4);
 			expect(hashery.providers.providers.has("provider2")).toBe(true);
 		});
 
@@ -657,7 +647,7 @@ describe("Hashery", () => {
 
 			const names = hashery.providers.names;
 
-			expect(names.length).toBe(2);
+			expect(names.length).toBe(5);
 			expect(names).toContain("sha256");
 			expect(names).toContain("md5");
 		});

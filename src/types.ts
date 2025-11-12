@@ -32,6 +32,26 @@ export type HasheryOptions = {
 	 * ```
 	 */
 	stringify?: StringifyFn;
+
+	/**
+	 * Array of hash providers to add to base providers
+	 * Providers implement the HashProvider interface and enable custom hashing algorithms.
+	 * @example
+	 * ```ts
+	 * const customProvider = {
+	 *   name: 'custom-hash',
+	 *   toHash: async (data) => {
+	 *     // Custom hash implementation
+	 *     return 'hash-value';
+	 *   }
+	 * };
+	 *
+	 * const hashery = new Hashery({
+	 *   providers: [customProvider]
+	 * });
+	 * ```
+	 */
+	providers?: Array<HashProvider>;
 } & HookifiedOptions;
 
 /**
