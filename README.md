@@ -87,6 +87,58 @@ const userSlot = await hashery.toNumber({ userId: 'user@example.com' }, 0, 9);
 // Same user will always get the same slot number
 ```
 
+# API - Properties
+
+## `parse`
+
+Gets or sets the parse function used to deserialize stored values.
+
+**Type:** `ParseFn`
+
+**Default:** `JSON.parse`
+
+```typescript
+const hashery = new Hashery();
+hashery.parse = customParseFunction;
+```
+
+## `stringify`
+
+Gets or sets the stringify function used to serialize values for storage.
+
+**Type:** `StringifyFn`
+
+**Default:** `JSON.stringify`
+
+```typescript
+const hashery = new Hashery();
+hashery.stringify = customStringifyFunction;
+```
+
+## `providers`
+
+Gets or sets the HashProviders instance used to manage hash providers.
+
+**Type:** `HashProviders`
+
+```typescript
+const hashery = new Hashery();
+console.log(hashery.providers);
+```
+
+## `names`
+
+Gets the names of all registered hash algorithm providers.
+
+**Type:** `Array<string>`
+
+**Returns:** An array of provider names (e.g., ['SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmer', 'crc32'])
+
+```typescript
+const hashery = new Hashery();
+console.log(hashery.names); // ['SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmer', 'crc32']
+```
+
 # Code of Conduct and Contributing
 Please use our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines for development and testing. We appreciate your contributions!
 
