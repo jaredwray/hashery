@@ -740,6 +740,20 @@ hashery.loadProviders([customProvider]);
 hashery.loadProviders([customProvider], { includeBase: false });
 ```
 
+# Benchmarks
+
+Overall view of the current algorithm's and their performance using simple hashing with random data.
+
+|   name    |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
+|-----------|:---------:|----------:|----------:|:--------:|----------:|
+|  DJB2     |    🥇     |     522K  |      2µs  |  ±0.86%  |     506K  |
+|  MURMER   |  -0.24%   |     521K  |      2µs  |  ±0.96%  |     504K  |
+|  FNV1     |   -3.9%   |     501K  |      2µs  |  ±0.27%  |     487K  |
+|  CRC32    |   -12%    |     457K  |      2µs  |  ±0.22%  |     446K  |
+|  SHA-256  |   -81%    |      98K  |     10µs  |  ±0.20%  |      96K  |
+|  SHA-384  |   -83%    |      90K  |     12µs  |  ±2.88%  |      85K  |
+|  SHA-512  |   -83%    |      86K  |     12µs  |  ±0.58%  |      84K  |
+
 # Code of Conduct and Contributing
 Please use our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines for development and testing. We appreciate your contributions!
 
