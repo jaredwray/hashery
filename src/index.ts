@@ -1,6 +1,7 @@
 import { Hookified } from "hookified";
 import { WebCrypto } from "./providers/crypto.js";
 import { DJB2 } from "./providers/djb2.js";
+import { FNV1 } from "./providers/fnv1.js";
 import { Murmer } from "./providers/murmer.js";
 import { HashProviders } from "./providers.js";
 import type {
@@ -192,6 +193,7 @@ export class Hashery extends Hookified {
 			this.providers.add(new WebCrypto({ algorithm: "SHA-384" }));
 			this.providers.add(new WebCrypto({ algorithm: "SHA-512" }));
 			this.providers.add(new DJB2());
+			this.providers.add(new FNV1());
 			this.providers.add(new Murmer());
 		}
 	}
