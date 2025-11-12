@@ -16,6 +16,29 @@ describe("Hashery", () => {
 		expect(hashery.throwOnEmitError).toBe(false);
 	});
 
+	test("should load providers from constructor options", () => {
+		const customProvider1 = {
+			name: "custom-provider-1",
+			toHash: async (_data: BufferSource) => "hash-1",
+		};
+		const customProvider2 = {
+			name: "custom-provider-2",
+			toHash: async (_data: BufferSource) => "hash-2",
+		};
+
+		const hashery = new Hashery({
+			providers: [customProvider1, customProvider2],
+		});
+
+		// Should have base providers (3) + custom providers (2) = 5 total
+		expect(hashery.providers.providers.size).toBe(5);
+		expect(hashery.providers.providers.has("custom-provider-1")).toBe(true);
+		expect(hashery.providers.providers.has("custom-provider-2")).toBe(true);
+		expect(hashery.providers.providers.has("SHA-256")).toBe(true);
+		expect(hashery.providers.providers.has("SHA-384")).toBe(true);
+		expect(hashery.providers.providers.has("SHA-512")).toBe(true);
+	});
+
 	describe("parse property", () => {
 		test("should have default JSON.parse function", () => {
 			const hashery = new Hashery();
