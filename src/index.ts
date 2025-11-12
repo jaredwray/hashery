@@ -97,7 +97,9 @@ export class Hashery extends Hookified {
 	 * The data is first stringified using the configured stringify function, then hashed.
 	 *
 	 * @param data - The data to hash (will be stringified before hashing)
-	 * @param algorithm - The hash algorithm to use (defaults to 'SHA-256')
+	 * @param options - Optional configuration object
+	 * @param options.algorithm - The hash algorithm to use (defaults to 'SHA-256')
+	 * @param options.maxLength - Optional maximum length for the hash output
 	 * @returns A Promise that resolves to the hexadecimal string representation of the hash
 	 *
 	 * @example
@@ -107,7 +109,7 @@ export class Hashery extends Hookified {
 	 * console.log(hash); // "a1b2c3d4..."
 	 *
 	 * // Using a different algorithm
-	 * const hash512 = await hashery.toHash({ name: 'John' }, 'SHA-512');
+	 * const hash512 = await hashery.toHash({ name: 'John' }, { algorithm: 'SHA-512' });
 	 * ```
 	 */
 	public async toHash(
@@ -138,7 +140,12 @@ export class Hashery extends Hookified {
 		}
 
 		// Use the provider to hash the data
-		const hash = await provider.toHash(dataBuffer);
+		let hash = await provider.toHash(dataBuffer);
+
+		// if there is a max then change the hash
+		if (options?.maxLength && hash.length > options?.maxLength) {
+			hash = hash.substring(0, options.maxLength);
+		}
 
 		// After hook - allows modification/logging of result
 		const result = { hash, data: context.data, algorithm: context.algorithm };
