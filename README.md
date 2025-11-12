@@ -151,14 +151,14 @@ DJB2 is a non-cryptographic hash function created by Daniel J. Bernstein. It's k
 
 ## When to Use DJB2
 
-✅ **Good for:**
+**Good for:**
 - Hash tables and data structures
 - Non-security checksums
 - Fast data lookups
 - Cache keys
 - General-purpose hashing where security isn't a concern
 
-❌ **Not suitable for:**
+**Not suitable for:**
 - Password hashing
 - Cryptographic signatures
 - Security-sensitive applications
@@ -220,7 +220,7 @@ FNV1 (Fowler-Noll-Vo) is a non-cryptographic hash function designed for fast has
 
 ## When to Use FNV1
 
-✅ **Good for:**
+**Good for:**
 - Hash tables and associative arrays
 - Checksums and fingerprints
 - Data deduplication
@@ -228,7 +228,7 @@ FNV1 (Fowler-Noll-Vo) is a non-cryptographic hash function designed for fast has
 - Fast lookups and indexing
 - Non-cryptographic applications
 
-❌ **Not suitable for:**
+**Not suitable for:**
 - Password hashing
 - Cryptographic signatures
 - Security-critical applications
