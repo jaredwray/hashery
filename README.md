@@ -118,6 +118,201 @@ Hashery works seamlessly in the browser using the Web Crypto API. You can includ
 </html>
 ```
 
+# Hooks
+
+Hashery extends [Hookified](https://github.com/jaredwray/hookified) to provide event-based functionality through hooks. Hooks allow you to intercept and modify behavior during the hashing process.
+
+## Available Hooks
+
+### `before:toHash`
+
+Fired before hashing occurs. This hook receives a context object containing:
+- `data` - The data to be hashed (can be modified)
+- `algorithm` - The hash algorithm to use (can be modified)
+
+### `after:toHash`
+
+Fired after hashing completes. This hook receives a result object containing:
+- `hash` - The generated hash (can be modified)
+- `data` - The data that was hashed
+- `algorithm` - The algorithm that was used
+
+## Basic Hook Usage
+
+```typescript
+import { Hashery } from 'hashery';
+
+const hashery = new Hashery();
+
+// Listen to before:toHash hook
+hashery.onHook('before:toHash', async (context) => {
+  console.log('About to hash:', context.data);
+  console.log('Using algorithm:', context.algorithm);
+});
+
+// Listen to after:toHash hook
+hashery.onHook('after:toHash', async (result) => {
+  console.log('Hash generated:', result.hash);
+  console.log('Original data:', result.data);
+});
+
+await hashery.toHash({ name: 'John', age: 30 });
+```
+
+## Modifying Data with Hooks
+
+You can modify the data before it's hashed:
+
+```typescript
+const hashery = new Hashery();
+
+// Add a timestamp to all hashed data
+hashery.onHook('before:toHash', async (context) => {
+  context.data = {
+    original: context.data,
+    timestamp: new Date().toISOString()
+  };
+});
+
+const hash = await hashery.toHash({ userId: 123 });
+// Data will be hashed with timestamp included
+```
+
+## Modifying Algorithms with Hooks
+
+You can force a specific algorithm regardless of what's requested:
+
+```typescript
+const hashery = new Hashery();
+
+// Force all hashes to use SHA-512
+hashery.onHook('before:toHash', async (context) => {
+  context.algorithm = 'SHA-512';
+});
+
+// Even though we request SHA-256, it will use SHA-512
+const hash = await hashery.toHash({ data: 'example' }, 'SHA-256');
+console.log(hash.length); // 128 (SHA-512 hash length)
+```
+
+## Modifying Hash Results
+
+You can transform the hash after it's generated:
+
+```typescript
+const hashery = new Hashery();
+
+// Convert all hashes to uppercase
+hashery.onHook('after:toHash', async (result) => {
+  result.hash = result.hash.toUpperCase();
+});
+
+const hash = await hashery.toHash({ data: 'example' });
+console.log(hash); // Hash will be in uppercase
+```
+
+## Implementing Caching with Hooks
+
+Use hooks to implement a caching layer:
+
+```typescript
+const hashery = new Hashery();
+const cache = new Map<string, string>();
+
+// Store hashes in cache after generation
+hashery.onHook('after:toHash', async (result) => {
+  const cacheKey = `${result.algorithm}:${JSON.stringify(result.data)}`;
+  cache.set(cacheKey, result.hash);
+});
+
+// Later you can check the cache before hashing
+// (Note: You would need to implement cache lookup logic in your application)
+```
+
+## Logging and Debugging
+
+Hooks are perfect for logging and debugging:
+
+```typescript
+const hashery = new Hashery();
+
+hashery.onHook('before:toHash', async (context) => {
+  console.log(`[DEBUG] Hashing data with ${context.algorithm}:`, context.data);
+});
+
+hashery.onHook('after:toHash', async (result) => {
+  console.log(`[DEBUG] Hash generated: ${result.hash.substring(0, 8)}...`);
+});
+
+await hashery.toHash({ userId: 'user123' });
+```
+
+## Multiple Hooks
+
+You can register multiple hooks, and they will execute in the order they were registered:
+
+```typescript
+const hashery = new Hashery();
+
+hashery.onHook('before:toHash', async (context) => {
+  console.log('First hook');
+  context.data = { step: 1, original: context.data };
+});
+
+hashery.onHook('before:toHash', async (context) => {
+  console.log('Second hook');
+  context.data = { step: 2, previous: context.data };
+});
+
+await hashery.toHash({ name: 'test' });
+// Output: "First hook" then "Second hook"
+// Data will be wrapped twice
+```
+
+## Removing Hooks
+
+You can remove hooks when they're no longer needed:
+
+```typescript
+const hashery = new Hashery();
+
+const myHook = async (context: any) => {
+  console.log('Hook called');
+};
+
+// Add the hook
+hashery.onHook('before:toHash', myHook);
+
+// Remove the hook
+hashery.offHook('before:toHash', myHook);
+```
+
+## Error Handling in Hooks
+
+Control how errors in hooks are handled using the `throwOnEmitError` option:
+
+```typescript
+// Throw errors that occur in hooks
+const hashery1 = new Hashery({ throwOnEmitError: true });
+
+hashery1.onHook('before:toHash', async (context) => {
+  throw new Error('Hook error');
+});
+
+// This will throw the error
+await hashery1.toHash({ data: 'example' }); // Throws Error: Hook error
+
+// Silently handle errors in hooks
+const hashery2 = new Hashery({ throwOnEmitError: false });
+
+hashery2.onHook('before:toHash', async (context) => {
+  throw new Error('Hook error');
+});
+
+// This will not throw, hashing continues
+const hash = await hashery2.toHash({ data: 'example' }); // Returns hash successfully
+```
+
 # Web Crypto
 
 Hashery is built on top of the Web Crypto API, which provides cryptographic operations in both browser and Node.js environments. This ensures consistent, secure hashing across all platforms.
