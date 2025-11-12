@@ -20,6 +20,7 @@ export class Hashery extends Hookified {
 	private _parse: ParseFn = JSON.parse;
 	private _stringify: StringifyFn = JSON.stringify;
 	private _providers = new HashProviders();
+	private _defaultAlgorithm: string = "SHA-256";
 
 	constructor(options?: HasheryOptions) {
 		super(options);
@@ -30,6 +31,10 @@ export class Hashery extends Hookified {
 
 		if (options?.stringify) {
 			this._stringify = options.stringify;
+		}
+
+		if (options?.defaultAlgorithm) {
+			this._defaultAlgorithm = options.defaultAlgorithm;
 		}
 
 		this.loadProviders(options?.providers, {
@@ -94,6 +99,30 @@ export class Hashery extends Hookified {
 	}
 
 	/**
+	 * Gets the default hash algorithm used when none is specified.
+	 * @returns The current default algorithm (defaults to 'SHA-256')
+	 */
+	public get defaultAlgorithm(): string {
+		return this._defaultAlgorithm;
+	}
+
+	/**
+	 * Sets the default hash algorithm to use when none is specified.
+	 * @param value - The default algorithm to use (e.g., 'SHA-256', 'SHA-512', 'djb2')
+	 * @example
+	 * ```ts
+	 * const hashery = new Hashery();
+	 * hashery.defaultAlgorithm = 'SHA-512';
+	 *
+	 * // Now toHash will use SHA-512 by default
+	 * const hash = await hashery.toHash({ data: 'example' });
+	 * ```
+	 */
+	public set defaultAlgorithm(value: string) {
+		this._defaultAlgorithm = value;
+	}
+
+	/**
 	 * Generates a cryptographic hash of the provided data using the Web Crypto API.
 	 * The data is first stringified using the configured stringify function, then hashed.
 	 *
@@ -117,12 +146,10 @@ export class Hashery extends Hookified {
 		data: unknown,
 		options?: HasheryToHashOptions,
 	): Promise<string> {
-		const defaultAlgorithm = "SHA-256";
-
 		// Before hook - allows modification of input data and algorithm
 		const context = {
 			data,
-			algorithm: options?.algorithm ?? defaultAlgorithm,
+			algorithm: options?.algorithm ?? this._defaultAlgorithm,
 			maxLength: options?.maxLength,
 		};
 		await this.beforeHook("toHash", context);
@@ -137,7 +164,9 @@ export class Hashery extends Hookified {
 		// Get the provider for the specified algorithm
 		let provider = this._providers.get(context.algorithm);
 		if (!provider) {
-			provider = new WebCrypto({ algorithm: defaultAlgorithm });
+			provider = new WebCrypto({
+				algorithm: this._defaultAlgorithm as WebCryptoHashAlgorithm,
+			});
 		}
 
 		// Use the provider to hash the data
@@ -188,7 +217,7 @@ export class Hashery extends Hookified {
 		const {
 			min = 0,
 			max = 100,
-			algorithm = "SHA-256",
+			algorithm = this._defaultAlgorithm,
 			hashLength = 16,
 		} = options;
 

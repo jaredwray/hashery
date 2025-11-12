@@ -66,17 +66,118 @@ export type HasheryOptions = {
 	 * ```
 	 */
 	includeBase?: boolean;
+
+	/**
+	 * Default hash algorithm to use when none is specified.
+	 * Defaults to 'SHA-256'.
+	 * @example
+	 * ```ts
+	 * const hashery = new Hashery({
+	 *   defaultAlgorithm: 'SHA-512'
+	 * });
+	 *
+	 * // This will use SHA-512 instead of SHA-256
+	 * const hash = await hashery.toHash({ data: 'example' });
+	 * ```
+	 */
+	defaultAlgorithm?: string;
 } & HookifiedOptions;
 
+/**
+ * Options for the toHash method.
+ * @example
+ * ```ts
+ * const hashery = new Hashery();
+ *
+ * // Using a specific algorithm
+ * const hash = await hashery.toHash({ data: 'example' }, { algorithm: 'SHA-512' });
+ *
+ * // Truncating the hash output
+ * const shortHash = await hashery.toHash(
+ *   { data: 'example' },
+ *   { algorithm: 'SHA-256', maxLength: 16 }
+ * );
+ * ```
+ */
 export type HasheryToHashOptions = {
+	/**
+	 * The hash algorithm to use.
+	 * Defaults to 'SHA-256' if not specified.
+	 * Supported algorithms include: 'SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmer', 'crc32'
+	 */
 	algorithm?: string;
+
+	/**
+	 * Maximum length for the hash output.
+	 * If specified, the hash will be truncated to this length.
+	 * @example
+	 * ```ts
+	 * // Get a 16-character hash instead of the full 64-character SHA-256 hash
+	 * const hash = await hashery.toHash({ data: 'example' }, { maxLength: 16 });
+	 * ```
+	 */
 	maxLength?: number;
 };
 
+/**
+ * Options for the toNumber method.
+ * @example
+ * ```ts
+ * const hashery = new Hashery();
+ *
+ * // Using default range (0-100)
+ * const num = await hashery.toNumber({ user: 'john' });
+ *
+ * // Using custom range
+ * const slot = await hashery.toNumber({ user: 'john' }, { min: 0, max: 9 });
+ *
+ * // Using different algorithm
+ * const num512 = await hashery.toNumber(
+ *   { user: 'john' },
+ *   { min: 0, max: 255, algorithm: 'SHA-512' }
+ * );
+ * ```
+ */
 export type HasheryToNumberOptions = {
+	/**
+	 * The hash algorithm to use.
+	 * Defaults to 'SHA-256' if not specified.
+	 * Supported algorithms include: 'SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmer', 'crc32'
+	 */
 	algorithm?: string;
+
+	/**
+	 * The minimum value of the range (inclusive).
+	 * Defaults to 0 if not specified.
+	 * @example
+	 * ```ts
+	 * // Generate number between 1 and 100
+	 * const num = await hashery.toNumber({ data: 'example' }, { min: 1, max: 100 });
+	 * ```
+	 */
 	min?: number;
+
+	/**
+	 * The maximum value of the range (inclusive).
+	 * Defaults to 100 if not specified.
+	 * @example
+	 * ```ts
+	 * // Generate number between 0 and 1000
+	 * const num = await hashery.toNumber({ data: 'example' }, { min: 0, max: 1000 });
+	 * ```
+	 */
 	max?: number;
+
+	/**
+	 * Number of characters from the hash to use for conversion.
+	 * Defaults to 16 if not specified.
+	 * This provides good distribution while avoiding precision issues with JavaScript numbers.
+	 * @example
+	 * ```ts
+	 * // Use more hash characters for better distribution
+	 * const num = await hashery.toNumber({ data: 'example' }, { hashLength: 32 });
+	 * ```
+	 */
 	hashLength?: number;
 };
 
