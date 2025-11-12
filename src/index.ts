@@ -80,6 +80,14 @@ export class Hashery extends Hookified {
 	}
 
 	/**
+	 * Gets the names of all registered hash algorithm providers.
+	 * @returns An array of provider names (e.g., ['SHA-256', 'SHA-384', 'SHA-512'])
+	 */
+	public get names(): Array<string> {
+		return this._providers.names;
+	}
+
+	/**
 	 * Generates a cryptographic hash of the provided data using the Web Crypto API.
 	 * The data is first stringified using the configured stringify function, then hashed.
 	 *
