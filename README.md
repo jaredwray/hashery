@@ -86,3 +86,10 @@ console.log(slot); // Deterministic number between 0-100
 const userSlot = await hashery.toNumber({ userId: 'user@example.com' }, 0, 9);
 // Same user will always get the same slot number
 ```
+
+# Code of Conduct and Contributing
+Please use our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines for development and testing. We appreciate your contributions!
+
+# License
+
+[MIT](LICENSE) & © [Jared Wray](https://jaredwray.com)
