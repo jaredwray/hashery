@@ -54,7 +54,7 @@ export type ParseFn = (data: string) => unknown;
  * - SHA-384: High security algorithm (384-bit)
  * - SHA-512: Highest security algorithm (512-bit)
  */
-export type HashAlgorithm = "SHA-256" | "SHA-384" | "SHA-512";
+export type WebCryptoHashAlgorithm = "SHA-256" | "SHA-384" | "SHA-512";
 
 export type HashProvider = {
 	name: string;
@@ -69,3 +69,7 @@ export type HashProvidersOptions = {
 export type HashProvidersGetOptions = {
 	fuzzy?: boolean;
 };
+
+export type HasheryLoadProviderOptions = {
+	includeBase?: boolean;
+}

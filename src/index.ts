@@ -1,11 +1,14 @@
 import { Hookified } from "hookified";
 import { HashProviders } from "./providers.js";
 import type {
-	HashAlgorithm,
+	WebCryptoHashAlgorithm,
 	HasheryOptions,
 	ParseFn,
 	StringifyFn,
+	HashProvider,
+	HasheryLoadProviderOptions,
 } from "./types.js";
+import {WebCrypto} from "providers/crypto.js"
 
 export class Hashery extends Hookified {
 	private _parse: ParseFn = JSON.parse;
@@ -22,6 +25,8 @@ export class Hashery extends Hookified {
 		if (options?.stringify) {
 			this._stringify = options.stringify;
 		}
+
+		this.loadProviders();
 	}
 
 	/**
@@ -92,7 +97,7 @@ export class Hashery extends Hookified {
 	 */
 	public async toHash(
 		data: unknown,
-		algorithm: HashAlgorithm = "SHA-256",
+		algorithm: WebCryptoHashAlgorithm = "SHA-256",
 	): Promise<string> {
 		// Stringify the data using the configured stringify function
 		const stringified = this._stringify(data);
@@ -138,7 +143,7 @@ export class Hashery extends Hookified {
 		data: unknown,
 		min: number,
 		max: number,
-		algorithm: HashAlgorithm = "SHA-256",
+		algorithm: WebCryptoHashAlgorithm = "SHA-256",
 	): Promise<number> {
 		if (min > max) {
 			throw new Error("min cannot be greater than max");
@@ -160,6 +165,21 @@ export class Hashery extends Hookified {
 
 		return mapped;
 	}
+
+	public loadProviders(providers?: Array<HashProvider>, options: HasheryLoadProviderOptions = {includeBase: true}): void {
+		if (providers) {
+			for(const provider of providers) {
+				this._providers.add(provider);
+			}
+		}
+
+		// load all the providers
+		if(options.includeBase) {
+			this.providers.add(new WebCrypto({ algorithm: "SHA-256"}));
+			this.providers.add(new WebCrypto({ algorithm: "SHA-384"}));
+			this.providers.add(new WebCrypto({ algorithm: "SHA-512"}));
+		}
+	}
 }
 
-export type { HashAlgorithm, HasheryOptions, ParseFn, StringifyFn };
+export type { WebCryptoHashAlgorithm, HasheryOptions, ParseFn, StringifyFn };
