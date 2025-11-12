@@ -87,6 +87,56 @@ const userSlot = await hashery.toNumber({ userId: 'user@example.com' }, 0, 9);
 // Same user will always get the same slot number
 ```
 
+# Web Crypto
+
+Hashery is built on top of the Web Crypto API, which provides cryptographic operations in both browser and Node.js environments. This ensures consistent, secure hashing across all platforms.
+
+## Browser Support
+
+The Web Crypto API is supported in all modern browsers:
+- Chrome 37+
+- Firefox 34+
+- Safari 11+
+- Edge 12+
+
+## Node.js Support
+
+Node.js 15+ includes the Web Crypto API via the `crypto.webcrypto` global. Hashery automatically detects and uses the appropriate crypto implementation for your environment.
+
+## Available Algorithms
+
+### Web Crypto Algorithms (Async)
+These algorithms use the Web Crypto API and return Promises:
+- **SHA-256** - Secure Hash Algorithm 256-bit (default)
+- **SHA-384** - Secure Hash Algorithm 384-bit
+- **SHA-512** - Secure Hash Algorithm 512-bit
+
+### Non-Crypto Algorithms (Async)
+These algorithms are optimized for speed and are great for non-security use cases:
+- **djb2** - Fast hash function by Daniel J. Bernstein
+- **fnv1** - Fowler-Noll-Vo hash function
+- **murmer** - MurmurHash algorithm
+- **crc32** - Cyclic Redundancy Check 32-bit
+
+All algorithms in Hashery use async/await for consistency, even though some non-crypto algorithms could be synchronous.
+
+## Example: Using Web Crypto
+
+```typescript
+import { Hashery } from 'hashery';
+
+const hashery = new Hashery();
+
+// Web Crypto algorithms
+const sha256 = await hashery.toHash({ data: 'example' }); // Default SHA-256
+const sha384 = await hashery.toHash({ data: 'example' }, 'SHA-384');
+const sha512 = await hashery.toHash({ data: 'example' }, 'SHA-512');
+
+// Non-crypto algorithms (faster, but not cryptographically secure)
+const djb2Hash = await hashery.toHash({ data: 'example' }, 'djb2');
+const fnv1Hash = await hashery.toHash({ data: 'example' }, 'fnv1');
+```
+
 # API - Properties
 
 ## `parse`
