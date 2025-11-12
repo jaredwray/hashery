@@ -1,14 +1,14 @@
 import { Hookified } from "hookified";
+import { WebCrypto } from "./providers/crypto.js";
 import { HashProviders } from "./providers.js";
 import type {
-	WebCryptoHashAlgorithm,
+	HasheryLoadProviderOptions,
 	HasheryOptions,
+	HashProvider,
 	ParseFn,
 	StringifyFn,
-	HashProvider,
-	HasheryLoadProviderOptions,
+	WebCryptoHashAlgorithm,
 } from "./types.js";
-import {WebCrypto} from "providers/crypto.js"
 
 export class Hashery extends Hookified {
 	private _parse: ParseFn = JSON.parse;
@@ -25,8 +25,6 @@ export class Hashery extends Hookified {
 		if (options?.stringify) {
 			this._stringify = options.stringify;
 		}
-
-		this.loadProviders();
 	}
 
 	/**
@@ -166,18 +164,21 @@ export class Hashery extends Hookified {
 		return mapped;
 	}
 
-	public loadProviders(providers?: Array<HashProvider>, options: HasheryLoadProviderOptions = {includeBase: true}): void {
+	public loadProviders(
+		providers?: Array<HashProvider>,
+		options: HasheryLoadProviderOptions = { includeBase: true },
+	): void {
 		if (providers) {
-			for(const provider of providers) {
+			for (const provider of providers) {
 				this._providers.add(provider);
 			}
 		}
 
 		// load all the providers
-		if(options.includeBase) {
-			this.providers.add(new WebCrypto({ algorithm: "SHA-256"}));
-			this.providers.add(new WebCrypto({ algorithm: "SHA-384"}));
-			this.providers.add(new WebCrypto({ algorithm: "SHA-512"}));
+		if (options.includeBase) {
+			this.providers.add(new WebCrypto({ algorithm: "SHA-256" }));
+			this.providers.add(new WebCrypto({ algorithm: "SHA-384" }));
+			this.providers.add(new WebCrypto({ algorithm: "SHA-512" }));
 		}
 	}
 }

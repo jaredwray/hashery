@@ -72,4 +72,4 @@ export type HashProvidersGetOptions = {
 
 export type HasheryLoadProviderOptions = {
 	includeBase?: boolean;
-}
+};
