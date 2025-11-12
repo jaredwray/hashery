@@ -398,6 +398,52 @@ describe("Hashery", () => {
 			expect(emptyArrayHash).toBeDefined();
 			expect(emptyObjectHash).not.toBe(emptyArrayHash);
 		});
+
+		test("should fallback to WebCrypto SHA-256 when provider not found", async () => {
+			// Create a Hashery instance with no base providers
+			const hashery = new Hashery({ includeBase: false });
+
+			// Verify no providers are loaded
+			expect(hashery.providers.providers.size).toBe(0);
+
+			// Call toHash with an algorithm that doesn't exist
+			const data = { name: "test", value: 42 };
+			const hash = await hashery.toHash(data, "SHA-256");
+
+			// Should still get a valid SHA-256 hash from the fallback
+			expect(hash).toBeDefined();
+			expect(typeof hash).toBe("string");
+			expect(hash.length).toBe(64); // SHA-256 produces 64 hex characters
+			expect(/^[a-f0-9]+$/.test(hash)).toBe(true); // Should be valid hex
+
+			// Verify the hash is consistent
+			const hash2 = await hashery.toHash(data, "SHA-256");
+			expect(hash).toBe(hash2);
+		});
+
+		test("should fallback to SHA-256 for custom provider when not loaded", async () => {
+			// Create a Hashery instance with only SHA-512 provider
+			const hashery = new Hashery({ includeBase: false });
+
+			// Add only SHA-512, not SHA-256
+			const customProvider = {
+				name: "custom-hash",
+				toHash: async (_data: BufferSource) => "custom-hash-output",
+			};
+			hashery.providers.add(customProvider);
+
+			// Try to use SHA-256 which isn't in the providers
+			const data = { name: "test" };
+			const hash = await hashery.toHash(data, "SHA-256");
+
+			// Should fallback to WebCrypto SHA-256
+			expect(hash).toBeDefined();
+			expect(hash.length).toBe(64); // SHA-256 produces 64 hex characters
+			expect(/^[a-f0-9]+$/.test(hash)).toBe(true);
+
+			// Should NOT be the custom provider's output
+			expect(hash).not.toBe("custom-hash-output");
+		});
 	});
 
 	describe("toNumber method", () => {

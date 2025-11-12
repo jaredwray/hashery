@@ -108,16 +108,14 @@ export class Hashery extends Hookified {
 		const encoder = new TextEncoder();
 		const dataBuffer = encoder.encode(stringified);
 
-		// Hash the data using Web Crypto API
-		const hashBuffer = await crypto.subtle.digest(algorithm, dataBuffer);
+		// Get the provider for the specified algorithm
+		let provider = this._providers.get(algorithm);
+		if (!provider) {
+			provider = new WebCrypto({ algorithm: "SHA-256" });
+		}
 
-		// Convert the hash to a hexadecimal string
-		const hashArray = Array.from(new Uint8Array(hashBuffer));
-		const hashHex = hashArray
-			.map((byte) => byte.toString(16).padStart(2, "0"))
-			.join("");
-
-		return hashHex;
+		// Use the provider to hash the data
+		return await provider.toHash(dataBuffer);
 	}
 
 	/**
