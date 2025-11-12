@@ -742,7 +742,7 @@ hashery.loadProviders([customProvider], { includeBase: false });
 
 # Benchmarks
 
-Overall view of the current algorithm's and their performance using simple hashing with random data.
+Overall view of the current algorithm's and their performance using simple hashing with random data. Many of these are not secure and should be used only for object hashing. Read about each one in the documentation and pick what works best for your use case.
 
 |   name    |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
 |-----------|:---------:|----------:|----------:|:--------:|----------:|
