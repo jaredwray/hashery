@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { Hashery, type HasheryOptions } from "../src/index.js";
+import { HashProviders } from "../src/providers.js";
 
 describe("Hashery", () => {
 	test("initialization", () => {
@@ -524,6 +525,141 @@ describe("Hashery", () => {
 			expect(numberNum).toBeLessThanOrEqual(max);
 			expect(booleanNum).toBeGreaterThanOrEqual(min);
 			expect(booleanNum).toBeLessThanOrEqual(max);
+		});
+	});
+
+	describe("providers property", () => {
+		test("should have HashProviders instance by default", () => {
+			const hashery = new Hashery();
+			expect(hashery.providers).toBeDefined();
+			expect(hashery.providers.constructor.name).toBe("HashProviders");
+		});
+
+		test("should get the providers instance", () => {
+			const hashery = new Hashery();
+			const providers = hashery.providers;
+
+			expect(providers).toBeDefined();
+			expect(typeof providers.add).toBe("function");
+			expect(typeof providers.remove).toBe("function");
+			expect(typeof providers.loadProviders).toBe("function");
+		});
+
+		test("should return same instance on multiple calls", () => {
+			const hashery = new Hashery();
+			const providers1 = hashery.providers;
+			const providers2 = hashery.providers;
+
+			expect(providers1).toBe(providers2);
+		});
+
+		test("should allow adding providers through getter", () => {
+			const hashery = new Hashery();
+
+			hashery.providers.add({
+				name: "custom-provider",
+				toHash: async (_data: BufferSource) => "custom-hash",
+			});
+
+			expect(hashery.providers.providers.size).toBe(1);
+			expect(hashery.providers.providers.has("custom-provider")).toBe(true);
+		});
+
+		test("should set a new HashProviders instance", () => {
+			const hashery = new Hashery();
+			const originalProviders = hashery.providers;
+
+			const newProviders = new HashProviders();
+			newProviders.add({
+				name: "new-provider",
+				toHash: async (_data: BufferSource) => "new-hash",
+			});
+
+			hashery.providers = newProviders;
+
+			expect(hashery.providers).toBe(newProviders);
+			expect(hashery.providers).not.toBe(originalProviders);
+			expect(hashery.providers.providers.has("new-provider")).toBe(true);
+		});
+
+		test("should replace providers when setting new instance", () => {
+			const hashery = new Hashery();
+
+			hashery.providers.add({
+				name: "original-provider",
+				toHash: async (_data: BufferSource) => "original-hash",
+			});
+
+			expect(hashery.providers.providers.size).toBe(1);
+
+			const newProviders = new HashProviders();
+			newProviders.add({
+				name: "replacement-provider",
+				toHash: async (_data: BufferSource) => "replacement-hash",
+			});
+
+			hashery.providers = newProviders;
+
+			expect(hashery.providers.providers.size).toBe(1);
+			expect(hashery.providers.providers.has("original-provider")).toBe(false);
+			expect(hashery.providers.providers.has("replacement-provider")).toBe(
+				true,
+			);
+		});
+
+		test("should allow setting empty HashProviders instance", () => {
+			const hashery = new Hashery();
+
+			hashery.providers.add({
+				name: "test-provider",
+				toHash: async (_data: BufferSource) => "test-hash",
+			});
+
+			expect(hashery.providers.providers.size).toBe(1);
+
+			const emptyProviders = new HashProviders();
+			hashery.providers = emptyProviders;
+
+			expect(hashery.providers.providers.size).toBe(0);
+		});
+
+		test("should maintain providers instance after modifications", () => {
+			const hashery = new Hashery();
+
+			hashery.providers.add({
+				name: "provider1",
+				toHash: async (_data: BufferSource) => "hash1",
+			});
+			hashery.providers.add({
+				name: "provider2",
+				toHash: async (_data: BufferSource) => "hash2",
+			});
+
+			expect(hashery.providers.providers.size).toBe(2);
+
+			hashery.providers.remove("provider1");
+
+			expect(hashery.providers.providers.size).toBe(1);
+			expect(hashery.providers.providers.has("provider2")).toBe(true);
+		});
+
+		test("should access provider names through providers getter", () => {
+			const hashery = new Hashery();
+
+			hashery.providers.add({
+				name: "sha256",
+				toHash: async (_data: BufferSource) => "hash1",
+			});
+			hashery.providers.add({
+				name: "md5",
+				toHash: async (_data: BufferSource) => "hash2",
+			});
+
+			const names = hashery.providers.names;
+
+			expect(names.length).toBe(2);
+			expect(names).toContain("sha256");
+			expect(names).toContain("md5");
 		});
 	});
 });

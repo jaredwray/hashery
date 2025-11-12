@@ -1,4 +1,5 @@
 import { Hookified } from "hookified";
+import { HashProviders } from "./providers.js";
 import type {
 	HashAlgorithm,
 	HasheryOptions,
@@ -9,6 +10,7 @@ import type {
 export class Hashery extends Hookified {
 	private _parse: ParseFn = JSON.parse;
 	private _stringify: StringifyFn = JSON.stringify;
+	private _providers = new HashProviders();
 
 	constructor(options?: HasheryOptions) {
 		super(options);
@@ -52,6 +54,22 @@ export class Hashery extends Hookified {
 	 */
 	public set stringify(value: StringifyFn) {
 		this._stringify = value;
+	}
+
+	/**
+	 * Gets the HashProviders instance used to manage hash providers.
+	 * @returns The current HashProviders instance
+	 */
+	public get providers(): HashProviders {
+		return this._providers;
+	}
+
+	/**
+	 * Sets the HashProviders instance used to manage hash providers.
+	 * @param value - The HashProviders instance to use
+	 */
+	public set providers(value: HashProviders) {
+		this._providers = value;
 	}
 
 	/**

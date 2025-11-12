@@ -56,3 +56,12 @@ export type ParseFn = (data: string) => unknown;
  * - SHA-512: Highest security algorithm (512-bit)
  */
 export type HashAlgorithm = "SHA-256" | "SHA-384" | "SHA-512";
+
+export type HashProvider = {
+	name: string;
+	toHash(data: BufferSource): Promise<string>;
+};
+
+export type HashProvidersOptions = {
+	providers?: Array<HashProvider>;
+};
