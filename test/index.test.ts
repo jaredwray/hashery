@@ -298,7 +298,7 @@ describe("Hashery", () => {
 		test("should support SHA-384 algorithm", async () => {
 			const hashery = new Hashery();
 			const data = { name: "test" };
-			const hash = await hashery.toHash(data, "SHA-384");
+			const hash = await hashery.toHash(data, { algorithm: "SHA-384" });
 
 			expect(hash).toBeDefined();
 			expect(hash.length).toBe(96); // SHA-384 produces 96 hex characters
@@ -308,7 +308,7 @@ describe("Hashery", () => {
 		test("should support SHA-512 algorithm", async () => {
 			const hashery = new Hashery();
 			const data = { name: "test" };
-			const hash = await hashery.toHash(data, "SHA-512");
+			const hash = await hashery.toHash(data, { algorithm: "SHA-512" });
 
 			expect(hash).toBeDefined();
 			expect(hash.length).toBe(128); // SHA-512 produces 128 hex characters
@@ -387,8 +387,8 @@ describe("Hashery", () => {
 			const hashery = new Hashery();
 			const data = { name: "test" };
 
-			const sha256Hash = await hashery.toHash(data, "SHA-256");
-			const sha512Hash = await hashery.toHash(data, "SHA-512");
+			const sha256Hash = await hashery.toHash(data, { algorithm: "SHA-256" });
+			const sha512Hash = await hashery.toHash(data, { algorithm: "SHA-512" });
 
 			expect(sha256Hash).not.toBe(sha512Hash);
 			expect(sha256Hash.length).toBe(64);
@@ -415,7 +415,7 @@ describe("Hashery", () => {
 
 			// Call toHash with an algorithm that doesn't exist
 			const data = { name: "test", value: 42 };
-			const hash = await hashery.toHash(data, "SHA-256");
+			const hash = await hashery.toHash(data, { algorithm: "SHA-256" });
 
 			// Should still get a valid SHA-256 hash from the fallback
 			expect(hash).toBeDefined();
@@ -424,7 +424,7 @@ describe("Hashery", () => {
 			expect(/^[a-f0-9]+$/.test(hash)).toBe(true); // Should be valid hex
 
 			// Verify the hash is consistent
-			const hash2 = await hashery.toHash(data, "SHA-256");
+			const hash2 = await hashery.toHash(data, { algorithm: "SHA-256" });
 			expect(hash).toBe(hash2);
 		});
 
@@ -441,7 +441,7 @@ describe("Hashery", () => {
 
 			// Try to use SHA-256 which isn't in the providers
 			const data = { name: "test" };
-			const hash = await hashery.toHash(data, "SHA-256");
+			const hash = await hashery.toHash(data, { algorithm: "SHA-256" });
 
 			// Should fallback to WebCrypto SHA-256
 			expect(hash).toBeDefined();
@@ -450,6 +450,138 @@ describe("Hashery", () => {
 
 			// Should NOT be the custom provider's output
 			expect(hash).not.toBe("custom-hash-output");
+		});
+
+		test("should truncate hash when maxLength is specified", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test", value: 42 };
+			const maxLength = 16;
+
+			const hash = await hashery.toHash(data, {
+				algorithm: "SHA-256",
+				maxLength,
+			});
+
+			expect(hash).toBeDefined();
+			expect(typeof hash).toBe("string");
+			expect(hash.length).toBe(maxLength);
+			expect(/^[a-f0-9]+$/.test(hash)).toBe(true); // Should still be valid hex
+		});
+
+		test("should not truncate hash when maxLength is greater than hash length", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+			const maxLength = 100; // SHA-256 produces 64 characters
+
+			const hash = await hashery.toHash(data, {
+				algorithm: "SHA-256",
+				maxLength,
+			});
+
+			expect(hash).toBeDefined();
+			expect(hash.length).toBe(64); // Should be full SHA-256 length
+			expect(/^[a-f0-9]+$/.test(hash)).toBe(true);
+		});
+
+		test("should not truncate hash when maxLength equals hash length", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+			const maxLength = 64; // Exactly SHA-256 length
+
+			const hash = await hashery.toHash(data, {
+				algorithm: "SHA-256",
+				maxLength,
+			});
+
+			expect(hash).toBeDefined();
+			expect(hash.length).toBe(64);
+			expect(/^[a-f0-9]+$/.test(hash)).toBe(true);
+		});
+
+		test("should handle maxLength of 1", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			const hash = await hashery.toHash(data, {
+				algorithm: "SHA-256",
+				maxLength: 1,
+			});
+
+			expect(hash).toBeDefined();
+			expect(hash.length).toBe(1);
+			expect(/^[a-f0-9]$/.test(hash)).toBe(true);
+		});
+
+		test("should work with maxLength on different algorithms", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+			const maxLength = 32;
+
+			const sha256Hash = await hashery.toHash(data, {
+				algorithm: "SHA-256",
+				maxLength,
+			});
+			const sha512Hash = await hashery.toHash(data, {
+				algorithm: "SHA-512",
+				maxLength,
+			});
+
+			expect(sha256Hash.length).toBe(maxLength);
+			expect(sha512Hash.length).toBe(maxLength);
+
+			// Both should be truncated from the start of their respective hashes
+			const fullSha256 = await hashery.toHash(data, { algorithm: "SHA-256" });
+			const fullSha512 = await hashery.toHash(data, { algorithm: "SHA-512" });
+
+			expect(sha256Hash).toBe(fullSha256.substring(0, maxLength));
+			expect(sha512Hash).toBe(fullSha512.substring(0, maxLength));
+		});
+
+		test("should maintain consistent truncation for same data", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+			const maxLength = 20;
+
+			const hash1 = await hashery.toHash(data, {
+				algorithm: "SHA-256",
+				maxLength,
+			});
+			const hash2 = await hashery.toHash(data, {
+				algorithm: "SHA-256",
+				maxLength,
+			});
+
+			expect(hash1).toBe(hash2);
+			expect(hash1.length).toBe(maxLength);
+		});
+
+		test("should work without maxLength option", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			const hash = await hashery.toHash(data, { algorithm: "SHA-256" });
+
+			expect(hash).toBeDefined();
+			expect(hash.length).toBe(64); // Full SHA-256 length
+		});
+
+		test("should truncate hash before after hook is called", async () => {
+			const hashery = new Hashery();
+			const maxLength = 16;
+			let hookHash = "";
+
+			hashery.onHook("after:toHash", async (result) => {
+				hookHash = result.hash;
+			});
+
+			const hash = await hashery.toHash(
+				{ name: "test" },
+				{ algorithm: "SHA-256", maxLength },
+			);
+
+			// The hook should receive the truncated hash
+			expect(hookHash).toBe(hash);
+			expect(hookHash.length).toBe(maxLength);
 		});
 	});
 
@@ -899,7 +1031,7 @@ describe("Hashery", () => {
 			});
 
 			const data = { name: "test", value: 42 };
-			await hashery.toHash(data, "SHA-256");
+			await hashery.toHash(data, { algorithm: "SHA-256" });
 
 			expect(hookData.length).toBe(1);
 			expect(hookData[0].data).toEqual(data);
@@ -919,7 +1051,7 @@ describe("Hashery", () => {
 			});
 
 			const data = { name: "test", value: 42 };
-			const hash = await hashery.toHash(data, "SHA-256");
+			const hash = await hashery.toHash(data, { algorithm: "SHA-256" });
 
 			expect(hookData.length).toBe(1);
 			expect(hookData[0].hash).toBe(hash);
@@ -936,11 +1068,11 @@ describe("Hashery", () => {
 			});
 
 			const data = { name: "test" };
-			const hash1 = await hashery.toHash(data, "SHA-256");
+			const hash1 = await hashery.toHash(data, { algorithm: "SHA-256" });
 
 			// Hash without the hook should be different
 			const hashery2 = new Hashery();
-			const hash2 = await hashery2.toHash(data, "SHA-256");
+			const hash2 = await hashery2.toHash(data, { algorithm: "SHA-256" });
 
 			expect(hash1).not.toBe(hash2);
 		});
@@ -954,7 +1086,7 @@ describe("Hashery", () => {
 			});
 
 			const data = { name: "test" };
-			const hash = await hashery.toHash(data, "SHA-256");
+			const hash = await hashery.toHash(data, { algorithm: "SHA-256" });
 
 			// SHA-512 produces 128 hex characters, SHA-256 produces 64
 			expect(hash.length).toBe(128);
@@ -969,7 +1101,7 @@ describe("Hashery", () => {
 			});
 
 			const data = { name: "test" };
-			const hash = await hashery.toHash(data, "SHA-256");
+			const hash = await hashery.toHash(data, { algorithm: "SHA-256" });
 
 			// Check that the hash is uppercase
 			expect(hash).toBe(hash.toUpperCase());
@@ -992,7 +1124,7 @@ describe("Hashery", () => {
 				executionOrder.push("hook3");
 			});
 
-			await hashery.toHash({ name: "test" }, "SHA-256");
+			await hashery.toHash({ name: "test" }, { algorithm: "SHA-256" });
 
 			expect(executionOrder).toEqual(["hook1", "hook2", "hook3"]);
 		});
@@ -1013,7 +1145,7 @@ describe("Hashery", () => {
 				executionOrder.push("hook3");
 			});
 
-			await hashery.toHash({ name: "test" }, "SHA-256");
+			await hashery.toHash({ name: "test" }, { algorithm: "SHA-256" });
 
 			expect(executionOrder).toEqual(["hook1", "hook2", "hook3"]);
 		});
@@ -1038,7 +1170,7 @@ describe("Hashery", () => {
 				executionOrder.push("after2");
 			});
 
-			await hashery.toHash({ name: "test" }, "SHA-256");
+			await hashery.toHash({ name: "test" }, { algorithm: "SHA-256" });
 
 			expect(executionOrder).toEqual([
 				"before1",
@@ -1067,7 +1199,7 @@ describe("Hashery", () => {
 				});
 			});
 
-			await hashery.toHash({ name: "test" }, "SHA-256");
+			await hashery.toHash({ name: "test" }, { algorithm: "SHA-256" });
 		});
 
 		test("should work with default algorithm", async () => {
@@ -1124,7 +1256,7 @@ describe("Hashery", () => {
 				logs.push(`Hash result: ${result.hash.substring(0, 8)}...`);
 			});
 
-			await hashery.toHash({ name: "test" }, "SHA-256");
+			await hashery.toHash({ name: "test" }, { algorithm: "SHA-256" });
 
 			expect(logs.length).toBe(2);
 			expect(logs[0]).toContain("Hashing data:");
@@ -1143,9 +1275,9 @@ describe("Hashery", () => {
 			});
 
 			const data = { name: "test" };
-			const hash1 = await hashery.toHash(data, "SHA-256");
-			const hash2 = await hashery.toHash(data, "SHA-256");
-			const hash3 = await hashery.toHash(data, "SHA-256");
+			const hash1 = await hashery.toHash(data, { algorithm: "SHA-256" });
+			const hash2 = await hashery.toHash(data, { algorithm: "SHA-256" });
+			const hash3 = await hashery.toHash(data, { algorithm: "SHA-256" });
 
 			// All hashes should be the same
 			expect(hash1).toBe(hash2);
@@ -1170,7 +1302,7 @@ describe("Hashery", () => {
 			});
 
 			for (const algorithm of algorithms) {
-				await hashery.toHash({ name: "test" }, algorithm);
+				await hashery.toHash({ name: "test" }, { algorithm });
 			}
 
 			expect(results.length).toBe(3);
