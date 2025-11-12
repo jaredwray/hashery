@@ -30,23 +30,25 @@ describe("Hashery", () => {
 			providers: [customProvider1, customProvider2],
 		});
 
-		// Should have base providers (3) + custom providers (2) = 5 total
-		expect(hashery.providers.providers.size).toBe(5);
+		// Should have base providers (4) + custom providers (2) = 6 total
+		expect(hashery.providers.providers.size).toBe(6);
 		expect(hashery.providers.providers.has("custom-provider-1")).toBe(true);
 		expect(hashery.providers.providers.has("custom-provider-2")).toBe(true);
 		expect(hashery.providers.providers.has("SHA-256")).toBe(true);
 		expect(hashery.providers.providers.has("SHA-384")).toBe(true);
 		expect(hashery.providers.providers.has("SHA-512")).toBe(true);
+		expect(hashery.providers.providers.has("djb2")).toBe(true);
 	});
 
 	test("should include base providers by default", () => {
 		const hashery = new Hashery();
 
-		// Should have 3 base providers by default
-		expect(hashery.providers.providers.size).toBe(3);
+		// Should have 4 base providers by default
+		expect(hashery.providers.providers.size).toBe(4);
 		expect(hashery.providers.providers.has("SHA-256")).toBe(true);
 		expect(hashery.providers.providers.has("SHA-384")).toBe(true);
 		expect(hashery.providers.providers.has("SHA-512")).toBe(true);
+		expect(hashery.providers.providers.has("djb2")).toBe(true);
 	});
 
 	test("should exclude base providers when includeBase is false", () => {
@@ -66,6 +68,7 @@ describe("Hashery", () => {
 		expect(hashery.providers.providers.has("SHA-256")).toBe(false);
 		expect(hashery.providers.providers.has("SHA-384")).toBe(false);
 		expect(hashery.providers.providers.has("SHA-512")).toBe(false);
+		expect(hashery.providers.providers.has("djb2")).toBe(false);
 	});
 
 	test("should start with empty providers when includeBase is false and no providers given", () => {
@@ -88,12 +91,13 @@ describe("Hashery", () => {
 			providers: [customProvider],
 		});
 
-		// Should have base providers (3) + custom provider (1) = 4 total
-		expect(hashery.providers.providers.size).toBe(4);
+		// Should have base providers (4) + custom provider (1) = 5 total
+		expect(hashery.providers.providers.size).toBe(5);
 		expect(hashery.providers.providers.has("custom-with-base")).toBe(true);
 		expect(hashery.providers.providers.has("SHA-256")).toBe(true);
 		expect(hashery.providers.providers.has("SHA-384")).toBe(true);
 		expect(hashery.providers.providers.has("SHA-512")).toBe(true);
+		expect(hashery.providers.providers.has("djb2")).toBe(true);
 	});
 
 	describe("parse property", () => {
@@ -677,7 +681,7 @@ describe("Hashery", () => {
 				toHash: async (_data: BufferSource) => "custom-hash",
 			});
 
-			expect(hashery.providers.providers.size).toBe(4);
+			expect(hashery.providers.providers.size).toBe(5);
 			expect(hashery.providers.providers.has("custom-provider")).toBe(true);
 		});
 
@@ -706,7 +710,7 @@ describe("Hashery", () => {
 				toHash: async (_data: BufferSource) => "original-hash",
 			});
 
-			expect(hashery.providers.providers.size).toBe(4);
+			expect(hashery.providers.providers.size).toBe(5);
 
 			const newProviders = new HashProviders();
 			newProviders.add({
@@ -731,7 +735,7 @@ describe("Hashery", () => {
 				toHash: async (_data: BufferSource) => "test-hash",
 			});
 
-			expect(hashery.providers.providers.size).toBe(4);
+			expect(hashery.providers.providers.size).toBe(5);
 
 			const emptyProviders = new HashProviders();
 			hashery.providers = emptyProviders;
@@ -751,11 +755,11 @@ describe("Hashery", () => {
 				toHash: async (_data: BufferSource) => "hash2",
 			});
 
-			expect(hashery.providers.providers.size).toBe(5);
+			expect(hashery.providers.providers.size).toBe(6);
 
 			hashery.providers.remove("provider1");
 
-			expect(hashery.providers.providers.size).toBe(4);
+			expect(hashery.providers.providers.size).toBe(5);
 			expect(hashery.providers.providers.has("provider2")).toBe(true);
 		});
 
@@ -773,7 +777,7 @@ describe("Hashery", () => {
 
 			const names = hashery.providers.names;
 
-			expect(names.length).toBe(5);
+			expect(names.length).toBe(6);
 			expect(names).toContain("sha256");
 			expect(names).toContain("md5");
 		});
@@ -786,10 +790,11 @@ describe("Hashery", () => {
 
 			expect(names).toBeDefined();
 			expect(Array.isArray(names)).toBe(true);
-			expect(names.length).toBe(3);
+			expect(names.length).toBe(4);
 			expect(names).toContain("SHA-256");
 			expect(names).toContain("SHA-384");
 			expect(names).toContain("SHA-512");
+			expect(names).toContain("djb2");
 		});
 
 		test("should return empty array when no providers loaded", () => {
@@ -811,10 +816,11 @@ describe("Hashery", () => {
 
 			const names = hashery.names;
 
-			expect(names.length).toBe(4);
+			expect(names.length).toBe(5);
 			expect(names).toContain("SHA-256");
 			expect(names).toContain("SHA-384");
 			expect(names).toContain("SHA-512");
+			expect(names).toContain("djb2");
 			expect(names).toContain("custom-hash");
 		});
 
@@ -822,7 +828,7 @@ describe("Hashery", () => {
 			const hashery = new Hashery();
 
 			const namesBefore = hashery.names;
-			expect(namesBefore.length).toBe(3);
+			expect(namesBefore.length).toBe(4);
 
 			hashery.providers.add({
 				name: "new-provider",
@@ -830,7 +836,7 @@ describe("Hashery", () => {
 			});
 
 			const namesAfter = hashery.names;
-			expect(namesAfter.length).toBe(4);
+			expect(namesAfter.length).toBe(5);
 			expect(namesAfter).toContain("new-provider");
 		});
 
@@ -843,13 +849,13 @@ describe("Hashery", () => {
 			});
 
 			const namesBefore = hashery.names;
-			expect(namesBefore.length).toBe(4);
+			expect(namesBefore.length).toBe(5);
 			expect(namesBefore).toContain("temp-provider");
 
 			hashery.providers.remove("temp-provider");
 
 			const namesAfter = hashery.names;
-			expect(namesAfter.length).toBe(3);
+			expect(namesAfter.length).toBe(4);
 			expect(namesAfter).not.toContain("temp-provider");
 		});
 
