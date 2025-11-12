@@ -13,7 +13,7 @@ describe("Hashery", () => {
 			throwOnEmitError: true,
 		};
 		const hashery = new Hashery(options);
-		expect(hashery.throwOnEmitError).toBe(false);
+		expect(hashery.throwOnEmitError).toBe(true);
 	});
 
 	test("should load providers from constructor options", () => {

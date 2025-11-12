@@ -140,3 +140,4 @@ vite.config.ts.timestamp-*
 
 # AI
 .claude
+pnpm-lock.yaml
