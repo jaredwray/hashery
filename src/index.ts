@@ -26,7 +26,9 @@ export class Hashery extends Hookified {
 			this._stringify = options.stringify;
 		}
 
-		this.loadProviders(options?.providers);
+		this.loadProviders(options?.providers, {
+			includeBase: options?.includeBase ?? true,
+		});
 	}
 
 	/**

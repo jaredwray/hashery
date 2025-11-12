@@ -52,6 +52,20 @@ export type HasheryOptions = {
 	 * ```
 	 */
 	providers?: Array<HashProvider>;
+
+	/**
+	 * Whether to include base WebCrypto providers (SHA-256, SHA-384, SHA-512).
+	 * Defaults to true.
+	 * @example
+	 * ```ts
+	 * // Create instance without base providers
+	 * const hashery = new Hashery({
+	 *   includeBase: false,
+	 *   providers: [customProvider]
+	 * });
+	 * ```
+	 */
+	includeBase?: boolean;
 } & HookifiedOptions;
 
 /**

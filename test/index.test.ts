@@ -39,6 +39,63 @@ describe("Hashery", () => {
 		expect(hashery.providers.providers.has("SHA-512")).toBe(true);
 	});
 
+	test("should include base providers by default", () => {
+		const hashery = new Hashery();
+
+		// Should have 3 base providers by default
+		expect(hashery.providers.providers.size).toBe(3);
+		expect(hashery.providers.providers.has("SHA-256")).toBe(true);
+		expect(hashery.providers.providers.has("SHA-384")).toBe(true);
+		expect(hashery.providers.providers.has("SHA-512")).toBe(true);
+	});
+
+	test("should exclude base providers when includeBase is false", () => {
+		const customProvider = {
+			name: "custom-only",
+			toHash: async (_data: BufferSource) => "custom-hash",
+		};
+
+		const hashery = new Hashery({
+			includeBase: false,
+			providers: [customProvider],
+		});
+
+		// Should only have the custom provider
+		expect(hashery.providers.providers.size).toBe(1);
+		expect(hashery.providers.providers.has("custom-only")).toBe(true);
+		expect(hashery.providers.providers.has("SHA-256")).toBe(false);
+		expect(hashery.providers.providers.has("SHA-384")).toBe(false);
+		expect(hashery.providers.providers.has("SHA-512")).toBe(false);
+	});
+
+	test("should start with empty providers when includeBase is false and no providers given", () => {
+		const hashery = new Hashery({
+			includeBase: false,
+		});
+
+		// Should have no providers
+		expect(hashery.providers.providers.size).toBe(0);
+	});
+
+	test("should include base providers when includeBase is explicitly true", () => {
+		const customProvider = {
+			name: "custom-with-base",
+			toHash: async (_data: BufferSource) => "custom-hash",
+		};
+
+		const hashery = new Hashery({
+			includeBase: true,
+			providers: [customProvider],
+		});
+
+		// Should have base providers (3) + custom provider (1) = 4 total
+		expect(hashery.providers.providers.size).toBe(4);
+		expect(hashery.providers.providers.has("custom-with-base")).toBe(true);
+		expect(hashery.providers.providers.has("SHA-256")).toBe(true);
+		expect(hashery.providers.providers.has("SHA-384")).toBe(true);
+		expect(hashery.providers.providers.has("SHA-512")).toBe(true);
+	});
+
 	describe("parse property", () => {
 		test("should have default JSON.parse function", () => {
 			const hashery = new Hashery();
