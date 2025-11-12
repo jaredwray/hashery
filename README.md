@@ -1,7 +1,7 @@
 <img src="./site/logo.svg" />
 
 # hashery
-Browser Compatible Object Hashing
+Browser / Nodejs Compatible Object Hashing
 
 [![tests](https://github.com/jaredwray/hashery/actions/workflows/tests.yml/badge.svg)](https://github.com/jaredwray/hashery/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/jaredwray/hashery/graph/badge.svg?token=JTuDzWoTRn)](https://codecov.io/gh/jaredwray/hashery)
@@ -22,16 +22,40 @@ Browser Compatible Object Hashing
 - **Hooks Support** - Extends Hookified for event-based functionality
 - **Maintained on a Regular Basis** - Active maintenance and updates
 
+# Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Basic Hashing](#basic-hashing)
+  - [Using Different Hash Algorithms](#using-different-hash-algorithms)
+  - [Setting a Default Algorithm](#setting-a-default-algorithm)
+  - [Truncating Hash Output](#truncating-hash-output)
+  - [Hash to Number (Great for Slot Management)](#hash-to-number-great-for-slot-management)
+  - [Browser Usage](#browser-usage)
+- [Hooks](#hooks)
+- [Web Crypto](#web-crypto)
+- [DJB2 Hashing](#djb2-hashing)
+- [FNV1 Hashing](#fnv1-hashing)
+- [CRC Hashing](#crc-hashing)
+- [API - Properties](#api---properties)
+  - [parse](#parse)
+  - [stringify](#stringify)
+  - [providers](#providers)
+  - [names](#names)
+  - [defaultAlgorithm](#defaultalgorithm)
+- [API - Functions](#api---functions)
+  - [toHash(data, options?)](#toHashdata-options)
+  - [toNumber(data, options?)](#tonumberdata-options)
+  - [loadProviders(providers?, options?)](#loadprovidersproviders-options)
+- [Benchmarks](#benchmarks)
+- [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
+- [License and Copyright](#license-and-copyright)
+
 # Installation
 
 ```bash
 npm install hashery
-```
-
-or with pnpm:
-
-```bash
-pnpm add hashery
 ```
 
 # Usage
@@ -70,6 +94,29 @@ const hash512 = await hashery.toHash({ data: 'example' }, { algorithm: 'SHA-512'
 
 // Use non-crypto hash algorithms
 const fastHash = await hashery.toHash({ data: 'example' }, { algorithm: 'djb2' });
+```
+
+## Setting a Default Algorithm
+
+You can set a default algorithm for all hash operations via constructor or property:
+
+```typescript
+import { Hashery } from 'hashery';
+
+// Set default algorithm via constructor
+const hashery = new Hashery({ defaultAlgorithm: 'SHA-512' });
+
+// Now all hashes use SHA-512 by default
+const hash1 = await hashery.toHash({ data: 'example' }); // Uses SHA-512
+console.log(hash1.length); // 128 (SHA-512 produces 128 hex characters)
+
+// You can still override it per call
+const hash2 = await hashery.toHash({ data: 'example' }, { algorithm: 'SHA-256' });
+console.log(hash2.length); // 64 (SHA-256 produces 64 hex characters)
+
+// Change default algorithm at runtime
+hashery.defaultAlgorithm = 'djb2';
+const hash3 = await hashery.toHash({ data: 'example' }); // Uses djb2
 ```
 
 ## Truncating Hash Output
@@ -682,6 +729,28 @@ const hashery = new Hashery();
 console.log(hashery.names); // ['SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmer', 'crc32']
 ```
 
+## `defaultAlgorithm`
+
+Gets or sets the default hash algorithm to use when none is specified.
+
+**Type:** `string`
+
+**Default:** `'SHA-256'`
+
+```typescript
+const hashery = new Hashery();
+
+// Get default algorithm
+console.log(hashery.defaultAlgorithm); // 'SHA-256'
+
+// Set default algorithm
+hashery.defaultAlgorithm = 'SHA-512';
+
+// Now all hashes use SHA-512 by default
+const hash = await hashery.toHash({ data: 'example' });
+console.log(hash.length); // 128 (SHA-512 produces 128 hex characters)
+```
+
 # API - Functions
 
 ## `toHash(data, options?)`
@@ -791,6 +860,6 @@ Overall view of the current algorithm's and their performance using simple hashi
 # Code of Conduct and Contributing
 Please use our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines for development and testing. We appreciate your contributions!
 
-# License
+# License and Copyright
 
 [MIT](LICENSE) & © [Jared Wray](https://jaredwray.com)

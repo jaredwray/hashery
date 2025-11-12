@@ -262,6 +262,79 @@ describe("Hashery", () => {
 		});
 	});
 
+	describe("defaultAlgorithm property", () => {
+		test("should have SHA-256 as default algorithm", () => {
+			const hashery = new Hashery();
+			expect(hashery.defaultAlgorithm).toBe("SHA-256");
+		});
+
+		test("should set defaultAlgorithm via constructor", () => {
+			const hashery = new Hashery({ defaultAlgorithm: "SHA-512" });
+			expect(hashery.defaultAlgorithm).toBe("SHA-512");
+		});
+
+		test("should allow setting defaultAlgorithm via property setter", () => {
+			const hashery = new Hashery();
+			expect(hashery.defaultAlgorithm).toBe("SHA-256");
+
+			hashery.defaultAlgorithm = "SHA-384";
+			expect(hashery.defaultAlgorithm).toBe("SHA-384");
+		});
+
+		test("should use defaultAlgorithm when no algorithm specified in toHash", async () => {
+			const hashery = new Hashery({ defaultAlgorithm: "SHA-512" });
+			const data = { name: "test" };
+			const hash = await hashery.toHash(data);
+
+			// SHA-512 produces 128 hex characters
+			expect(hash.length).toBe(128);
+		});
+
+		test("should use defaultAlgorithm when no algorithm specified in toNumber", async () => {
+			const hashery = new Hashery({ defaultAlgorithm: "djb2" });
+			const data = { name: "test" };
+
+			// Should not throw error and should use djb2
+			const num = await hashery.toNumber(data, { min: 0, max: 100 });
+			expect(num).toBeGreaterThanOrEqual(0);
+			expect(num).toBeLessThanOrEqual(100);
+		});
+
+		test("should allow runtime change of defaultAlgorithm", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			// First hash with SHA-256 (default)
+			const hash256 = await hashery.toHash(data);
+			expect(hash256.length).toBe(64);
+
+			// Change default to SHA-512
+			hashery.defaultAlgorithm = "SHA-512";
+			const hash512 = await hashery.toHash(data);
+			expect(hash512.length).toBe(128);
+
+			// Hashes should be different
+			expect(hash256).not.toBe(hash512);
+		});
+
+		test("should allow setting defaultAlgorithm to non-crypto algorithms", () => {
+			const hashery = new Hashery();
+			hashery.defaultAlgorithm = "djb2";
+			expect(hashery.defaultAlgorithm).toBe("djb2");
+		});
+
+		test("should override defaultAlgorithm when algorithm option is provided", async () => {
+			const hashery = new Hashery({ defaultAlgorithm: "SHA-512" });
+			const data = { name: "test" };
+
+			// Explicitly use SHA-256
+			const hash = await hashery.toHash(data, { algorithm: "SHA-256" });
+
+			// Should use SHA-256 (64 chars) not SHA-512 (128 chars)
+			expect(hash.length).toBe(64);
+		});
+	});
+
 	describe("toHash method", () => {
 		test("should generate SHA-256 hash by default", async () => {
 			const hashery = new Hashery();
