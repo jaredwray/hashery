@@ -26,6 +26,7 @@
     "clean": "rimraf ./dist ./coverage ./node_modules ./pnpm-lock.yaml ./site/README.md ./site/dist",
     "build": "rimraf ./dist && tsup",
     "prepare": "pnpm build",
+    "benchmark": "tsx benchmark/hashing.ts",
     "lint": "biome check --write --error-on-warnings",
     "test": "pnpm lint && vitest run --coverage",
     "test:ci": "biome check --error-on-warnings && vitest run --coverage",
@@ -37,11 +38,15 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.5",
+    "@faker-js/faker": "^10.1.0",
+    "@monstermann/tinybench-pretty-printer": "^0.2.0",
     "@types/node": "^24.10.1",
     "@vitest/coverage-v8": "^4.0.8",
     "docula": "^0.31.0",
     "rimraf": "^6.1.0",
+    "tinybench": "^5.1.0",
     "tsup": "^8.5.0",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "^4.0.8"
   },
@@ -50,7 +55,7 @@
     "README.md",
     "LICENSE"
   ],
-    "keywords": [
+  "keywords": [
     "webcrypto",
     "crypto.subtle",
     "object-hash",
