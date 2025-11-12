@@ -63,13 +63,34 @@ import { Hashery } from 'hashery';
 const hashery = new Hashery();
 
 // Use SHA-384
-const hash384 = await hashery.toHash({ data: 'example' }, 'SHA-384');
+const hash384 = await hashery.toHash({ data: 'example' }, { algorithm: 'SHA-384' });
 
 // Use SHA-512
-const hash512 = await hashery.toHash({ data: 'example' }, 'SHA-512');
+const hash512 = await hashery.toHash({ data: 'example' }, { algorithm: 'SHA-512' });
 
 // Use non-crypto hash algorithms
-const fastHash = await hashery.toHash({ data: 'example' }, 'djb2');
+const fastHash = await hashery.toHash({ data: 'example' }, { algorithm: 'djb2' });
+```
+
+## Truncating Hash Output
+
+You can limit the length of the hash output using the `maxLength` option:
+
+```typescript
+import { Hashery } from 'hashery';
+
+const hashery = new Hashery();
+
+// Get a shorter hash (16 characters instead of 64)
+const shortHash = await hashery.toHash(
+  { data: 'example' },
+  { algorithm: 'SHA-256', maxLength: 16 }
+);
+console.log(shortHash); // "3f79bb7b435b0518" (16 chars)
+
+// Full hash for comparison
+const fullHash = await hashery.toHash({ data: 'example' });
+console.log(fullHash); // "3f79bb7b435b05181e4ccf0d4e8..." (64 chars)
 ```
 
 ## Hash to Number (Great for Slot Management)
@@ -191,7 +212,7 @@ hashery.onHook('before:toHash', async (context) => {
 });
 
 // Even though we request SHA-256, it will use SHA-512
-const hash = await hashery.toHash({ data: 'example' }, 'SHA-256');
+const hash = await hashery.toHash({ data: 'example' }, { algorithm: 'SHA-256' });
 console.log(hash.length); // 128 (SHA-512 hash length)
 ```
 
@@ -355,12 +376,12 @@ const hashery = new Hashery();
 
 // Web Crypto algorithms
 const sha256 = await hashery.toHash({ data: 'example' }); // Default SHA-256
-const sha384 = await hashery.toHash({ data: 'example' }, 'SHA-384');
-const sha512 = await hashery.toHash({ data: 'example' }, 'SHA-512');
+const sha384 = await hashery.toHash({ data: 'example' }, { algorithm: 'SHA-384' });
+const sha512 = await hashery.toHash({ data: 'example' }, { algorithm: 'SHA-512' });
 
 // Non-crypto algorithms (faster, but not cryptographically secure)
-const djb2Hash = await hashery.toHash({ data: 'example' }, 'djb2');
-const fnv1Hash = await hashery.toHash({ data: 'example' }, 'fnv1');
+const djb2Hash = await hashery.toHash({ data: 'example' }, { algorithm: 'djb2' });
+const fnv1Hash = await hashery.toHash({ data: 'example' }, { algorithm: 'fnv1' });
 ```
 
 # DJB2 Hashing
@@ -408,13 +429,13 @@ import { Hashery } from 'hashery';
 const hashery = new Hashery();
 
 // Hash with DJB2 (fast, non-cryptographic)
-const djb2Hash = await hashery.toHash({ userId: 123, action: 'login' }, 'djb2');
+const djb2Hash = await hashery.toHash({ userId: 123, action: 'login' }, { algorithm: 'djb2' });
 
 // Use for cache keys
 const cacheKey = await hashery.toHash({
   endpoint: '/api/users',
   params: { page: 1, limit: 10 }
-}, 'djb2');
+}, { algorithm: 'djb2' });
 
 // Generate slot numbers with DJB2
 const slot = await hashery.toNumber({ userId: 'user123' }, 0, 99, 'djb2');
@@ -479,13 +500,13 @@ import { Hashery } from 'hashery';
 const hashery = new Hashery();
 
 // Hash with FNV1 (fast, excellent distribution)
-const fnv1Hash = await hashery.toHash({ productId: 'ABC123', variant: 'red' }, 'fnv1');
+const fnv1Hash = await hashery.toHash({ productId: 'ABC123', variant: 'red' }, { algorithm: 'fnv1' });
 
 // Use for hash table keys
 const tableKey = await hashery.toHash({
   userId: 'user@example.com',
   resource: 'profile'
-}, 'fnv1');
+}, { algorithm: 'fnv1' });
 
 // Generate distributed slot numbers with FNV1
 const slot = await hashery.toNumber({ sessionId: 'sess_xyz789' }, 0, 999, 'fnv1');
@@ -494,7 +515,7 @@ const slot = await hashery.toNumber({ sessionId: 'sess_xyz789' }, 0, 999, 'fnv1'
 const fingerprint = await hashery.toHash({
   content: 'document content here',
   metadata: { author: 'John', date: '2024-01-01' }
-}, 'fnv1');
+}, { algorithm: 'fnv1' });
 ```
 
 ## Algorithm Details
@@ -564,26 +585,26 @@ import { Hashery } from 'hashery';
 const hashery = new Hashery();
 
 // Hash with CRC32 for data integrity
-const crcHash = await hashery.toHash({ fileData: 'content here' }, 'crc32');
+const crcHash = await hashery.toHash({ fileData: 'content here' }, { algorithm: 'crc32' });
 
 // Verify file integrity
 const fileChecksum = await hashery.toHash({
   filename: 'document.pdf',
   size: 1024000,
   modified: '2024-01-01'
-}, 'crc32');
+}, { algorithm: 'crc32' });
 
 // Network packet validation
 const packetChecksum = await hashery.toHash({
   header: { type: 'data', seq: 123 },
   payload: 'packet payload data'
-}, 'crc32');
+}, { algorithm: 'crc32' });
 
 // Quick data validation
 const dataIntegrity = await hashery.toHash({
   recordId: 'rec_123',
   data: { field1: 'value1', field2: 'value2' }
-}, 'crc32');
+}, { algorithm: 'crc32' });
 ```
 
 ## Algorithm Details
@@ -663,13 +684,15 @@ console.log(hashery.names); // ['SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1',
 
 # API - Functions
 
-## `toHash(data, algorithm?)`
+## `toHash(data, options?)`
 
 Generates a cryptographic hash of the provided data using the specified algorithm. The data is first stringified using the configured stringify function, then hashed.
 
 **Parameters:**
 - `data` (unknown) - The data to hash (will be stringified before hashing)
-- `algorithm` (string, optional) - The hash algorithm to use (defaults to 'SHA-256')
+- `options` (object, optional) - Configuration options
+  - `algorithm` (string, optional) - The hash algorithm to use (defaults to 'SHA-256')
+  - `maxLength` (number, optional) - Maximum length for the hash output (truncates from the start)
 
 **Returns:** `Promise<string>` - A Promise that resolves to the hexadecimal string representation of the hash
 
@@ -682,8 +705,14 @@ const hashery = new Hashery();
 const hash = await hashery.toHash({ name: 'John', age: 30 });
 
 // Using a different algorithm
-const hash512 = await hashery.toHash({ name: 'John' }, 'SHA-512');
-const fastHash = await hashery.toHash({ name: 'John' }, 'djb2');
+const hash512 = await hashery.toHash({ name: 'John' }, { algorithm: 'SHA-512' });
+const fastHash = await hashery.toHash({ name: 'John' }, { algorithm: 'djb2' });
+
+// Truncating hash output
+const shortHash = await hashery.toHash(
+  { name: 'John' },
+  { algorithm: 'SHA-256', maxLength: 16 }
+);
 ```
 
 ## `toNumber(data, min, max, algorithm?)`
