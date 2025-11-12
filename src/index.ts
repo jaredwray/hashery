@@ -99,7 +99,7 @@ export class Hashery extends Hookified {
 	 */
 	public async toHash(
 		data: unknown,
-		algorithm: WebCryptoHashAlgorithm = "SHA-256",
+		algorithm: string = "SHA-256",
 	): Promise<string> {
 		// Stringify the data using the configured stringify function
 		const stringified = this._stringify(data);
@@ -143,7 +143,7 @@ export class Hashery extends Hookified {
 		data: unknown,
 		min: number,
 		max: number,
-		algorithm: WebCryptoHashAlgorithm = "SHA-256",
+		algorithm: string = "SHA-256",
 	): Promise<number> {
 		if (min > max) {
 			throw new Error("min cannot be greater than max");
