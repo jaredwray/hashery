@@ -139,6 +139,85 @@ const hashery = new Hashery();
 console.log(hashery.names); // ['SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmer', 'crc32']
 ```
 
+# API - Functions
+
+## `toHash(data, algorithm?)`
+
+Generates a cryptographic hash of the provided data using the specified algorithm. The data is first stringified using the configured stringify function, then hashed.
+
+**Parameters:**
+- `data` (unknown) - The data to hash (will be stringified before hashing)
+- `algorithm` (string, optional) - The hash algorithm to use (defaults to 'SHA-256')
+
+**Returns:** `Promise<string>` - A Promise that resolves to the hexadecimal string representation of the hash
+
+**Example:**
+
+```typescript
+const hashery = new Hashery();
+
+// Using default SHA-256
+const hash = await hashery.toHash({ name: 'John', age: 30 });
+
+// Using a different algorithm
+const hash512 = await hashery.toHash({ name: 'John' }, 'SHA-512');
+const fastHash = await hashery.toHash({ name: 'John' }, 'djb2');
+```
+
+## `toNumber(data, min, max, algorithm?)`
+
+Generates a deterministic number within a specified range based on the hash of the provided data. This method uses the toHash function to create a consistent hash, then maps it to a number between min and max (inclusive).
+
+**Parameters:**
+- `data` (unknown) - The data to hash (will be stringified before hashing)
+- `min` (number) - The minimum value of the range (inclusive)
+- `max` (number) - The maximum value of the range (inclusive)
+- `algorithm` (string, optional) - The hash algorithm to use (defaults to 'SHA-256')
+
+**Returns:** `Promise<number>` - A Promise that resolves to a number between min and max (inclusive)
+
+**Throws:** Error if min is greater than max
+
+**Example:**
+
+```typescript
+const hashery = new Hashery();
+
+// Generate a number between 0 and 100
+const num = await hashery.toNumber({ user: 'john' }, 0, 100);
+
+// Using a different algorithm
+const num512 = await hashery.toNumber({ user: 'john' }, 0, 255, 'SHA-512');
+```
+
+## `loadProviders(providers?, options?)`
+
+Loads hash providers into the Hashery instance. This allows you to add custom hash providers or replace the default ones.
+
+**Parameters:**
+- `providers` (Array<HashProvider>, optional) - Array of hash providers to add
+- `options` (HasheryLoadProviderOptions, optional) - Options object
+  - `includeBase` (boolean) - Whether to include base providers (default: true)
+
+**Returns:** `void`
+
+**Example:**
+
+```typescript
+const hashery = new Hashery();
+
+// Add a custom provider
+const customProvider = {
+  name: 'custom',
+  toHash: async (data: BufferSource) => 'custom-hash'
+};
+
+hashery.loadProviders([customProvider]);
+
+// Load without base providers
+hashery.loadProviders([customProvider], { includeBase: false });
+```
+
 # Code of Conduct and Contributing
 Please use our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines for development and testing. We appreciate your contributions!
 
