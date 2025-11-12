@@ -11,6 +11,7 @@ Browser Compatible Object Hashing
 [![npm](https://img.shields.io/npm/v/hashery)](https://npmjs.com/package/hashery)
 
 # Features
+- **Simple and Easy Object Hashing** - Object hashing based on multiple algorithms.
 - **Browser and Node.js Compatible** - Built using `WebCrypto` API for both environments
 - **Multiple Hash Algorithms** - Supports SHA-256, SHA-384, SHA-512 (WebCrypto), plus DJB2, FNV1, Murmer, and CRC32
 - **Custom Serialization** - Easily replace JSON `parse` and `stringify` with custom functions
@@ -287,6 +288,101 @@ Where:
 - **XOR**: Bitwise exclusive OR operation
 
 The algorithm multiplies by a prime and XORs with each input byte, creating excellent avalanche properties where small input changes result in very different hash values.
+
+# CRC Hashing
+
+CRC (Cyclic Redundancy Check) is a non-cryptographic hash function designed primarily for detecting accidental changes to data. CRC32 is a 32-bit variant widely used in network protocols, file formats, and data integrity verification.
+
+## Why Use CRC?
+
+- **Error Detection** - Excellent at detecting accidental data corruption
+- **Industry Standard** - Widely used in ZIP, PNG, Ethernet, and many other standards
+- **Fast Performance** - Very efficient computation using lookup tables
+- **Hardware Support** - Often implemented in hardware for maximum speed
+- **Well-Understood** - Decades of use and mathematical analysis
+- **Deterministic** - Same input always produces the same output
+
+## When to Use CRC
+
+**Good for:**
+- Data integrity verification
+- Error detection in network protocols
+- File format checksums (ZIP, PNG, etc.)
+- Storage integrity checks
+- Detecting accidental corruption
+- Quick data validation
+
+**Not suitable for:**
+- Cryptographic applications
+- Password hashing
+- Digital signatures
+- Security-sensitive checksums
+- Protection against intentional tampering
+- Hash tables (not designed for this use case)
+
+## CRC vs Other Hash Functions
+
+| Feature | CRC32 | DJB2 | FNV1 | SHA-256 |
+|---------|-------|------|------|---------|
+| Primary Use | Error Detection | Hash Tables | Hash Tables | Security |
+| Speed | Very Fast | Very Fast | Very Fast | Slower |
+| Security | Not Secure | Not Secure | Not Secure | Cryptographically Secure |
+| Hash Length | 32-bit | 32-bit | 32-bit/64-bit | 256-bit |
+| Error Detection | Excellent | Poor | Poor | Excellent |
+| Use Case | Data Integrity | General Purpose | Hash Tables | Security |
+
+## Example: Using CRC
+
+```typescript
+import { Hashery } from 'hashery';
+
+const hashery = new Hashery();
+
+// Hash with CRC32 for data integrity
+const crcHash = await hashery.toHash({ fileData: 'content here' }, 'crc32');
+
+// Verify file integrity
+const fileChecksum = await hashery.toHash({
+  filename: 'document.pdf',
+  size: 1024000,
+  modified: '2024-01-01'
+}, 'crc32');
+
+// Network packet validation
+const packetChecksum = await hashery.toHash({
+  header: { type: 'data', seq: 123 },
+  payload: 'packet payload data'
+}, 'crc32');
+
+// Quick data validation
+const dataIntegrity = await hashery.toHash({
+  recordId: 'rec_123',
+  data: { field1: 'value1', field2: 'value2' }
+}, 'crc32');
+```
+
+## Algorithm Details
+
+CRC32 uses polynomial division in a finite field (GF(2)):
+
+```
+CRC32 polynomial: 0x04C11DB7 (IEEE 802.3 standard)
+
+for each byte b:
+    crc = (crc >> 8) XOR table[(crc XOR b) & 0xFF]
+```
+
+Key characteristics:
+- **Polynomial**: Uses a standardized polynomial for consistent results
+- **Lookup Table**: Pre-computed table for fast calculation
+- **Bit Shifting**: Efficient XOR and shift operations
+- **Finite Field**: Mathematical properties ensure good error detection
+
+## Important Notes
+
+⚠️ **Security Warning**: CRC is NOT cryptographically secure. It's designed to detect accidental errors, not intentional tampering. For security applications, use SHA-256 or other cryptographic hash functions.
+
+✅ **Best Practice**: Use CRC32 for checksums and error detection in non-adversarial environments. Use cryptographic hashes (SHA-256, SHA-512) when security matters.
 
 # API - Properties
 
