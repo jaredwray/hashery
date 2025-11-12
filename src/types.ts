@@ -63,4 +63,9 @@ export type HashProvider = {
 
 export type HashProvidersOptions = {
 	providers?: Array<HashProvider>;
+	getFuzzy?: boolean;
+};
+
+export type HashProvidersGetOptions = {
+	fuzzy?: boolean;
 };

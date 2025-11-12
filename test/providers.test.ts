@@ -49,6 +49,62 @@ describe("HashProviders", () => {
 			const providers = new HashProviders();
 			expect(providers.providers.size).toBe(0);
 		});
+
+		test("should enable getFuzzy by default", () => {
+			const providers = new HashProviders();
+			providers.add({
+				name: "sha256",
+				toHash: async (_data: unknown) => "hash",
+			});
+
+			// Should find with fuzzy matching (lowercase)
+			const result = providers.get("SHA256");
+			expect(result).toBeDefined();
+		});
+
+		test("should set getFuzzy to true when explicitly enabled", () => {
+			const providers = new HashProviders({ getFuzzy: true });
+			providers.add({
+				name: "sha256",
+				toHash: async (_data: unknown) => "hash",
+			});
+
+			const result = providers.get("SHA256");
+			expect(result).toBeDefined();
+		});
+
+		test("should set getFuzzy to false when explicitly disabled", () => {
+			const providers = new HashProviders({ getFuzzy: false });
+			providers.add({
+				name: "sha-256",
+				toHash: async (_data: unknown) => "hash",
+			});
+
+			const result = providers.get("SHA256");
+			expect(result).toBeUndefined();
+
+			const exactMatch = providers.get("sha-256");
+			expect(exactMatch).toBeDefined();
+		});
+
+		test("should handle getFuzzy as boolean conversion", () => {
+			// Test with false value
+			const providers1 = new HashProviders({ getFuzzy: false });
+			providers1.add({
+				name: "test",
+				toHash: async (_data: unknown) => "hash",
+			});
+			expect(providers1.get("TEST")).toBeUndefined();
+			expect(providers1.get("test")).toBeDefined();
+
+			// Test with true value
+			const providers2 = new HashProviders({ getFuzzy: true });
+			providers2.add({
+				name: "test",
+				toHash: async (_data: unknown) => "hash",
+			});
+			expect(providers2.get("TEST")).toBeDefined();
+		});
 	});
 
 	describe("loadProviders method", () => {
@@ -358,6 +414,227 @@ describe("HashProviders", () => {
 			providers.providers = newMap;
 
 			expect(providers.providers).toBe(newMap);
+		});
+	});
+
+	describe("get method", () => {
+		test("should get an existing provider by name", () => {
+			const providers = new HashProviders();
+			const mockProvider: HashProvider = {
+				name: "test-provider",
+				toHash: async (_data: unknown) => "hash-result",
+			};
+
+			providers.add(mockProvider);
+
+			const retrieved = providers.get("test-provider");
+
+			expect(retrieved).toBeDefined();
+			expect(retrieved).toBe(mockProvider);
+			expect(retrieved?.name).toBe("test-provider");
+		});
+
+		test("should return undefined for non-existent provider", () => {
+			const providers = new HashProviders();
+
+			const retrieved = providers.get("non-existent");
+
+			expect(retrieved).toBeUndefined();
+		});
+
+		test("should get provider after loading", () => {
+			const mockProviders: HashProvider[] = [
+				{
+					name: "provider1",
+					toHash: async (_data: unknown) => "hash1",
+				},
+				{
+					name: "provider2",
+					toHash: async (_data: unknown) => "hash2",
+				},
+			];
+
+			const providers = new HashProviders({ providers: mockProviders });
+
+			const provider1 = providers.get("provider1");
+			const provider2 = providers.get("provider2");
+
+			expect(provider1).toBeDefined();
+			expect(provider2).toBeDefined();
+			expect(provider1?.name).toBe("provider1");
+			expect(provider2?.name).toBe("provider2");
+		});
+
+		test("should return undefined after removing provider", () => {
+			const providers = new HashProviders();
+			providers.add({
+				name: "test",
+				toHash: async (_data: unknown) => "hash",
+			});
+
+			expect(providers.get("test")).toBeDefined();
+
+			providers.remove("test");
+
+			expect(providers.get("test")).toBeUndefined();
+		});
+
+		test("should get the updated provider after replacement", () => {
+			const providers = new HashProviders();
+			const firstProvider: HashProvider = {
+				name: "test",
+				toHash: async (_data: unknown) => "first-hash",
+			};
+			const secondProvider: HashProvider = {
+				name: "test",
+				toHash: async (_data: unknown) => "second-hash",
+			};
+
+			providers.add(firstProvider);
+			expect(providers.get("test")).toBe(firstProvider);
+
+			providers.add(secondProvider);
+			expect(providers.get("test")).toBe(secondProvider);
+			expect(providers.get("test")).not.toBe(firstProvider);
+		});
+
+		test("should work with provider functionality", async () => {
+			const providers = new HashProviders();
+			const mockProvider: HashProvider = {
+				name: "functional-provider",
+				toHash: async (data: unknown) => `hashed:${JSON.stringify(data)}`,
+			};
+
+			providers.add(mockProvider);
+
+			const retrieved = providers.get("functional-provider");
+
+			expect(retrieved).toBeDefined();
+			if (retrieved) {
+				const result = await retrieved.toHash({ test: "data" });
+				expect(result).toBe('hashed:{"test":"data"}');
+			}
+		});
+
+		test("should handle providers with special characters in names", () => {
+			const providers = new HashProviders();
+
+			providers.add({
+				name: "provider-with-dashes",
+				toHash: async (_data: unknown) => "hash1",
+			});
+			providers.add({
+				name: "provider_with_underscores",
+				toHash: async (_data: unknown) => "hash2",
+			});
+
+			const provider1 = providers.get("provider-with-dashes");
+			const provider2 = providers.get("provider_with_underscores");
+
+			expect(provider1).toBeDefined();
+			expect(provider2).toBeDefined();
+			expect(provider1?.name).toBe("provider-with-dashes");
+			expect(provider2?.name).toBe("provider_with_underscores");
+		});
+
+		test("should trim whitespace from provider names", () => {
+			const providers = new HashProviders();
+			providers.add({
+				name: "sha256",
+				toHash: async (_data: unknown) => "hash",
+			});
+
+			const result = providers.get("  sha256  ");
+			expect(result).toBeDefined();
+			expect(result?.name).toBe("sha256");
+		});
+
+		test("should use fuzzy matching with lowercase", () => {
+			const providers = new HashProviders();
+			providers.add({
+				name: "sha256",
+				toHash: async (_data: unknown) => "hash",
+			});
+
+			const result = providers.get("SHA256");
+			expect(result).toBeDefined();
+			expect(result?.name).toBe("sha256");
+		});
+
+		test("should use fuzzy matching with dash removal", () => {
+			const providers = new HashProviders();
+			providers.add({
+				name: "sha256",
+				toHash: async (_data: unknown) => "hash",
+			});
+
+			const result = providers.get("SHA-256");
+			expect(result).toBeDefined();
+			expect(result?.name).toBe("sha256");
+		});
+
+		test("should combine trim, lowercase, and dash removal", () => {
+			const providers = new HashProviders();
+			providers.add({
+				name: "sha256",
+				toHash: async (_data: unknown) => "hash",
+			});
+
+			const result = providers.get("  SHA-256  ");
+			expect(result).toBeDefined();
+			expect(result?.name).toBe("sha256");
+		});
+
+		test("should disable fuzzy matching with option", () => {
+			const providers = new HashProviders();
+			providers.add({
+				name: "sha256",
+				toHash: async (_data: unknown) => "hash",
+			});
+
+			const result = providers.get("SHA-256", { fuzzy: false });
+			expect(result).toBeUndefined();
+
+			const exactMatch = providers.get("sha256", { fuzzy: false });
+			expect(exactMatch).toBeDefined();
+		});
+
+		test("should override constructor getFuzzy with option", () => {
+			const providers = new HashProviders({ getFuzzy: false });
+			providers.add({
+				name: "sha256",
+				toHash: async (_data: unknown) => "hash",
+			});
+
+			// Constructor disabled fuzzy, but option enables it
+			const result = providers.get("SHA-256", { fuzzy: true });
+			expect(result).toBeDefined();
+		});
+
+		test("should handle exact match even with fuzzy enabled", () => {
+			const providers = new HashProviders();
+			providers.add({
+				name: "SHA-256",
+				toHash: async (_data: unknown) => "hash",
+			});
+
+			// Exact match should be found first
+			const result = providers.get("SHA-256");
+			expect(result).toBeDefined();
+			expect(result?.name).toBe("SHA-256");
+		});
+
+		test("should fallback to fuzzy when exact match not found", () => {
+			const providers = new HashProviders();
+			providers.add({
+				name: "sha256",
+				toHash: async (_data: unknown) => "hash",
+			});
+
+			// No exact match for "SHA-256", should use fuzzy
+			const result = providers.get("SHA-256");
+			expect(result).toBeDefined();
+			expect(result?.name).toBe("sha256");
 		});
 	});
 
