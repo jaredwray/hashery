@@ -50,7 +50,6 @@ export type ParseFn = (data: string) => unknown;
 
 /**
  * Supported hash algorithms for the Web Crypto API.
- * - SHA-1: Legacy algorithm (160-bit) - not recommended for security-critical applications
  * - SHA-256: Recommended algorithm (256-bit) - good balance of security and performance
  * - SHA-384: High security algorithm (384-bit)
  * - SHA-512: Highest security algorithm (512-bit)
