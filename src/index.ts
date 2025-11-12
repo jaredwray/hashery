@@ -9,6 +9,7 @@ import type {
 	HasheryLoadProviderOptions,
 	HasheryOptions,
 	HasheryToHashOptions,
+	HasheryToNumberOptions,
 	HashProvider,
 	ParseFn,
 	StringifyFn,
@@ -160,40 +161,48 @@ export class Hashery extends Hookified {
 	 * between min and max (inclusive).
 	 *
 	 * @param data - The data to hash (will be stringified before hashing)
-	 * @param min - The minimum value of the range (inclusive)
-	 * @param max - The maximum value of the range (inclusive)
-	 * @param algorithm - The hash algorithm to use (defaults to 'SHA-256')
+	 * @param options - Configuration options (optional, defaults to min: 0, max: 100)
+	 * @param options.min - The minimum value of the range (inclusive, defaults to 0)
+	 * @param options.max - The maximum value of the range (inclusive, defaults to 100)
+	 * @param options.algorithm - The hash algorithm to use (defaults to 'SHA-256')
+	 * @param options.hashLength - Number of characters from hash to use for conversion (defaults to 16)
 	 * @returns A Promise that resolves to a number between min and max (inclusive)
 	 *
 	 * @example
 	 * ```ts
 	 * const hashery = new Hashery();
-	 * const num = await hashery.toNumber({ user: 'john' }, 1, 100);
+	 * const num = await hashery.toNumber({ user: 'john' }); // Uses default min: 0, max: 100
 	 * console.log(num); // Always returns the same number for the same input, e.g., 42
 	 *
+	 * // Using custom range
+	 * const num2 = await hashery.toNumber({ user: 'john' }, { min: 1, max: 100 });
+	 *
 	 * // Using a different algorithm
-	 * const num512 = await hashery.toNumber({ user: 'john' }, 0, 255, 'SHA-512');
+	 * const num512 = await hashery.toNumber({ user: 'john' }, { min: 0, max: 255, algorithm: 'SHA-512' });
 	 * ```
 	 */
 	public async toNumber(
 		data: unknown,
-		min: number,
-		max: number,
-		algorithm: string = "SHA-256",
+		options: HasheryToNumberOptions = {},
 	): Promise<number> {
+		const {
+			min = 0,
+			max = 100,
+			algorithm = "SHA-256",
+			hashLength = 16,
+		} = options;
+
 		if (min > max) {
 			throw new Error("min cannot be greater than max");
 		}
 
 		// Get the hash as a hex string
-		const hash = await this.toHash(data, { algorithm });
-
-		// Take the first 16 characters (64 bits) of the hash to convert to a number
+		// Take the first hashLength characters of the hash to convert to a number
 		// This provides good distribution while avoiding precision issues with JavaScript numbers
-		const hashSegment = hash.substring(0, 16);
+		const hash = await this.toHash(data, { algorithm, maxLength: hashLength });
 
-		// Convert hex to a number (0 to 2^64 - 1)
-		const hashNumber = Number.parseInt(hashSegment, 16);
+		// Convert hex to a number
+		const hashNumber = Number.parseInt(hash, 16);
 
 		// Map the hash number to the desired range
 		const range = max - min + 1;

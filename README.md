@@ -101,11 +101,11 @@ import { Hashery } from 'hashery';
 const hashery = new Hashery();
 
 // Convert hash to a number within a range
-const slot = await hashery.toNumber({ userId: 123 }, 0, 100);
+const slot = await hashery.toNumber({ userId: 123 }, { min: 0, max: 100 });
 console.log(slot); // Deterministic number between 0-100
 
 // Use for consistent slot assignment
-const userSlot = await hashery.toNumber({ userId: 'user@example.com' }, 0, 9);
+const userSlot = await hashery.toNumber({ userId: 'user@example.com' }, { min: 0, max: 9 });
 // Same user will always get the same slot number
 ```
 
@@ -132,7 +132,7 @@ Hashery works seamlessly in the browser using the Web Crypto API. You can includ
     console.log('Hash:', hash);
 
     // Generate slot numbers for A/B testing
-    const variant = await hashery.toNumber({ userId: 'user123' }, 0, 1);
+    const variant = await hashery.toNumber({ userId: 'user123' }, { min: 0, max: 1 });
     console.log('A/B Test Variant:', variant === 0 ? 'A' : 'B');
   </script>
 </body>
@@ -438,7 +438,7 @@ const cacheKey = await hashery.toHash({
 }, { algorithm: 'djb2' });
 
 // Generate slot numbers with DJB2
-const slot = await hashery.toNumber({ userId: 'user123' }, 0, 99, 'djb2');
+const slot = await hashery.toNumber({ userId: 'user123' }, { min: 0, max: 99, algorithm: 'djb2' });
 ```
 
 ## Algorithm Details
@@ -509,7 +509,7 @@ const tableKey = await hashery.toHash({
 }, { algorithm: 'fnv1' });
 
 // Generate distributed slot numbers with FNV1
-const slot = await hashery.toNumber({ sessionId: 'sess_xyz789' }, 0, 999, 'fnv1');
+const slot = await hashery.toNumber({ sessionId: 'sess_xyz789' }, { min: 0, max: 999, algorithm: 'fnv1' });
 
 // Use for data deduplication
 const fingerprint = await hashery.toHash({
@@ -715,15 +715,17 @@ const shortHash = await hashery.toHash(
 );
 ```
 
-## `toNumber(data, min, max, algorithm?)`
+## `toNumber(data, options?)`
 
 Generates a deterministic number within a specified range based on the hash of the provided data. This method uses the toHash function to create a consistent hash, then maps it to a number between min and max (inclusive).
 
 **Parameters:**
 - `data` (unknown) - The data to hash (will be stringified before hashing)
-- `min` (number) - The minimum value of the range (inclusive)
-- `max` (number) - The maximum value of the range (inclusive)
-- `algorithm` (string, optional) - The hash algorithm to use (defaults to 'SHA-256')
+- `options` (object, optional) - Configuration options
+  - `min` (number, optional) - The minimum value of the range (inclusive, defaults to 0)
+  - `max` (number, optional) - The maximum value of the range (inclusive, defaults to 100)
+  - `algorithm` (string, optional) - The hash algorithm to use (defaults to 'SHA-256')
+  - `hashLength` (number, optional) - Number of characters from hash to use for conversion (defaults to 16)
 
 **Returns:** `Promise<number>` - A Promise that resolves to a number between min and max (inclusive)
 
@@ -734,11 +736,14 @@ Generates a deterministic number within a specified range based on the hash of t
 ```typescript
 const hashery = new Hashery();
 
-// Generate a number between 0 and 100
-const num = await hashery.toNumber({ user: 'john' }, 0, 100);
+// Generate a number between 0 and 100 (default range)
+const num = await hashery.toNumber({ user: 'john' });
+
+// Generate a number with custom range
+const num2 = await hashery.toNumber({ user: 'john' }, { min: 0, max: 100 });
 
 // Using a different algorithm
-const num512 = await hashery.toNumber({ user: 'john' }, 0, 255, 'SHA-512');
+const num512 = await hashery.toNumber({ user: 'john' }, { min: 0, max: 255, algorithm: 'SHA-512' });
 ```
 
 ## `loadProviders(providers?, options?)`

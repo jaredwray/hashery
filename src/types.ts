@@ -73,6 +73,13 @@ export type HasheryToHashOptions = {
 	maxLength?: number;
 };
 
+export type HasheryToNumberOptions = {
+	algorithm?: string;
+	min?: number;
+	max?: number;
+	hashLength?: number;
+};
+
 /**
  * Function type for serializing data to a string.
  * @param data - The data to stringify

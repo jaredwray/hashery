@@ -586,13 +586,39 @@ describe("Hashery", () => {
 	});
 
 	describe("toNumber method", () => {
+		test("should use default range of 0-100 when no options provided", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test", value: 42 };
+
+			const num = await hashery.toNumber(data);
+
+			expect(num).toBeDefined();
+			expect(typeof num).toBe("number");
+			expect(num).toBeGreaterThanOrEqual(0);
+			expect(num).toBeLessThanOrEqual(100);
+			expect(Number.isInteger(num)).toBe(true);
+		});
+
+		test("should use default range of 0-100 when empty options provided", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test", value: 42 };
+
+			const num = await hashery.toNumber(data, {});
+
+			expect(num).toBeDefined();
+			expect(typeof num).toBe("number");
+			expect(num).toBeGreaterThanOrEqual(0);
+			expect(num).toBeLessThanOrEqual(100);
+			expect(Number.isInteger(num)).toBe(true);
+		});
+
 		test("should generate a number within the specified range", async () => {
 			const hashery = new Hashery();
 			const data = { name: "test", value: 42 };
 			const min = 1;
 			const max = 100;
 
-			const num = await hashery.toNumber(data, min, max);
+			const num = await hashery.toNumber(data, { min, max });
 
 			expect(num).toBeDefined();
 			expect(typeof num).toBe("number");
@@ -607,8 +633,8 @@ describe("Hashery", () => {
 			const min = 1;
 			const max = 100;
 
-			const num1 = await hashery.toNumber(data, min, max);
-			const num2 = await hashery.toNumber(data, min, max);
+			const num1 = await hashery.toNumber(data, { min, max });
+			const num2 = await hashery.toNumber(data, { min, max });
 
 			expect(num1).toBe(num2);
 		});
@@ -620,8 +646,8 @@ describe("Hashery", () => {
 			const min = 1;
 			const max = 1000;
 
-			const num1 = await hashery.toNumber(data1, min, max);
-			const num2 = await hashery.toNumber(data2, min, max);
+			const num1 = await hashery.toNumber(data1, { min, max });
+			const num2 = await hashery.toNumber(data2, { min, max });
 
 			// Very unlikely to be the same with a range of 1000
 			expect(num1).not.toBe(num2);
@@ -632,7 +658,7 @@ describe("Hashery", () => {
 			const data = { name: "test" };
 			const value = 42;
 
-			const num = await hashery.toNumber(data, value, value);
+			const num = await hashery.toNumber(data, { min: value, max: value });
 
 			expect(num).toBe(value);
 		});
@@ -641,7 +667,7 @@ describe("Hashery", () => {
 			const hashery = new Hashery();
 			const data = { name: "test" };
 
-			const num = await hashery.toNumber(data, 0, 1);
+			const num = await hashery.toNumber(data, { min: 0, max: 1 });
 
 			expect(num).toBeDefined();
 			expect(num === 0 || num === 1).toBe(true);
@@ -651,9 +677,9 @@ describe("Hashery", () => {
 			const hashery = new Hashery();
 			const data = { name: "test" };
 
-			await expect(hashery.toNumber(data, 100, 1)).rejects.toThrow(
-				"min cannot be greater than max",
-			);
+			await expect(
+				hashery.toNumber(data, { min: 100, max: 1 }),
+			).rejects.toThrow("min cannot be greater than max");
 		});
 
 		test("should work with negative ranges", async () => {
@@ -662,7 +688,7 @@ describe("Hashery", () => {
 			const min = -100;
 			const max = -1;
 
-			const num = await hashery.toNumber(data, min, max);
+			const num = await hashery.toNumber(data, { min, max });
 
 			expect(num).toBeGreaterThanOrEqual(min);
 			expect(num).toBeLessThanOrEqual(max);
@@ -674,7 +700,7 @@ describe("Hashery", () => {
 			const min = -50;
 			const max = 50;
 
-			const num = await hashery.toNumber(data, min, max);
+			const num = await hashery.toNumber(data, { min, max });
 
 			expect(num).toBeGreaterThanOrEqual(min);
 			expect(num).toBeLessThanOrEqual(max);
@@ -686,8 +712,16 @@ describe("Hashery", () => {
 			const min = 1;
 			const max = 1000;
 
-			const num256 = await hashery.toNumber(data, min, max, "SHA-256");
-			const num512 = await hashery.toNumber(data, min, max, "SHA-512");
+			const num256 = await hashery.toNumber(data, {
+				min,
+				max,
+				algorithm: "SHA-256",
+			});
+			const num512 = await hashery.toNumber(data, {
+				min,
+				max,
+				algorithm: "SHA-512",
+			});
 
 			// Different algorithms should produce different results
 			expect(num256).not.toBe(num512);
@@ -703,7 +737,7 @@ describe("Hashery", () => {
 			const min = 1;
 			const max = 1000000;
 
-			const num = await hashery.toNumber(data, min, max);
+			const num = await hashery.toNumber(data, { min, max });
 
 			expect(num).toBeGreaterThanOrEqual(min);
 			expect(num).toBeLessThanOrEqual(max);
@@ -724,8 +758,8 @@ describe("Hashery", () => {
 			const min = 1;
 			const max = 100;
 
-			const num1 = await hashery.toNumber(data1, min, max);
-			const num2 = await hashery.toNumber(data2, min, max);
+			const num1 = await hashery.toNumber(data1, { min, max });
+			const num2 = await hashery.toNumber(data2, { min, max });
 
 			expect(num1).toBe(num2);
 		});
@@ -738,7 +772,7 @@ describe("Hashery", () => {
 
 			// Generate numbers for different inputs
 			for (let i = 0; i < 100; i++) {
-				const num = await hashery.toNumber({ value: i }, min, max);
+				const num = await hashery.toNumber({ value: i }, { min, max });
 				numbers.push(num);
 			}
 
@@ -759,7 +793,7 @@ describe("Hashery", () => {
 			const min = 0;
 			const max = 10;
 
-			const num = await hashery.toNumber(data, min, max);
+			const num = await hashery.toNumber(data, { min, max });
 
 			expect(num).toBeGreaterThanOrEqual(min);
 			expect(num).toBeLessThanOrEqual(max);
@@ -770,9 +804,9 @@ describe("Hashery", () => {
 			const min = 1;
 			const max = 100;
 
-			const stringNum = await hashery.toNumber("test string", min, max);
-			const numberNum = await hashery.toNumber(42, min, max);
-			const booleanNum = await hashery.toNumber(true, min, max);
+			const stringNum = await hashery.toNumber("test string", { min, max });
+			const numberNum = await hashery.toNumber(42, { min, max });
+			const booleanNum = await hashery.toNumber(true, { min, max });
 
 			expect(stringNum).toBeGreaterThanOrEqual(min);
 			expect(stringNum).toBeLessThanOrEqual(max);
