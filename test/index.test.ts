@@ -834,7 +834,7 @@ describe("Hashery", () => {
 			const hashery = new Hashery();
 
 			const namesBefore = hashery.names;
-			expect(namesBefore.length).toBe(5);
+			expect(namesBefore.length).toBe(6);
 
 			hashery.providers.add({
 				name: "new-provider",
@@ -842,7 +842,7 @@ describe("Hashery", () => {
 			});
 
 			const namesAfter = hashery.names;
-			expect(namesAfter.length).toBe(6);
+			expect(namesAfter.length).toBe(7);
 			expect(namesAfter).toContain("new-provider");
 		});
 
