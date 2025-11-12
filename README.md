@@ -21,6 +21,18 @@ Browser Compatible Object Hashing
 - **Hooks Support** - Extends Hookified for event-based functionality
 - **Maintained on a Regular Basis** - Active maintenance and updates
 
+# Installation
+
+```bash
+npm install hashery
+```
+
+or with pnpm:
+
+```bash
+pnpm add hashery
+```
+
 # Usage
 
 ## Basic Hashing
