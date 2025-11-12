@@ -855,13 +855,13 @@ describe("Hashery", () => {
 			});
 
 			const namesBefore = hashery.names;
-			expect(namesBefore.length).toBe(6);
+			expect(namesBefore.length).toBe(7);
 			expect(namesBefore).toContain("temp-provider");
 
 			hashery.providers.remove("temp-provider");
 
 			const namesAfter = hashery.names;
-			expect(namesAfter.length).toBe(5);
+			expect(namesAfter.length).toBe(6);
 			expect(namesAfter).not.toContain("temp-provider");
 		});
 
