@@ -88,6 +88,36 @@ const userSlot = await hashery.toNumber({ userId: 'user@example.com' }, 0, 9);
 // Same user will always get the same slot number
 ```
 
+## Browser Usage
+
+Hashery works seamlessly in the browser using the Web Crypto API. You can include it via CDN or bundle it with your application.
+
+### Using via CDN (jsDelivr)
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hashery Browser Example</title>
+</head>
+<body>
+  <script type="module">
+    import { Hashery } from 'https://cdn.jsdelivr.net/npm/hashery@latest/dist/browser/index.js';
+
+    const hashery = new Hashery();
+
+    // Hash data in the browser
+    const hash = await hashery.toHash({ page: 'home', userId: 123 });
+    console.log('Hash:', hash);
+
+    // Generate slot numbers for A/B testing
+    const variant = await hashery.toNumber({ userId: 'user123' }, 0, 1);
+    console.log('A/B Test Variant:', variant === 0 ? 'A' : 'B');
+  </script>
+</body>
+</html>
+```
+
 # Web Crypto
 
 Hashery is built on top of the Web Crypto API, which provides cryptographic operations in both browser and Node.js environments. This ensures consistent, secure hashing across all platforms.
