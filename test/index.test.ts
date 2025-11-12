@@ -821,11 +821,12 @@ describe("Hashery", () => {
 
 			const names = hashery.names;
 
-			expect(names.length).toBe(6);
+			expect(names.length).toBe(7);
 			expect(names).toContain("SHA-256");
 			expect(names).toContain("SHA-384");
 			expect(names).toContain("SHA-512");
 			expect(names).toContain("djb2");
+			expect(names).toContain("fnv1");
 			expect(names).toContain("custom-hash");
 		});
 
