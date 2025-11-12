@@ -32,6 +32,40 @@ export type HasheryOptions = {
 	 * ```
 	 */
 	stringify?: StringifyFn;
+
+	/**
+	 * Array of hash providers to add to base providers
+	 * Providers implement the HashProvider interface and enable custom hashing algorithms.
+	 * @example
+	 * ```ts
+	 * const customProvider = {
+	 *   name: 'custom-hash',
+	 *   toHash: async (data) => {
+	 *     // Custom hash implementation
+	 *     return 'hash-value';
+	 *   }
+	 * };
+	 *
+	 * const hashery = new Hashery({
+	 *   providers: [customProvider]
+	 * });
+	 * ```
+	 */
+	providers?: Array<HashProvider>;
+
+	/**
+	 * Whether to include base WebCrypto providers (SHA-256, SHA-384, SHA-512).
+	 * Defaults to true.
+	 * @example
+	 * ```ts
+	 * // Create instance without base providers
+	 * const hashery = new Hashery({
+	 *   includeBase: false,
+	 *   providers: [customProvider]
+	 * });
+	 * ```
+	 */
+	includeBase?: boolean;
 } & HookifiedOptions;
 
 /**
@@ -54,7 +88,7 @@ export type ParseFn = (data: string) => unknown;
  * - SHA-384: High security algorithm (384-bit)
  * - SHA-512: Highest security algorithm (512-bit)
  */
-export type HashAlgorithm = "SHA-256" | "SHA-384" | "SHA-512";
+export type WebCryptoHashAlgorithm = "SHA-256" | "SHA-384" | "SHA-512";
 
 export type HashProvider = {
 	name: string;
@@ -68,4 +102,8 @@ export type HashProvidersOptions = {
 
 export type HashProvidersGetOptions = {
 	fuzzy?: boolean;
+};
+
+export type HasheryLoadProviderOptions = {
+	includeBase?: boolean;
 };

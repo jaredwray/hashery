@@ -1,10 +1,13 @@
 import { Hookified } from "hookified";
+import { WebCrypto } from "./providers/crypto.js";
 import { HashProviders } from "./providers.js";
 import type {
-	HashAlgorithm,
+	HasheryLoadProviderOptions,
 	HasheryOptions,
+	HashProvider,
 	ParseFn,
 	StringifyFn,
+	WebCryptoHashAlgorithm,
 } from "./types.js";
 
 export class Hashery extends Hookified {
@@ -22,6 +25,10 @@ export class Hashery extends Hookified {
 		if (options?.stringify) {
 			this._stringify = options.stringify;
 		}
+
+		this.loadProviders(options?.providers, {
+			includeBase: options?.includeBase ?? true,
+		});
 	}
 
 	/**
@@ -92,7 +99,7 @@ export class Hashery extends Hookified {
 	 */
 	public async toHash(
 		data: unknown,
-		algorithm: HashAlgorithm = "SHA-256",
+		algorithm: WebCryptoHashAlgorithm = "SHA-256",
 	): Promise<string> {
 		// Stringify the data using the configured stringify function
 		const stringified = this._stringify(data);
@@ -101,16 +108,14 @@ export class Hashery extends Hookified {
 		const encoder = new TextEncoder();
 		const dataBuffer = encoder.encode(stringified);
 
-		// Hash the data using Web Crypto API
-		const hashBuffer = await crypto.subtle.digest(algorithm, dataBuffer);
+		// Get the provider for the specified algorithm
+		let provider = this._providers.get(algorithm);
+		if (!provider) {
+			provider = new WebCrypto({ algorithm: "SHA-256" });
+		}
 
-		// Convert the hash to a hexadecimal string
-		const hashArray = Array.from(new Uint8Array(hashBuffer));
-		const hashHex = hashArray
-			.map((byte) => byte.toString(16).padStart(2, "0"))
-			.join("");
-
-		return hashHex;
+		// Use the provider to hash the data
+		return await provider.toHash(dataBuffer);
 	}
 
 	/**
@@ -138,7 +143,7 @@ export class Hashery extends Hookified {
 		data: unknown,
 		min: number,
 		max: number,
-		algorithm: HashAlgorithm = "SHA-256",
+		algorithm: WebCryptoHashAlgorithm = "SHA-256",
 	): Promise<number> {
 		if (min > max) {
 			throw new Error("min cannot be greater than max");
@@ -160,6 +165,24 @@ export class Hashery extends Hookified {
 
 		return mapped;
 	}
+
+	public loadProviders(
+		providers?: Array<HashProvider>,
+		options: HasheryLoadProviderOptions = { includeBase: true },
+	): void {
+		if (providers) {
+			for (const provider of providers) {
+				this._providers.add(provider);
+			}
+		}
+
+		// load all the providers
+		if (options.includeBase) {
+			this.providers.add(new WebCrypto({ algorithm: "SHA-256" }));
+			this.providers.add(new WebCrypto({ algorithm: "SHA-384" }));
+			this.providers.add(new WebCrypto({ algorithm: "SHA-512" }));
+		}
+	}
 }
 
-export type { HashAlgorithm, HasheryOptions, ParseFn, StringifyFn };
+export type { WebCryptoHashAlgorithm, HasheryOptions, ParseFn, StringifyFn };

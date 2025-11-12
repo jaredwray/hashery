@@ -1,12 +1,12 @@
-import type { HashAlgorithm, HashProvider } from "../types.js";
+import type { WebCryptoHashAlgorithm, HashProvider } from "../types.js";
 
 
 export type WebCryptoOptions = {
-	algorithm?: HashAlgorithm
+	algorithm?: WebCryptoHashAlgorithm
 }
 
 export class WebCrypto implements HashProvider {
-	private _algorithm: HashAlgorithm = "SHA-256";
+	private _algorithm: WebCryptoHashAlgorithm = "SHA-256";
 	constructor(options?: WebCryptoOptions) {
 		if(options?.algorithm) {
 			this._algorithm = options?.algorithm;
