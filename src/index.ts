@@ -8,6 +8,7 @@ import { HashProviders } from "./providers.js";
 import type {
 	HasheryLoadProviderOptions,
 	HasheryOptions,
+	HasheryToHashOptions,
 	HashProvider,
 	ParseFn,
 	StringifyFn,
@@ -111,10 +112,16 @@ export class Hashery extends Hookified {
 	 */
 	public async toHash(
 		data: unknown,
-		algorithm: string = "SHA-256",
+		options?: HasheryToHashOptions,
 	): Promise<string> {
+		const defaultAlgorithm = "SHA-256";
+
 		// Before hook - allows modification of input data and algorithm
-		const context = { data, algorithm };
+		const context = {
+			data,
+			algorithm: options?.algorithm ?? defaultAlgorithm,
+			maxLength: options?.maxLength,
+		};
 		await this.beforeHook("toHash", context);
 
 		// Stringify the data using the configured stringify function
@@ -127,7 +134,7 @@ export class Hashery extends Hookified {
 		// Get the provider for the specified algorithm
 		let provider = this._providers.get(context.algorithm);
 		if (!provider) {
-			provider = new WebCrypto({ algorithm: "SHA-256" });
+			provider = new WebCrypto({ algorithm: defaultAlgorithm });
 		}
 
 		// Use the provider to hash the data
@@ -172,7 +179,7 @@ export class Hashery extends Hookified {
 		}
 
 		// Get the hash as a hex string
-		const hash = await this.toHash(data, algorithm);
+		const hash = await this.toHash(data, { algorithm });
 
 		// Take the first 16 characters (64 bits) of the hash to convert to a number
 		// This provides good distribution while avoiding precision issues with JavaScript numbers

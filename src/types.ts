@@ -68,6 +68,11 @@ export type HasheryOptions = {
 	includeBase?: boolean;
 } & HookifiedOptions;
 
+export type HasheryToHashOptions = {
+	algorithm?: string;
+	maxLength?: number;
+};
+
 /**
  * Function type for serializing data to a string.
  * @param data - The data to stringify
