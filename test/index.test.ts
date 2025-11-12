@@ -778,4 +778,101 @@ describe("Hashery", () => {
 			expect(names).toContain("md5");
 		});
 	});
+
+	describe("names property", () => {
+		test("should return default provider names", () => {
+			const hashery = new Hashery();
+			const names = hashery.names;
+
+			expect(names).toBeDefined();
+			expect(Array.isArray(names)).toBe(true);
+			expect(names.length).toBe(3);
+			expect(names).toContain("SHA-256");
+			expect(names).toContain("SHA-384");
+			expect(names).toContain("SHA-512");
+		});
+
+		test("should return empty array when no providers loaded", () => {
+			const hashery = new Hashery({ includeBase: false });
+			const names = hashery.names;
+
+			expect(names).toBeDefined();
+			expect(Array.isArray(names)).toBe(true);
+			expect(names.length).toBe(0);
+		});
+
+		test("should include custom provider names", () => {
+			const hashery = new Hashery();
+
+			hashery.providers.add({
+				name: "custom-hash",
+				toHash: async (_data: BufferSource) => "custom-output",
+			});
+
+			const names = hashery.names;
+
+			expect(names.length).toBe(4);
+			expect(names).toContain("SHA-256");
+			expect(names).toContain("SHA-384");
+			expect(names).toContain("SHA-512");
+			expect(names).toContain("custom-hash");
+		});
+
+		test("should reflect changes when providers are added", () => {
+			const hashery = new Hashery();
+
+			const namesBefore = hashery.names;
+			expect(namesBefore.length).toBe(3);
+
+			hashery.providers.add({
+				name: "new-provider",
+				toHash: async (_data: BufferSource) => "new-hash",
+			});
+
+			const namesAfter = hashery.names;
+			expect(namesAfter.length).toBe(4);
+			expect(namesAfter).toContain("new-provider");
+		});
+
+		test("should reflect changes when providers are removed", () => {
+			const hashery = new Hashery();
+
+			hashery.providers.add({
+				name: "temp-provider",
+				toHash: async (_data: BufferSource) => "temp-hash",
+			});
+
+			const namesBefore = hashery.names;
+			expect(namesBefore.length).toBe(4);
+			expect(namesBefore).toContain("temp-provider");
+
+			hashery.providers.remove("temp-provider");
+
+			const namesAfter = hashery.names;
+			expect(namesAfter.length).toBe(3);
+			expect(namesAfter).not.toContain("temp-provider");
+		});
+
+		test("should return names from custom HashProviders instance", () => {
+			const hashery = new Hashery({ includeBase: false });
+
+			const customProviders = new HashProviders();
+			customProviders.add({
+				name: "provider-1",
+				toHash: async (_data: BufferSource) => "hash-1",
+			});
+			customProviders.add({
+				name: "provider-2",
+				toHash: async (_data: BufferSource) => "hash-2",
+			});
+
+			hashery.providers = customProviders;
+
+			const names = hashery.names;
+
+			expect(names.length).toBe(2);
+			expect(names).toContain("provider-1");
+			expect(names).toContain("provider-2");
+		});
+	});
 });
