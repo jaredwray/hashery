@@ -113,21 +113,31 @@ export class Hashery extends Hookified {
 		data: unknown,
 		algorithm: string = "SHA-256",
 	): Promise<string> {
+		// Before hook - allows modification of input data and algorithm
+		const context = { data, algorithm };
+		await this.beforeHook("toHash", context);
+
 		// Stringify the data using the configured stringify function
-		const stringified = this._stringify(data);
+		const stringified = this._stringify(context.data);
 
 		// Convert the string to a Uint8Array
 		const encoder = new TextEncoder();
 		const dataBuffer = encoder.encode(stringified);
 
 		// Get the provider for the specified algorithm
-		let provider = this._providers.get(algorithm);
+		let provider = this._providers.get(context.algorithm);
 		if (!provider) {
 			provider = new WebCrypto({ algorithm: "SHA-256" });
 		}
 
 		// Use the provider to hash the data
-		return await provider.toHash(dataBuffer);
+		const hash = await provider.toHash(dataBuffer);
+
+		// After hook - allows modification/logging of result
+		const result = { hash, data: context.data, algorithm: context.algorithm };
+		await this.afterHook("toHash", result);
+
+		return result.hash;
 	}
 
 	/**

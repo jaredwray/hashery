@@ -888,4 +888,316 @@ describe("Hashery", () => {
 			expect(names).toContain("provider-2");
 		});
 	});
+
+	describe("toHash hooks", () => {
+		test("should fire before:toHash hook before hashing", async () => {
+			const hashery = new Hashery();
+			const hookData: Array<{ data: unknown; algorithm: string }> = [];
+
+			hashery.onHook("before:toHash", async (context) => {
+				hookData.push({ ...context });
+			});
+
+			const data = { name: "test", value: 42 };
+			await hashery.toHash(data, "SHA-256");
+
+			expect(hookData.length).toBe(1);
+			expect(hookData[0].data).toEqual(data);
+			expect(hookData[0].algorithm).toBe("SHA-256");
+		});
+
+		test("should fire after:toHash hook after hashing", async () => {
+			const hashery = new Hashery();
+			const hookData: Array<{
+				hash: string;
+				data: unknown;
+				algorithm: string;
+			}> = [];
+
+			hashery.onHook("after:toHash", async (result) => {
+				hookData.push({ ...result });
+			});
+
+			const data = { name: "test", value: 42 };
+			const hash = await hashery.toHash(data, "SHA-256");
+
+			expect(hookData.length).toBe(1);
+			expect(hookData[0].hash).toBe(hash);
+			expect(hookData[0].data).toEqual(data);
+			expect(hookData[0].algorithm).toBe("SHA-256");
+		});
+
+		test("should allow before:toHash hook to modify input data", async () => {
+			const hashery = new Hashery();
+
+			hashery.onHook("before:toHash", async (context) => {
+				// Modify the data before hashing
+				context.data = { modified: true, original: context.data };
+			});
+
+			const data = { name: "test" };
+			const hash1 = await hashery.toHash(data, "SHA-256");
+
+			// Hash without the hook should be different
+			const hashery2 = new Hashery();
+			const hash2 = await hashery2.toHash(data, "SHA-256");
+
+			expect(hash1).not.toBe(hash2);
+		});
+
+		test("should allow before:toHash hook to modify algorithm", async () => {
+			const hashery = new Hashery();
+
+			hashery.onHook("before:toHash", async (context) => {
+				// Force SHA-512 instead of SHA-256
+				context.algorithm = "SHA-512";
+			});
+
+			const data = { name: "test" };
+			const hash = await hashery.toHash(data, "SHA-256");
+
+			// SHA-512 produces 128 hex characters, SHA-256 produces 64
+			expect(hash.length).toBe(128);
+		});
+
+		test("should allow after:toHash hook to modify result", async () => {
+			const hashery = new Hashery();
+
+			hashery.onHook("after:toHash", async (result) => {
+				// Convert hash to uppercase
+				result.hash = result.hash.toUpperCase();
+			});
+
+			const data = { name: "test" };
+			const hash = await hashery.toHash(data, "SHA-256");
+
+			// Check that the hash is uppercase
+			expect(hash).toBe(hash.toUpperCase());
+			expect(hash).not.toBe(hash.toLowerCase());
+		});
+
+		test("should execute multiple before hooks in order", async () => {
+			const hashery = new Hashery();
+			const executionOrder: string[] = [];
+
+			hashery.onHook("before:toHash", async (_context) => {
+				executionOrder.push("hook1");
+			});
+
+			hashery.onHook("before:toHash", async (_context) => {
+				executionOrder.push("hook2");
+			});
+
+			hashery.onHook("before:toHash", async (_context) => {
+				executionOrder.push("hook3");
+			});
+
+			await hashery.toHash({ name: "test" }, "SHA-256");
+
+			expect(executionOrder).toEqual(["hook1", "hook2", "hook3"]);
+		});
+
+		test("should execute multiple after hooks in order", async () => {
+			const hashery = new Hashery();
+			const executionOrder: string[] = [];
+
+			hashery.onHook("after:toHash", async (_result) => {
+				executionOrder.push("hook1");
+			});
+
+			hashery.onHook("after:toHash", async (_result) => {
+				executionOrder.push("hook2");
+			});
+
+			hashery.onHook("after:toHash", async (_result) => {
+				executionOrder.push("hook3");
+			});
+
+			await hashery.toHash({ name: "test" }, "SHA-256");
+
+			expect(executionOrder).toEqual(["hook1", "hook2", "hook3"]);
+		});
+
+		test("should execute hooks in correct lifecycle order", async () => {
+			const hashery = new Hashery();
+			const executionOrder: string[] = [];
+
+			hashery.onHook("before:toHash", async (_context) => {
+				executionOrder.push("before1");
+			});
+
+			hashery.onHook("before:toHash", async (_context) => {
+				executionOrder.push("before2");
+			});
+
+			hashery.onHook("after:toHash", async (_result) => {
+				executionOrder.push("after1");
+			});
+
+			hashery.onHook("after:toHash", async (_result) => {
+				executionOrder.push("after2");
+			});
+
+			await hashery.toHash({ name: "test" }, "SHA-256");
+
+			expect(executionOrder).toEqual([
+				"before1",
+				"before2",
+				"after1",
+				"after2",
+			]);
+		});
+
+		test("should pass modified context through multiple before hooks", async () => {
+			const hashery = new Hashery();
+
+			hashery.onHook("before:toHash", async (context) => {
+				context.data = { step: 1, original: context.data };
+			});
+
+			hashery.onHook("before:toHash", async (context) => {
+				context.data = { step: 2, previous: context.data };
+			});
+
+			hashery.onHook("after:toHash", async (result) => {
+				// Verify the data was modified through both hooks
+				expect(result.data).toEqual({
+					step: 2,
+					previous: { step: 1, original: { name: "test" } },
+				});
+			});
+
+			await hashery.toHash({ name: "test" }, "SHA-256");
+		});
+
+		test("should work with default algorithm", async () => {
+			const hashery = new Hashery();
+			const hookData: Array<{ algorithm: string }> = [];
+
+			hashery.onHook("before:toHash", async (context) => {
+				hookData.push({ algorithm: context.algorithm });
+			});
+
+			await hashery.toHash({ name: "test" });
+
+			expect(hookData.length).toBe(1);
+			expect(hookData[0].algorithm).toBe("SHA-256");
+		});
+
+		test("should handle errors in hooks when throwOnEmitError is true", async () => {
+			const hashery = new Hashery({ throwOnEmitError: true });
+
+			hashery.onHook("before:toHash", async (_context) => {
+				throw new Error("Hook error");
+			});
+
+			await expect(hashery.toHash({ name: "test" })).rejects.toThrow(
+				"Hook error",
+			);
+		});
+
+		test("should not throw errors in hooks when throwOnEmitError is false", async () => {
+			const hashery = new Hashery({ throwOnEmitError: false });
+
+			hashery.onHook("before:toHash", async (_context) => {
+				throw new Error("Hook error");
+			});
+
+			// Should not throw, should continue and return hash
+			const hash = await hashery.toHash({ name: "test" });
+			expect(hash).toBeDefined();
+			expect(typeof hash).toBe("string");
+			expect(hash.length).toBe(64);
+		});
+
+		test("should allow logging in hooks", async () => {
+			const hashery = new Hashery();
+			const logs: string[] = [];
+
+			hashery.onHook("before:toHash", async (context) => {
+				logs.push(
+					`Hashing data: ${JSON.stringify(context.data)} with ${context.algorithm}`,
+				);
+			});
+
+			hashery.onHook("after:toHash", async (result) => {
+				logs.push(`Hash result: ${result.hash.substring(0, 8)}...`);
+			});
+
+			await hashery.toHash({ name: "test" }, "SHA-256");
+
+			expect(logs.length).toBe(2);
+			expect(logs[0]).toContain("Hashing data:");
+			expect(logs[0]).toContain("SHA-256");
+			expect(logs[1]).toContain("Hash result:");
+		});
+
+		test("should support caching pattern with hooks", async () => {
+			const hashery = new Hashery();
+			const cache = new Map<string, string>();
+
+			hashery.onHook("after:toHash", async (result) => {
+				const cacheKey = `${result.algorithm}:${JSON.stringify(result.data)}`;
+				// Store the hash in cache
+				cache.set(cacheKey, result.hash);
+			});
+
+			const data = { name: "test" };
+			const hash1 = await hashery.toHash(data, "SHA-256");
+			const hash2 = await hashery.toHash(data, "SHA-256");
+			const hash3 = await hashery.toHash(data, "SHA-256");
+
+			// All hashes should be the same
+			expect(hash1).toBe(hash2);
+			expect(hash2).toBe(hash3);
+
+			// Verify all were cached
+			const cacheKey = `SHA-256:${JSON.stringify(data)}`;
+			expect(cache.has(cacheKey)).toBe(true);
+			expect(cache.get(cacheKey)).toBe(hash1);
+		});
+
+		test("should work with all supported algorithms", async () => {
+			const hashery = new Hashery();
+			const algorithms = ["SHA-256", "SHA-384", "SHA-512"];
+			const results: Array<{ algorithm: string; hashLength: number }> = [];
+
+			hashery.onHook("after:toHash", async (result) => {
+				results.push({
+					algorithm: result.algorithm,
+					hashLength: result.hash.length,
+				});
+			});
+
+			for (const algorithm of algorithms) {
+				await hashery.toHash({ name: "test" }, algorithm);
+			}
+
+			expect(results.length).toBe(3);
+			expect(results[0]).toEqual({ algorithm: "SHA-256", hashLength: 64 });
+			expect(results[1]).toEqual({ algorithm: "SHA-384", hashLength: 96 });
+			expect(results[2]).toEqual({ algorithm: "SHA-512", hashLength: 128 });
+		});
+
+		test("should allow removing hooks", async () => {
+			const hashery = new Hashery();
+			const hookCalls: string[] = [];
+
+			const hookFn = async (_context: unknown) => {
+				hookCalls.push("called");
+			};
+
+			hashery.onHook("before:toHash", hookFn);
+			await hashery.toHash({ name: "test1" });
+
+			expect(hookCalls.length).toBe(1);
+
+			// Remove the hook
+			hashery.removeHook("before:toHash", hookFn);
+			await hashery.toHash({ name: "test2" });
+
+			// Should still be 1, not 2
+			expect(hookCalls.length).toBe(1);
+		});
+	});
 });
