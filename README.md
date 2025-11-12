@@ -1,3 +1,5 @@
+<img src="./site/logo.svg" />
+
 # hashery
 Browser Compatible Object Hashing
 
@@ -11,5 +13,4 @@ Browser Compatible Object Hashing
 # Features
 - Built using `WebCrypto` for Browser and Nodejs!
 - Easily replace JSON `parse` and `stringify`
-- `SafeString` parsing enabled by default
 - Maintained on a Regular Basis!
