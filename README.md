@@ -137,6 +137,157 @@ const djb2Hash = await hashery.toHash({ data: 'example' }, 'djb2');
 const fnv1Hash = await hashery.toHash({ data: 'example' }, 'fnv1');
 ```
 
+# DJB2 Hashing
+
+DJB2 is a non-cryptographic hash function created by Daniel J. Bernstein. It's known for its simplicity and speed, making it ideal for hash tables, checksums, and other non-security applications.
+
+## Why Use DJB2?
+
+- **Fast Performance** - Significantly faster than cryptographic hash functions
+- **Good Distribution** - Provides good hash distribution for most data
+- **Simple Algorithm** - Easy to understand and implement
+- **Low Collision Rate** - Works well for hash tables and data structures
+- **Deterministic** - Same input always produces the same output
+
+## When to Use DJB2
+
+✅ **Good for:**
+- Hash tables and data structures
+- Non-security checksums
+- Fast data lookups
+- Cache keys
+- General-purpose hashing where security isn't a concern
+
+❌ **Not suitable for:**
+- Password hashing
+- Cryptographic signatures
+- Security-sensitive applications
+- Data integrity verification where tampering is a concern
+
+## DJB2 vs Cryptographic Hashes
+
+| Feature | DJB2 | SHA-256 |
+|---------|------|---------|
+| Speed | Very Fast | Slower |
+| Security | Not Secure | Cryptographically Secure |
+| Hash Length | 32-bit | 256-bit |
+| Collision Resistance | Good | Excellent |
+| Use Case | General Purpose | Security |
+
+## Example: Using DJB2
+
+```typescript
+import { Hashery } from 'hashery';
+
+const hashery = new Hashery();
+
+// Hash with DJB2 (fast, non-cryptographic)
+const djb2Hash = await hashery.toHash({ userId: 123, action: 'login' }, 'djb2');
+
+// Use for cache keys
+const cacheKey = await hashery.toHash({
+  endpoint: '/api/users',
+  params: { page: 1, limit: 10 }
+}, 'djb2');
+
+// Generate slot numbers with DJB2
+const slot = await hashery.toNumber({ userId: 'user123' }, 0, 99, 'djb2');
+```
+
+## Algorithm Details
+
+DJB2 uses a simple formula:
+```
+hash = 5381
+for each character c:
+    hash = ((hash << 5) + hash) + c
+```
+
+This translates to: `hash * 33 + c`, where 5381 is the magic initial value chosen by Daniel J. Bernstein for its distribution properties.
+
+# FNV1 Hashing
+
+FNV1 (Fowler-Noll-Vo) is a non-cryptographic hash function designed for fast hash table and checksum use. Created by Glenn Fowler, Landon Curt Noll, and Kiem-Phong Vo, it's known for its excellent distribution properties and simplicity.
+
+## Why Use FNV1?
+
+- **Excellent Distribution** - Superior hash distribution reduces collisions
+- **Fast Performance** - Very fast computation with minimal operations
+- **Simple Implementation** - Easy to understand and implement
+- **Public Domain** - No licensing restrictions
+- **Well-Tested** - Extensively used and tested in production systems
+- **Deterministic** - Same input always produces the same output
+
+## When to Use FNV1
+
+✅ **Good for:**
+- Hash tables and associative arrays
+- Checksums and fingerprints
+- Data deduplication
+- Bloom filters
+- Fast lookups and indexing
+- Non-cryptographic applications
+
+❌ **Not suitable for:**
+- Password hashing
+- Cryptographic signatures
+- Security-critical applications
+- Digital signatures
+- Data integrity in adversarial environments
+
+## FNV1 vs Other Hash Functions
+
+| Feature | FNV1 | DJB2 | SHA-256 |
+|---------|------|------|---------|
+| Speed | Very Fast | Very Fast | Slower |
+| Distribution | Excellent | Good | Excellent |
+| Security | Not Secure | Not Secure | Cryptographically Secure |
+| Collision Resistance | Good | Good | Excellent |
+| Use Case | Hash Tables | General Purpose | Security |
+
+## Example: Using FNV1
+
+```typescript
+import { Hashery } from 'hashery';
+
+const hashery = new Hashery();
+
+// Hash with FNV1 (fast, excellent distribution)
+const fnv1Hash = await hashery.toHash({ productId: 'ABC123', variant: 'red' }, 'fnv1');
+
+// Use for hash table keys
+const tableKey = await hashery.toHash({
+  userId: 'user@example.com',
+  resource: 'profile'
+}, 'fnv1');
+
+// Generate distributed slot numbers with FNV1
+const slot = await hashery.toNumber({ sessionId: 'sess_xyz789' }, 0, 999, 'fnv1');
+
+// Use for data deduplication
+const fingerprint = await hashery.toHash({
+  content: 'document content here',
+  metadata: { author: 'John', date: '2024-01-01' }
+}, 'fnv1');
+```
+
+## Algorithm Details
+
+FNV1 uses the following formula:
+```
+hash = FNV_offset_basis
+for each byte b:
+    hash = hash * FNV_prime
+    hash = hash XOR b
+```
+
+Where:
+- **FNV_offset_basis**: Initial hash value (different for 32-bit, 64-bit, etc.)
+- **FNV_prime**: A carefully chosen prime number for good distribution
+- **XOR**: Bitwise exclusive OR operation
+
+The algorithm multiplies by a prime and XORs with each input byte, creating excellent avalanche properties where small input changes result in very different hash values.
+
 # API - Properties
 
 ## `parse`
