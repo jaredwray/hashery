@@ -11,6 +11,12 @@ Browser Compatible Object Hashing
 [![npm](https://img.shields.io/npm/v/hashery)](https://npmjs.com/package/hashery)
 
 # Features
-- Built using `WebCrypto` for Browser and Nodejs!
-- Easily replace JSON `parse` and `stringify`
-- Maintained on a Regular Basis!
+- **Browser and Node.js Compatible** - Built using `WebCrypto` API for both environments
+- **Multiple Hash Algorithms** - Supports SHA-256, SHA-384, SHA-512 (WebCrypto), plus DJB2, FNV1, Murmer, and CRC32
+- **Custom Serialization** - Easily replace JSON `parse` and `stringify` with custom functions
+- **Deterministic Hashing** - Generate consistent hashes for the same input
+- **Hash to Number** - Convert hashes to deterministic numbers within a specified range. Great for slot management
+- **Provider System** - Extensible hash provider architecture for custom algorithms
+- **Fuzzy Provider Matching** - Case-insensitive and dash-tolerant algorithm name matching
+- **Hooks Support** - Extends Hookified for event-based functionality
+- **Maintained on a Regular Basis** - Active maintenance and updates
