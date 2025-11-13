@@ -296,11 +296,19 @@ export class Hashery extends Hookified {
 	 * ```
 	 */
 	public toHashSync(data: unknown, options?: HasheryToHashSyncOptions): string {
-		// Get algorithm from options or use default sync algorithm
-		const algorithm = options?.algorithm ?? this._defaultAlgorithmSync;
+		// Before hook - allows modification of input data and algorithm (fires asynchronously)
+		const context = {
+			data,
+			algorithm: options?.algorithm ?? this._defaultAlgorithmSync,
+			maxLength: options?.maxLength,
+		};
+		this.beforeHook("toHashSync", context);
+
+		// Get algorithm from context (may have been modified by hook)
+		const algorithm = context.algorithm;
 
 		// Stringify the data using the configured stringify function
-		const stringified = this._stringify(data);
+		const stringified = this._stringify(context.data);
 
 		// Convert the string to a Uint8Array
 		const encoder = new TextEncoder();
@@ -327,7 +335,11 @@ export class Hashery extends Hookified {
 			hash = hash.substring(0, options.maxLength);
 		}
 
-		return hash;
+		// After hook - allows modification/logging of result (fires asynchronously)
+		const result = { hash, data: context.data, algorithm: context.algorithm };
+		this.afterHook("toHashSync", result);
+
+		return result.hash;
 	}
 
 	/**

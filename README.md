@@ -255,18 +255,41 @@ Hashery extends [Hookified](https://github.com/jaredwray/hookified) to provide e
 
 ## Available Hooks
 
-### `before:toHash`
+### Asynchronous Method Hooks
+
+#### `before:toHash`
 
 Fired before hashing occurs. This hook receives a context object containing:
 - `data` - The data to be hashed (can be modified)
 - `algorithm` - The hash algorithm to use (can be modified)
+- `maxLength` - Optional maximum length for the hash output
 
-### `after:toHash`
+#### `after:toHash`
 
 Fired after hashing completes. This hook receives a result object containing:
 - `hash` - The generated hash (can be modified)
 - `data` - The data that was hashed
 - `algorithm` - The algorithm that was used
+
+### Synchronous Method Hooks
+
+#### `before:toHashSync`
+
+Fired before synchronous hashing occurs. This hook receives a context object containing:
+- `data` - The data to be hashed (can be modified)
+- `algorithm` - The hash algorithm to use (can be modified)
+- `maxLength` - Optional maximum length for the hash output
+
+**Note:** This hook fires asynchronously (non-blocking) to maintain the synchronous nature of `toHashSync()`. Hook execution happens in the background and won't delay the method's return.
+
+#### `after:toHashSync`
+
+Fired after synchronous hashing completes. This hook receives a result object containing:
+- `hash` - The generated hash (can be modified)
+- `data` - The data that was hashed
+- `algorithm` - The algorithm that was used
+
+**Note:** This hook fires asynchronously (non-blocking) to maintain the synchronous nature of `toHashSync()`. Hook execution happens in the background.
 
 ## Basic Hook Usage
 
@@ -400,6 +423,44 @@ await hashery.toHash({ name: 'test' });
 // Data will be wrapped twice
 ```
 
+## Synchronous Method Hooks
+
+Synchronous methods (`toHashSync`, `toNumberSync`) support hooks, but they fire asynchronously in the background to maintain the synchronous nature of the methods.
+
+```typescript
+const hashery = new Hashery();
+
+// Listen to synchronous hash hooks
+hashery.onHook('before:toHashSync', async (context) => {
+  console.log('About to hash synchronously:', context.data);
+  console.log('Using algorithm:', context.algorithm);
+});
+
+hashery.onHook('after:toHashSync', async (result) => {
+  console.log('Sync hash generated:', result.hash);
+});
+
+// Call synchronous method - hooks fire in background
+const hash = hashery.toHashSync({ name: 'John', age: 30 });
+console.log('Method returned:', hash);
+// Method returns immediately, hooks execute asynchronously
+```
+
+**Important Notes:**
+- Synchronous method hooks fire asynchronously (non-blocking)
+- The method returns immediately without waiting for hooks to complete
+- Hook modifications to context/result may not affect the returned value
+- For guaranteed hook execution, use async methods (`toHash`, `toNumber`)
+
+### Why Are Sync Hooks Asynchronous?
+
+Synchronous methods are designed for maximum performance. Making hooks blocking would defeat this purpose. The async hook execution allows:
+- Logging and monitoring without performance impact
+- Side effects (like caching) without blocking
+- Maintaining the synchronous contract of the method
+
+If you need hooks that modify data or behavior, use the async methods (`toHash`, `toNumber`).
+
 ## Removing Hooks
 
 You can remove hooks when they're no longer needed:
@@ -416,6 +477,10 @@ hashery.onHook('before:toHash', myHook);
 
 // Remove the hook
 hashery.offHook('before:toHash', myHook);
+
+// Same works for sync hooks
+hashery.onHook('before:toHashSync', myHook);
+hashery.offHook('before:toHashSync', myHook);
 ```
 
 ## Error Handling in Hooks
