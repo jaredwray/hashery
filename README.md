@@ -1096,17 +1096,23 @@ hashery.loadProviders([customProvider], { includeBase: false });
 
 # Benchmarks
 
-Overall view of the current algorithm's and their performance using simple hashing with random data. Many of these are not secure and should be used only for object hashing. Read about each one in the documentation and pick what works best for your use case.
+Overall view of the current algorithm's and their performance using simple hashing with random data. `Sync` is when we use `toHashSync` and `Async` is the `toHash` function which requires `await`.
 
-|   name    |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
-|-----------|:---------:|----------:|----------:|:--------:|----------:|
-|  DJB2     |    🥇     |     522K  |      2µs  |  ±0.86%  |     506K  |
-|  MURMER   |  -0.24%   |     521K  |      2µs  |  ±0.96%  |     504K  |
-|  FNV1     |   -3.9%   |     501K  |      2µs  |  ±0.27%  |     487K  |
-|  CRC32    |   -12%    |     457K  |      2µs  |  ±0.22%  |     446K  |
-|  SHA-256  |   -81%    |      98K  |     10µs  |  ±0.20%  |      96K  |
-|  SHA-384  |   -83%    |      90K  |     12µs  |  ±2.88%  |      85K  |
-|  SHA-512  |   -83%    |      86K  |     12µs  |  ±0.58%  |      84K  |
+|      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
+|-----------------|:---------:|----------:|----------:|:--------:|----------:|
+|  DJB2 Sync      |    🥇     |     589K  |      2µs  |  ±0.21%  |     574K  |
+|  MURMER Sync    |   -5.1%   |     559K  |      2µs  |  ±0.20%  |     546K  |
+|  FNV1 Sync      |   -7.3%   |     546K  |      2µs  |  ±0.22%  |     532K  |
+|  MURMER Async   |   -12%    |     521K  |      2µs  |  ±0.87%  |     504K  |
+|  DJB2 Async     |   -12%    |     519K  |      2µs  |  ±0.21%  |     506K  |
+|  CRC32 Sync     |   -14%    |     505K  |      2µs  |  ±0.18%  |     495K  |
+|  FNV1 Async     |   -17%    |     492K  |      2µs  |  ±4.13%  |     439K  |
+|  CRC32 Async    |   -22%    |     461K  |      2µs  |  ±0.18%  |     451K  |
+|  SHA-256 Async  |   -83%    |     101K  |     10µs  |  ±1.26%  |      99K  |
+|  SHA-384 Async  |   -84%    |      93K  |     11µs  |  ±2.43%  |      90K  |
+|  SHA-512 Async  |   -85%    |      88K  |     12µs  |  ±0.26%  |      86K  |
+
+**NOTE: Many of these are not secure and should be used only for object hashing. Read about each one in the documentation and pick what works best for your use case.**
 
 # Code of Conduct and Contributing
 Please use our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines for development and testing. We appreciate your contributions!
