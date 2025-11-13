@@ -21,6 +21,7 @@ export class Hashery extends Hookified {
 	private _stringify: StringifyFn = JSON.stringify;
 	private _providers = new HashProviders();
 	private _defaultAlgorithm: string = "SHA-256";
+	private _defaultAlgorithmSync: string = "djb2";
 
 	constructor(options?: HasheryOptions) {
 		super(options);
@@ -35,6 +36,10 @@ export class Hashery extends Hookified {
 
 		if (options?.defaultAlgorithm) {
 			this._defaultAlgorithm = options.defaultAlgorithm;
+		}
+
+		if (options?.defaultAlgorithmSync) {
+			this._defaultAlgorithmSync = options.defaultAlgorithmSync;
 		}
 
 		this.loadProviders(options?.providers, {
@@ -120,6 +125,29 @@ export class Hashery extends Hookified {
 	 */
 	public set defaultAlgorithm(value: string) {
 		this._defaultAlgorithm = value;
+	}
+
+	/**
+	 * Gets the default synchronous hash algorithm used when none is specified.
+	 * @returns The current default synchronous algorithm (defaults to 'djb2')
+	 */
+	public get defaultAlgorithmSync(): string {
+		return this._defaultAlgorithmSync;
+	}
+
+	/**
+	 * Sets the default synchronous hash algorithm to use when none is specified.
+	 * @param value - The default synchronous algorithm to use (e.g., 'djb2', 'fnv1', 'murmer', 'crc32')
+	 * @example
+	 * ```ts
+	 * const hashery = new Hashery();
+	 * hashery.defaultAlgorithmSync = 'fnv1';
+	 *
+	 * // Now synchronous operations will use fnv1 by default
+	 * ```
+	 */
+	public set defaultAlgorithmSync(value: string) {
+		this._defaultAlgorithmSync = value;
 	}
 
 	/**
