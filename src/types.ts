@@ -81,6 +81,20 @@ export type HasheryOptions = {
 	 * ```
 	 */
 	defaultAlgorithm?: string;
+
+	/**
+	 * Default synchronous hash algorithm to use when none is specified.
+	 * Defaults to 'djb2'.
+	 * @example
+	 * ```ts
+	 * const hashery = new Hashery({
+	 *   defaultAlgorithmSync: 'fnv1'
+	 * });
+	 *
+	 * // This will use fnv1 for synchronous operations by default
+	 * ```
+	 */
+	defaultAlgorithmSync?: string;
 } & HookifiedOptions;
 
 /**

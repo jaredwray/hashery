@@ -335,6 +335,54 @@ describe("Hashery", () => {
 		});
 	});
 
+	describe("defaultAlgorithmSync property", () => {
+		test("should have djb2 as default synchronous algorithm", () => {
+			const hashery = new Hashery();
+			expect(hashery.defaultAlgorithmSync).toBe("djb2");
+		});
+
+		test("should set defaultAlgorithmSync via constructor", () => {
+			const hashery = new Hashery({ defaultAlgorithmSync: "fnv1" });
+			expect(hashery.defaultAlgorithmSync).toBe("fnv1");
+		});
+
+		test("should allow setting defaultAlgorithmSync via property setter", () => {
+			const hashery = new Hashery();
+			expect(hashery.defaultAlgorithmSync).toBe("djb2");
+
+			hashery.defaultAlgorithmSync = "murmer";
+			expect(hashery.defaultAlgorithmSync).toBe("murmer");
+		});
+
+		test("should allow runtime change of defaultAlgorithmSync", () => {
+			const hashery = new Hashery();
+			expect(hashery.defaultAlgorithmSync).toBe("djb2");
+
+			// Change default to fnv1
+			hashery.defaultAlgorithmSync = "fnv1";
+			expect(hashery.defaultAlgorithmSync).toBe("fnv1");
+
+			// Change to crc32
+			hashery.defaultAlgorithmSync = "crc32";
+			expect(hashery.defaultAlgorithmSync).toBe("crc32");
+		});
+
+		test("should allow setting defaultAlgorithmSync to any algorithm", () => {
+			const hashery = new Hashery();
+			hashery.defaultAlgorithmSync = "SHA-256";
+			expect(hashery.defaultAlgorithmSync).toBe("SHA-256");
+		});
+
+		test("should be independent of defaultAlgorithm", () => {
+			const hashery = new Hashery({
+				defaultAlgorithm: "SHA-512",
+				defaultAlgorithmSync: "fnv1",
+			});
+			expect(hashery.defaultAlgorithm).toBe("SHA-512");
+			expect(hashery.defaultAlgorithmSync).toBe("fnv1");
+		});
+	});
+
 	describe("toHash method", () => {
 		test("should generate SHA-256 hash by default", async () => {
 			const hashery = new Hashery();
