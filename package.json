@@ -57,12 +57,16 @@
   ],
   "keywords": [
     "webcrypto",
-    "crypto.subtle",
     "object-hash",
     "hash",
     "hashing",
     "sha256",
+    "sha384",
     "sha512",
+    "djb2",
+    "murmur",
+    "fnv1",
+    "crc32",
     "digest",
     "deterministic",
     "stable-hash",
@@ -71,12 +75,9 @@
     "native-crypto",
     "secure",
     "standards-based",
-    "nodejs",
-    "typescript",
     "esmodule",
     "lightweight",
     "fast",
-    "modern",
-    "object"
+    "modern"
   ]
 }
