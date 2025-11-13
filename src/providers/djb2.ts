@@ -31,20 +31,20 @@ export class DJB2 implements HashProvider {
 	}
 
 	/**
-	 * Computes the DJB2 hash of the provided data.
+	 * Computes the DJB2 hash of the provided data synchronously.
 	 *
 	 * @param data - The data to hash (Uint8Array, ArrayBuffer, or DataView)
-	 * @returns A Promise resolving to an 8-character lowercase hexadecimal string
+	 * @returns An 8-character lowercase hexadecimal string
 	 *
 	 * @example
 	 * ```typescript
 	 * const djb2 = new DJB2();
 	 * const data = new TextEncoder().encode('hello');
-	 * const hash = await djb2.toHash(data);
+	 * const hash = djb2.toHashSync(data);
 	 * console.log(hash); // "7c9df5ea"
 	 * ```
 	 */
-	public async toHash(data: BufferSource): Promise<string> {
+	public toHashSync(data: BufferSource): string {
 		// Convert BufferSource to Uint8Array for consistent processing
 		let bytes: Uint8Array;
 
@@ -75,5 +75,23 @@ export class DJB2 implements HashProvider {
 		const hashHex = hash.toString(16).padStart(8, "0");
 
 		return hashHex;
+	}
+
+	/**
+	 * Computes the DJB2 hash of the provided data.
+	 *
+	 * @param data - The data to hash (Uint8Array, ArrayBuffer, or DataView)
+	 * @returns A Promise resolving to an 8-character lowercase hexadecimal string
+	 *
+	 * @example
+	 * ```typescript
+	 * const djb2 = new DJB2();
+	 * const data = new TextEncoder().encode('hello');
+	 * const hash = await djb2.toHash(data);
+	 * console.log(hash); // "7c9df5ea"
+	 * ```
+	 */
+	public async toHash(data: BufferSource): Promise<string> {
+		return this.toHashSync(data);
 	}
 }

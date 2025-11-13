@@ -20,12 +20,12 @@ export class FNV1 implements HashProvider {
     }
 
     /**
-     * Computes the FNV-1 hash of the provided data.
+     * Computes the FNV-1 hash of the provided data synchronously.
      *
      * @param data - The data to hash (Uint8Array, ArrayBuffer, or DataView)
-     * @returns A Promise resolving to an 8-character lowercase hexadecimal string
+     * @returns An 8-character lowercase hexadecimal string
      */
-    public async toHash(data: BufferSource): Promise<string> {
+    public toHashSync(data: BufferSource): string {
         // Convert BufferSource to Uint8Array for consistent processing
         let bytes: Uint8Array;
 
@@ -60,5 +60,15 @@ export class FNV1 implements HashProvider {
         const hashHex = hash.toString(16).padStart(8, "0");
 
         return hashHex;
+    }
+
+    /**
+     * Computes the FNV-1 hash of the provided data.
+     *
+     * @param data - The data to hash (Uint8Array, ArrayBuffer, or DataView)
+     * @returns A Promise resolving to an 8-character lowercase hexadecimal string
+     */
+    public async toHash(data: BufferSource): Promise<string> {
+        return this.toHashSync(data);
     }
 }

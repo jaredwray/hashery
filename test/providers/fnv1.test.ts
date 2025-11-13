@@ -220,4 +220,51 @@ describe("FNV1 Hash Provider", () => {
             expect(hash).toMatch(/^[0-9a-f]{8}$/);
         });
     });
+
+    describe("toHashSync method", () => {
+        test("should return a valid hex string synchronously", () => {
+            const fnv1 = new FNV1();
+            const data = new TextEncoder().encode("test");
+            const hash = fnv1.toHashSync(data);
+
+            expect(hash).toMatch(/^[0-9a-f]{8}$/);
+            expect(hash.length).toBe(8);
+        });
+
+        test("should generate consistent hashes for same data", () => {
+            const fnv1 = new FNV1();
+            const data = new TextEncoder().encode("test data");
+
+            const hash1 = fnv1.toHashSync(data);
+            const hash2 = fnv1.toHashSync(data);
+
+            expect(hash1).toBe(hash2);
+        });
+
+        test("should produce same result as async toHash", async () => {
+            const fnv1 = new FNV1();
+            const data = new TextEncoder().encode("hello");
+
+            const hashSync = fnv1.toHashSync(data);
+            const hashAsync = await fnv1.toHash(data);
+
+            expect(hashSync).toBe(hashAsync);
+        });
+
+        test("should produce correct hash for 'hello'", () => {
+            const fnv1 = new FNV1();
+            const data = new TextEncoder().encode("hello");
+            const hash = fnv1.toHashSync(data);
+
+            expect(hash).toBe("a9b7cf6f");
+        });
+
+        test("should handle empty buffer", () => {
+            const fnv1 = new FNV1();
+            const data = new Uint8Array(0);
+            const hash = fnv1.toHashSync(data);
+
+            expect(hash).toBe("811c9dc5");
+        });
+    });
 });

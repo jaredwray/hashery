@@ -220,6 +220,7 @@ export type WebCryptoHashAlgorithm = "SHA-256" | "SHA-384" | "SHA-512";
 export type HashProvider = {
 	name: string;
 	toHash(data: BufferSource): Promise<string>;
+	toHashSync?(data: BufferSource): string; // Optional
 };
 
 export type HashProvidersOptions = {
