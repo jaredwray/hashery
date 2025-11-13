@@ -49,20 +49,20 @@ export class Murmer implements HashProvider {
 	}
 
 	/**
-	 * Computes the Murmer 32-bit hash of the provided data.
+	 * Computes the Murmer 32-bit hash of the provided data synchronously.
 	 *
 	 * @param data - The data to hash (Uint8Array, ArrayBuffer, or DataView)
-	 * @returns A Promise resolving to an 8-character lowercase hexadecimal string
+	 * @returns An 8-character lowercase hexadecimal string
 	 *
 	 * @example
 	 * ```typescript
 	 * const murmer = new Murmer();
 	 * const data = new TextEncoder().encode('hello');
-	 * const hash = await murmer.toHash(data);
+	 * const hash = murmer.toHashSync(data);
 	 * console.log(hash); // "248bfa47"
 	 * ```
 	 */
-	public async toHash(data: BufferSource): Promise<string> {
+	public toHashSync(data: BufferSource): string {
 		// Convert BufferSource to Uint8Array for consistent processing
 		let bytes: Uint8Array;
 
@@ -139,6 +139,24 @@ export class Murmer implements HashProvider {
 		const hashHex = h1.toString(16).padStart(8, "0");
 
 		return hashHex;
+	}
+
+	/**
+	 * Computes the Murmer 32-bit hash of the provided data.
+	 *
+	 * @param data - The data to hash (Uint8Array, ArrayBuffer, or DataView)
+	 * @returns A Promise resolving to an 8-character lowercase hexadecimal string
+	 *
+	 * @example
+	 * ```typescript
+	 * const murmer = new Murmer();
+	 * const data = new TextEncoder().encode('hello');
+	 * const hash = await murmer.toHash(data);
+	 * console.log(hash); // "248bfa47"
+	 * ```
+	 */
+	public async toHash(data: BufferSource): Promise<string> {
+		return this.toHashSync(data);
 	}
 
 	/**

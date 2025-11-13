@@ -14,6 +14,7 @@ export default defineConfig([
 		format: ['esm', 'iife'], // ESM and IIFE (for browsers)
 		target: 'es2020', // Target modern browsers
 		outDir: 'dist/browser', // Output directory for browser builds
+		minify: true, // Should minify for browser
 		sourcemap: true, // Generate source maps
 		dts: false, // No need for TypeScript declaration in browser build
 		clean: true, // Clean output directory before each build

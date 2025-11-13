@@ -14,6 +14,7 @@ Browser / Nodejs Compatible Object Hashing
 - **Simple and Easy Object Hashing** - Object hashing based on multiple algorithms.
 - **Browser and Node.js Compatible** - Built using `WebCrypto` API for both environments
 - **Multiple Hash Algorithms** - Supports SHA-256, SHA-384, SHA-512 (WebCrypto), plus DJB2, FNV1, Murmer, and CRC32
+- **Synchronous & Asynchronous** - Both sync and async methods for flexible integration
 - **Custom Serialization** - Easily replace JSON `parse` and `stringify` with custom functions
 - **Deterministic Hashing** - Generate consistent hashes for the same input
 - **Hash to Number** - Convert hashes to deterministic numbers within a specified range. Great for slot management
@@ -28,10 +29,12 @@ Browser / Nodejs Compatible Object Hashing
 - [Installation](#installation)
 - [Usage](#usage)
   - [Basic Hashing](#basic-hashing)
+  - [Synchronous Hashing](#synchronous-hashing)
   - [Using Different Hash Algorithms](#using-different-hash-algorithms)
   - [Setting a Default Algorithm](#setting-a-default-algorithm)
   - [Truncating Hash Output](#truncating-hash-output)
   - [Hash to Number (Great for Slot Management)](#hash-to-number-great-for-slot-management)
+  - [Hash to Number Synchronous](#hash-to-number-synchronous)
   - [Browser Usage](#browser-usage)
 - [Hooks](#hooks)
 - [Web Crypto](#web-crypto)
@@ -44,9 +47,12 @@ Browser / Nodejs Compatible Object Hashing
   - [providers](#providers)
   - [names](#names)
   - [defaultAlgorithm](#defaultalgorithm)
+  - [defaultAlgorithmSync](#defaultalgorithmsync)
 - [API - Functions](#api---functions)
   - [toHash(data, options?)](#toHashdata-options)
+  - [toHashSync(data, options?)](#toHashsyncdata-options)
   - [toNumber(data, options?)](#tonumberdata-options)
+  - [toNumberSync(data, options?)](#tonumbersyncdata-options)
   - [loadProviders(providers?, options?)](#loadprovidersproviders-options)
 - [Benchmarks](#benchmarks)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
@@ -77,6 +83,29 @@ const stringHash = await hashery.toHash('hello world');
 // Hash any value (numbers, arrays, etc.)
 const numberHash = await hashery.toHash(42);
 const arrayHash = await hashery.toHash([1, 2, 3, 4, 5]);
+```
+
+## Synchronous Hashing
+
+For performance-critical applications or when you need to avoid async/await, use the synchronous hashing methods. These work with non-cryptographic hash algorithms (djb2, fnv1, murmer, crc32) and are significantly faster than WebCrypto methods.
+
+```typescript
+import { Hashery } from 'hashery';
+
+const hashery = new Hashery();
+
+// Synchronous hash (defaults to djb2)
+const hash = hashery.toHashSync({ name: 'John', age: 30 });
+console.log(hash); // djb2 hash string (8 hex characters)
+
+// Sync with specific algorithm
+const fnv1Hash = hashery.toHashSync({ data: 'example' }, { algorithm: 'fnv1' });
+const murmerHash = hashery.toHashSync({ data: 'example' }, { algorithm: 'murmer' });
+const crcHash = hashery.toHashSync({ data: 'example' }, { algorithm: 'crc32' });
+
+// Note: WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are NOT supported in sync mode
+// This will throw an error:
+// hashery.toHashSync({ data: 'example' }, { algorithm: 'SHA-256' }); // ❌ Error!
 ```
 
 ## Using Different Hash Algorithms
@@ -156,6 +185,40 @@ const userSlot = await hashery.toNumber({ userId: 'user@example.com' }, { min: 0
 // Same user will always get the same slot number
 ```
 
+## Hash to Number Synchronous
+
+Generate deterministic numbers synchronously for high-performance scenarios. Perfect for A/B testing, sharding, and load balancing without async overhead.
+
+```typescript
+import { Hashery } from 'hashery';
+
+const hashery = new Hashery();
+
+// Synchronous number generation (defaults to djb2)
+const slot = hashery.toNumberSync({ userId: 123 }, { min: 0, max: 100 });
+console.log(slot); // Deterministic number between 0-100
+
+// A/B testing without async/await
+const variant = hashery.toNumberSync({ userId: 'user123' }, { min: 0, max: 1 });
+console.log(variant === 0 ? 'Group A' : 'Group B');
+
+// Load balancing across servers
+const serverIndex = hashery.toNumberSync(
+  { requestId: 'req_abc123' },
+  { min: 0, max: 9, algorithm: 'fnv1' } // 10 servers
+);
+
+// Sharding assignment
+const shardId = hashery.toNumberSync(
+  { customerId: 'cust_xyz' },
+  { min: 0, max: 15, algorithm: 'murmer' } // 16 shards
+);
+
+// Set default sync algorithm for all sync operations
+const hashery2 = new Hashery({ defaultAlgorithmSync: 'fnv1' });
+const num = hashery2.toNumberSync({ data: 'test' }); // Uses fnv1 by default
+```
+
 ## Browser Usage
 
 Hashery works seamlessly in the browser using the Web Crypto API. You can include it via CDN or bundle it with your application.
@@ -192,18 +255,41 @@ Hashery extends [Hookified](https://github.com/jaredwray/hookified) to provide e
 
 ## Available Hooks
 
-### `before:toHash`
+### Asynchronous Method Hooks
+
+#### `before:toHash`
 
 Fired before hashing occurs. This hook receives a context object containing:
 - `data` - The data to be hashed (can be modified)
 - `algorithm` - The hash algorithm to use (can be modified)
+- `maxLength` - Optional maximum length for the hash output
 
-### `after:toHash`
+#### `after:toHash`
 
 Fired after hashing completes. This hook receives a result object containing:
 - `hash` - The generated hash (can be modified)
 - `data` - The data that was hashed
 - `algorithm` - The algorithm that was used
+
+### Synchronous Method Hooks
+
+#### `before:toHashSync`
+
+Fired before synchronous hashing occurs. This hook receives a context object containing:
+- `data` - The data to be hashed (can be modified)
+- `algorithm` - The hash algorithm to use (can be modified)
+- `maxLength` - Optional maximum length for the hash output
+
+**Note:** This hook fires asynchronously (non-blocking) to maintain the synchronous nature of `toHashSync()`. Hook execution happens in the background and won't delay the method's return.
+
+#### `after:toHashSync`
+
+Fired after synchronous hashing completes. This hook receives a result object containing:
+- `hash` - The generated hash (can be modified)
+- `data` - The data that was hashed
+- `algorithm` - The algorithm that was used
+
+**Note:** This hook fires asynchronously (non-blocking) to maintain the synchronous nature of `toHashSync()`. Hook execution happens in the background.
 
 ## Basic Hook Usage
 
@@ -337,6 +423,44 @@ await hashery.toHash({ name: 'test' });
 // Data will be wrapped twice
 ```
 
+## Synchronous Method Hooks
+
+Synchronous methods (`toHashSync`, `toNumberSync`) support hooks, but they fire asynchronously in the background to maintain the synchronous nature of the methods.
+
+```typescript
+const hashery = new Hashery();
+
+// Listen to synchronous hash hooks
+hashery.onHook('before:toHashSync', async (context) => {
+  console.log('About to hash synchronously:', context.data);
+  console.log('Using algorithm:', context.algorithm);
+});
+
+hashery.onHook('after:toHashSync', async (result) => {
+  console.log('Sync hash generated:', result.hash);
+});
+
+// Call synchronous method - hooks fire in background
+const hash = hashery.toHashSync({ name: 'John', age: 30 });
+console.log('Method returned:', hash);
+// Method returns immediately, hooks execute asynchronously
+```
+
+**Important Notes:**
+- Synchronous method hooks fire asynchronously (non-blocking)
+- The method returns immediately without waiting for hooks to complete
+- Hook modifications to context/result may not affect the returned value
+- For guaranteed hook execution, use async methods (`toHash`, `toNumber`)
+
+### Why Are Sync Hooks Asynchronous?
+
+Synchronous methods are designed for maximum performance. Making hooks blocking would defeat this purpose. The async hook execution allows:
+- Logging and monitoring without performance impact
+- Side effects (like caching) without blocking
+- Maintaining the synchronous contract of the method
+
+If you need hooks that modify data or behavior, use the async methods (`toHash`, `toNumber`).
+
 ## Removing Hooks
 
 You can remove hooks when they're no longer needed:
@@ -353,6 +477,10 @@ hashery.onHook('before:toHash', myHook);
 
 // Remove the hook
 hashery.offHook('before:toHash', myHook);
+
+// Same works for sync hooks
+hashery.onHook('before:toHashSync', myHook);
+hashery.offHook('before:toHashSync', myHook);
 ```
 
 ## Error Handling in Hooks
@@ -399,20 +527,31 @@ Node.js 15+ includes the Web Crypto API via the `crypto.webcrypto` global. Hashe
 
 ## Available Algorithms
 
-### Web Crypto Algorithms (Async)
-These algorithms use the Web Crypto API and return Promises:
-- **SHA-256** - Secure Hash Algorithm 256-bit (default)
+### Web Crypto Algorithms (Async Only)
+These algorithms use the Web Crypto API and are only available asynchronously:
+- **SHA-256** - Secure Hash Algorithm 256-bit (default for async methods)
 - **SHA-384** - Secure Hash Algorithm 384-bit
 - **SHA-512** - Secure Hash Algorithm 512-bit
 
-### Non-Crypto Algorithms (Async)
-These algorithms are optimized for speed and are great for non-security use cases:
-- **djb2** - Fast hash function by Daniel J. Bernstein
+These are cryptographically secure and suitable for security-sensitive applications.
+
+### Non-Crypto Algorithms (Async & Sync)
+These algorithms support both synchronous and asynchronous operation:
+- **djb2** - Fast hash function by Daniel J. Bernstein (default for sync methods)
 - **fnv1** - Fowler-Noll-Vo hash function
 - **murmer** - MurmurHash algorithm
 - **crc32** - Cyclic Redundancy Check 32-bit
 
-All algorithms in Hashery use async/await for consistency, even though some non-crypto algorithms could be synchronous.
+**Async methods** (`toHash`, `toNumber`):
+- Default to `SHA-256`
+- Can use any algorithm (WebCrypto or non-crypto)
+- Return Promises
+
+**Sync methods** (`toHashSync`, `toNumberSync`):
+- Default to `djb2`
+- Only work with non-crypto algorithms (djb2, fnv1, murmer, crc32)
+- Return values immediately
+- Throw an error if you try to use WebCrypto algorithms
 
 ## Example: Using Web Crypto
 
@@ -731,7 +870,7 @@ console.log(hashery.names); // ['SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1',
 
 ## `defaultAlgorithm`
 
-Gets or sets the default hash algorithm to use when none is specified.
+Gets or sets the default hash algorithm to use when none is specified for async methods.
 
 **Type:** `string`
 
@@ -746,16 +885,41 @@ console.log(hashery.defaultAlgorithm); // 'SHA-256'
 // Set default algorithm
 hashery.defaultAlgorithm = 'SHA-512';
 
-// Now all hashes use SHA-512 by default
+// Now all async hashes use SHA-512 by default
 const hash = await hashery.toHash({ data: 'example' });
 console.log(hash.length); // 128 (SHA-512 produces 128 hex characters)
+```
+
+## `defaultAlgorithmSync`
+
+Gets or sets the default hash algorithm to use when none is specified for synchronous methods.
+
+**Type:** `string`
+
+**Default:** `'djb2'`
+
+```typescript
+const hashery = new Hashery();
+
+// Get default sync algorithm
+console.log(hashery.defaultAlgorithmSync); // 'djb2'
+
+// Set default sync algorithm
+hashery.defaultAlgorithmSync = 'fnv1';
+
+// Now all sync hashes use fnv1 by default
+const hash = hashery.toHashSync({ data: 'example' });
+
+// You can also set it in the constructor
+const hashery2 = new Hashery({ defaultAlgorithmSync: 'murmer' });
+const hash2 = hashery2.toHashSync({ data: 'test' }); // Uses murmer
 ```
 
 # API - Functions
 
 ## `toHash(data, options?)`
 
-Generates a cryptographic hash of the provided data using the specified algorithm. The data is first stringified using the configured stringify function, then hashed.
+Generates a cryptographic hash of the provided data using the specified algorithm (async). The data is first stringified using the configured stringify function, then hashed.
 
 **Parameters:**
 - `data` (unknown) - The data to hash (will be stringified before hashing)
@@ -784,9 +948,48 @@ const shortHash = await hashery.toHash(
 );
 ```
 
+## `toHashSync(data, options?)`
+
+Generates a hash of the provided data synchronously using a non-cryptographic hash algorithm. The data is first stringified using the configured stringify function, then hashed.
+
+**Important:** This method only works with synchronous hash providers (djb2, fnv1, murmer, crc32). WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported and will throw an error.
+
+**Parameters:**
+- `data` (unknown) - The data to hash (will be stringified before hashing)
+- `options` (object, optional) - Configuration options
+  - `algorithm` (string, optional) - The hash algorithm to use (defaults to 'djb2')
+  - `maxLength` (number, optional) - Maximum length for the hash output (truncates from the start)
+
+**Returns:** `string` - The hexadecimal string representation of the hash
+
+**Throws:** `Error` if the specified algorithm does not support synchronous hashing
+
+**Example:**
+
+```typescript
+const hashery = new Hashery();
+
+// Using default djb2
+const hash = hashery.toHashSync({ name: 'John', age: 30 });
+
+// Using a different algorithm
+const hashFnv1 = hashery.toHashSync({ name: 'John' }, { algorithm: 'fnv1' });
+const hashMurmer = hashery.toHashSync({ name: 'John' }, { algorithm: 'murmer' });
+const hashCrc = hashery.toHashSync({ name: 'John' }, { algorithm: 'crc32' });
+
+// Truncating hash output
+const shortHash = hashery.toHashSync(
+  { name: 'John' },
+  { algorithm: 'djb2', maxLength: 4 }
+);
+
+// This will throw an error (WebCrypto not supported in sync mode)
+// const invalid = hashery.toHashSync({ name: 'John' }, { algorithm: 'SHA-256' }); // ❌
+```
+
 ## `toNumber(data, options?)`
 
-Generates a deterministic number within a specified range based on the hash of the provided data. This method uses the toHash function to create a consistent hash, then maps it to a number between min and max (inclusive).
+Generates a deterministic number within a specified range based on the hash of the provided data (async). This method uses the toHash function to create a consistent hash, then maps it to a number between min and max (inclusive).
 
 **Parameters:**
 - `data` (unknown) - The data to hash (will be stringified before hashing)
@@ -813,6 +1016,54 @@ const num2 = await hashery.toNumber({ user: 'john' }, { min: 0, max: 100 });
 
 // Using a different algorithm
 const num512 = await hashery.toNumber({ user: 'john' }, { min: 0, max: 255, algorithm: 'SHA-512' });
+```
+
+## `toNumberSync(data, options?)`
+
+Generates a deterministic number within a specified range based on the hash of the provided data synchronously. This method uses the toHashSync function to create a consistent hash, then maps it to a number between min and max (inclusive).
+
+**Important:** This method only works with synchronous hash providers (djb2, fnv1, murmer, crc32).
+
+**Parameters:**
+- `data` (unknown) - The data to hash (will be stringified before hashing)
+- `options` (object, optional) - Configuration options
+  - `min` (number, optional) - The minimum value of the range (inclusive, defaults to 0)
+  - `max` (number, optional) - The maximum value of the range (inclusive, defaults to 100)
+  - `algorithm` (string, optional) - The hash algorithm to use (defaults to 'djb2')
+  - `hashLength` (number, optional) - Number of characters from hash to use for conversion (defaults to 16)
+
+**Returns:** `number` - A number between min and max (inclusive)
+
+**Throws:**
+- Error if min is greater than max
+- Error if the specified algorithm does not support synchronous hashing
+
+**Example:**
+
+```typescript
+const hashery = new Hashery();
+
+// Generate a number between 0 and 100 (default range)
+const num = hashery.toNumberSync({ user: 'john' });
+
+// Generate a number with custom range
+const slot = hashery.toNumberSync({ user: 'john' }, { min: 0, max: 9 });
+
+// Using a different algorithm
+const numFnv1 = hashery.toNumberSync({ user: 'john' }, { min: 0, max: 255, algorithm: 'fnv1' });
+
+// A/B testing
+const variant = hashery.toNumberSync({ userId: 'user123' }, { min: 0, max: 1 });
+console.log(variant === 0 ? 'Group A' : 'Group B');
+
+// Load balancing
+const serverId = hashery.toNumberSync(
+  { requestId: 'req_abc' },
+  { min: 0, max: 9, algorithm: 'murmer' } // 10 servers
+);
+
+// This will throw an error (WebCrypto not supported in sync mode)
+// const invalid = hashery.toNumberSync({ user: 'john' }, { algorithm: 'SHA-256' }); // ❌
 ```
 
 ## `loadProviders(providers?, options?)`

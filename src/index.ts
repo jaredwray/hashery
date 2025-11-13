@@ -9,7 +9,9 @@ import type {
 	HasheryLoadProviderOptions,
 	HasheryOptions,
 	HasheryToHashOptions,
+	HasheryToHashSyncOptions,
 	HasheryToNumberOptions,
+	HasheryToNumberSyncOptions,
 	HashProvider,
 	ParseFn,
 	StringifyFn,
@@ -257,6 +259,139 @@ export class Hashery extends Hookified {
 		// Take the first hashLength characters of the hash to convert to a number
 		// This provides good distribution while avoiding precision issues with JavaScript numbers
 		const hash = await this.toHash(data, { algorithm, maxLength: hashLength });
+
+		// Convert hex to a number
+		const hashNumber = Number.parseInt(hash, 16);
+
+		// Map the hash number to the desired range
+		const range = max - min + 1;
+		const mapped = min + (hashNumber % range);
+
+		return mapped;
+	}
+
+	/**
+	 * Generates a hash of the provided data synchronously using a non-cryptographic hash algorithm.
+	 * The data is first stringified using the configured stringify function, then hashed.
+	 *
+	 * Note: This method only works with synchronous hash providers (djb2, fnv1, murmer, crc32).
+	 * WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported and will throw an error.
+	 *
+	 * @param data - The data to hash (will be stringified before hashing)
+	 * @param options - Optional configuration object
+	 * @param options.algorithm - The hash algorithm to use (defaults to 'djb2')
+	 * @param options.maxLength - Optional maximum length for the hash output
+	 * @returns The hexadecimal string representation of the hash
+	 *
+	 * @throws {Error} If the specified algorithm does not support synchronous hashing
+	 *
+	 * @example
+	 * ```ts
+	 * const hashery = new Hashery();
+	 * const hash = hashery.toHashSync({ name: 'John', age: 30 });
+	 * console.log(hash); // "7c9df5ea..." (djb2 hash)
+	 *
+	 * // Using a different algorithm
+	 * const hashFnv1 = hashery.toHashSync({ name: 'John' }, { algorithm: 'fnv1' });
+	 * ```
+	 */
+	public toHashSync(data: unknown, options?: HasheryToHashSyncOptions): string {
+		// Before hook - allows modification of input data and algorithm (fires asynchronously)
+		const context = {
+			data,
+			algorithm: options?.algorithm ?? this._defaultAlgorithmSync,
+			maxLength: options?.maxLength,
+		};
+		this.beforeHook("toHashSync", context);
+
+		// Get algorithm from context (may have been modified by hook)
+		const algorithm = context.algorithm;
+
+		// Stringify the data using the configured stringify function
+		const stringified = this._stringify(context.data);
+
+		// Convert the string to a Uint8Array
+		const encoder = new TextEncoder();
+		const dataBuffer = encoder.encode(stringified);
+
+		// Get the provider for the specified algorithm
+		const provider = this._providers.get(algorithm);
+		if (!provider) {
+			throw new Error(`Hash provider '${algorithm}' not found`);
+		}
+
+		// Check if provider supports synchronous hashing
+		if (!provider.toHashSync) {
+			throw new Error(
+				`Hash provider '${algorithm}' does not support synchronous hashing. Use toHash() instead or choose a different algorithm (djb2, fnv1, murmer, crc32).`,
+			);
+		}
+
+		// Use the provider to hash the data synchronously
+		let hash = provider.toHashSync(dataBuffer);
+
+		// if there is a max then change the hash
+		if (options?.maxLength && hash.length > options?.maxLength) {
+			hash = hash.substring(0, options.maxLength);
+		}
+
+		// After hook - allows modification/logging of result (fires asynchronously)
+		const result = { hash, data: context.data, algorithm: context.algorithm };
+		this.afterHook("toHashSync", result);
+
+		return result.hash;
+	}
+
+	/**
+	 * Generates a deterministic number within a specified range based on the hash of the provided data synchronously.
+	 * This method uses the toHashSync function to create a consistent hash, then maps it to a number
+	 * between min and max (inclusive).
+	 *
+	 * Note: This method only works with synchronous hash providers (djb2, fnv1, murmer, crc32).
+	 *
+	 * @param data - The data to hash (will be stringified before hashing)
+	 * @param options - Configuration options (optional, defaults to min: 0, max: 100)
+	 * @param options.min - The minimum value of the range (inclusive, defaults to 0)
+	 * @param options.max - The maximum value of the range (inclusive, defaults to 100)
+	 * @param options.algorithm - The hash algorithm to use (defaults to 'djb2')
+	 * @param options.hashLength - Number of characters from hash to use for conversion (defaults to 16)
+	 * @returns A number between min and max (inclusive)
+	 *
+	 * @throws {Error} If the specified algorithm does not support synchronous hashing
+	 * @throws {Error} If min is greater than max
+	 *
+	 * @example
+	 * ```ts
+	 * const hashery = new Hashery();
+	 * const num = hashery.toNumberSync({ user: 'john' }); // Uses default min: 0, max: 100
+	 * console.log(num); // Always returns the same number for the same input, e.g., 42
+	 *
+	 * // Using custom range
+	 * const num2 = hashery.toNumberSync({ user: 'john' }, { min: 1, max: 100 });
+	 *
+	 * // Using a different algorithm
+	 * const numFnv1 = hashery.toNumberSync({ user: 'john' }, { min: 0, max: 255, algorithm: 'fnv1' });
+	 * ```
+	 */
+	public toNumberSync(
+		data: unknown,
+		options: HasheryToNumberSyncOptions = {},
+	): number {
+		const {
+			min = 0,
+			max = 100,
+			algorithm = this._defaultAlgorithmSync,
+			hashLength = 16,
+		} = options;
+
+		if (min > max) {
+			throw new Error("min cannot be greater than max");
+		}
+
+		// Get the hash as a hex string
+		// Take the first hashLength characters of the hash to convert to a number
+		// This provides good distribution while avoiding precision issues with JavaScript numbers
+		const hash = this.toHashSync(data, { algorithm, maxLength: hashLength });
 
 		// Convert hex to a number
 		const hashNumber = Number.parseInt(hash, 16);

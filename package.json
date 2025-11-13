@@ -1,6 +1,6 @@
 {
   "name": "hashery",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Browser Compatible Object Hashing",
   "type": "module",
   "main": "dist/node/index.cjs",

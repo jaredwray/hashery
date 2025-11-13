@@ -5,7 +5,7 @@ export class CRC implements HashProvider {
         return "crc32";
     }
 
-    public async toHash(data: BufferSource): Promise<string> {
+    public toHashSync(data: BufferSource): string {
         // Convert BufferSource to Uint8Array
         let bytes: Uint8Array;
 
@@ -38,5 +38,9 @@ export class CRC implements HashProvider {
         // Convert to hexadecimal string (8 characters, zero-padded)
         const hashHex = crc.toString(16).padStart(8, "0");
         return hashHex;
+    }
+
+    public async toHash(data: BufferSource): Promise<string> {
+        return this.toHashSync(data);
     }
 }
