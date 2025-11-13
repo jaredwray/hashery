@@ -196,6 +196,106 @@ export type HasheryToNumberOptions = {
 };
 
 /**
+ * Options for the toHashSync method.
+ * @example
+ * ```ts
+ * const hashery = new Hashery();
+ *
+ * // Using a specific algorithm
+ * const hash = hashery.toHashSync({ data: 'example' }, { algorithm: 'fnv1' });
+ *
+ * // Truncating the hash output
+ * const shortHash = hashery.toHashSync(
+ *   { data: 'example' },
+ *   { algorithm: 'djb2', maxLength: 16 }
+ * );
+ * ```
+ */
+export type HasheryToHashSyncOptions = {
+	/**
+	 * The hash algorithm to use.
+	 * Defaults to 'djb2' if not specified.
+	 * Supported synchronous algorithms include: 'djb2', 'fnv1', 'murmer', 'crc32'
+	 * Note: WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported in sync mode.
+	 */
+	algorithm?: string;
+
+	/**
+	 * Maximum length for the hash output.
+	 * If specified, the hash will be truncated to this length.
+	 * @example
+	 * ```ts
+	 * // Get a 16-character hash
+	 * const hash = hashery.toHashSync({ data: 'example' }, { maxLength: 16 });
+	 * ```
+	 */
+	maxLength?: number;
+};
+
+/**
+ * Options for the toNumberSync method.
+ * @example
+ * ```ts
+ * const hashery = new Hashery();
+ *
+ * // Using default range (0-100)
+ * const num = hashery.toNumberSync({ user: 'john' });
+ *
+ * // Using custom range
+ * const slot = hashery.toNumberSync({ user: 'john' }, { min: 0, max: 9 });
+ *
+ * // Using different algorithm
+ * const num = hashery.toNumberSync(
+ *   { user: 'john' },
+ *   { min: 0, max: 255, algorithm: 'fnv1' }
+ * );
+ * ```
+ */
+export type HasheryToNumberSyncOptions = {
+	/**
+	 * The hash algorithm to use.
+	 * Defaults to 'djb2' if not specified.
+	 * Supported synchronous algorithms include: 'djb2', 'fnv1', 'murmer', 'crc32'
+	 * Note: WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported in sync mode.
+	 */
+	algorithm?: string;
+
+	/**
+	 * The minimum value of the range (inclusive).
+	 * Defaults to 0 if not specified.
+	 * @example
+	 * ```ts
+	 * // Generate number between 1 and 100
+	 * const num = hashery.toNumberSync({ data: 'example' }, { min: 1, max: 100 });
+	 * ```
+	 */
+	min?: number;
+
+	/**
+	 * The maximum value of the range (inclusive).
+	 * Defaults to 100 if not specified.
+	 * @example
+	 * ```ts
+	 * // Generate number between 0 and 1000
+	 * const num = hashery.toNumberSync({ data: 'example' }, { min: 0, max: 1000 });
+	 * ```
+	 */
+	max?: number;
+
+	/**
+	 * Number of characters from the hash to use for conversion.
+	 * Defaults to 16 if not specified.
+	 * This provides good distribution while avoiding precision issues with JavaScript numbers.
+	 * @example
+	 * ```ts
+	 * // Use more hash characters for better distribution
+	 * const num = hashery.toNumberSync({ data: 'example' }, { hashLength: 32 });
+	 * ```
+	 */
+	hashLength?: number;
+};
+
+/**
  * Function type for serializing data to a string.
  * @param data - The data to stringify
  * @returns The stringified representation
