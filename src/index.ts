@@ -1,4 +1,5 @@
 import { Hookified } from "hookified";
+import { Cache } from "./cache.js";
 import { CRC } from "./providers/crc.js";
 import { WebCrypto } from "./providers/crypto.js";
 import { DJB2 } from "./providers/djb2.js";
@@ -24,6 +25,7 @@ export class Hashery extends Hookified {
 	private _providers = new HashProviders();
 	private _defaultAlgorithm: string = "SHA-256";
 	private _defaultAlgorithmSync: string = "djb2";
+	private _cache: Cache;
 
 	constructor(options?: HasheryOptions) {
 		super(options);
@@ -43,6 +45,8 @@ export class Hashery extends Hookified {
 		if (options?.defaultAlgorithmSync) {
 			this._defaultAlgorithmSync = options.defaultAlgorithmSync;
 		}
+
+		this._cache = new Cache(options?.cache);
 
 		this.loadProviders(options?.providers, {
 			includeBase: options?.includeBase ?? true,
@@ -153,6 +157,23 @@ export class Hashery extends Hookified {
 	}
 
 	/**
+	 * Gets the cache instance used to store computed hash values.
+	 * @returns The Cache instance
+	 * @example
+	 * ```ts
+	 * const hashery = new Hashery({ cache: { enabled: true } });
+	 *
+	 * // Access the cache
+	 * hashery.cache.enabled; // true
+	 * hashery.cache.size; // number of cached items
+	 * hashery.cache.clear(); // clear all cached items
+	 * ```
+	 */
+	public get cache(): Cache {
+		return this._cache;
+	}
+
+	/**
 	 * Generates a cryptographic hash of the provided data using the Web Crypto API.
 	 * The data is first stringified using the configured stringify function, then hashed.
 	 *
@@ -187,6 +208,20 @@ export class Hashery extends Hookified {
 		// Stringify the data using the configured stringify function
 		const stringified = this._stringify(context.data);
 
+		// Check cache first
+		const cacheKey = `${context.algorithm}:${stringified}`;
+		if (this._cache.enabled) {
+			const cached = this._cache.get(cacheKey);
+			if (cached !== undefined) {
+				// Apply maxLength if specified
+				if (options?.maxLength && cached.length > options.maxLength) {
+					return cached.substring(0, options.maxLength);
+				}
+
+				return cached;
+			}
+		}
+
 		// Convert the string to a Uint8Array
 		const encoder = new TextEncoder();
 		const dataBuffer = encoder.encode(stringified);
@@ -201,6 +236,11 @@ export class Hashery extends Hookified {
 
 		// Use the provider to hash the data
 		let hash = await provider.toHash(dataBuffer);
+
+		// Store the full hash in cache before truncation
+		if (this._cache.enabled) {
+			this._cache.set(cacheKey, hash);
+		}
 
 		// if there is a max then change the hash
 		if (options?.maxLength && hash.length > options?.maxLength) {
@@ -310,6 +350,20 @@ export class Hashery extends Hookified {
 		// Stringify the data using the configured stringify function
 		const stringified = this._stringify(context.data);
 
+		// Check cache first
+		const cacheKey = `${algorithm}:${stringified}`;
+		if (this._cache.enabled) {
+			const cached = this._cache.get(cacheKey);
+			if (cached !== undefined) {
+				// Apply maxLength if specified
+				if (options?.maxLength && cached.length > options.maxLength) {
+					return cached.substring(0, options.maxLength);
+				}
+
+				return cached;
+			}
+		}
+
 		// Convert the string to a Uint8Array
 		const encoder = new TextEncoder();
 		const dataBuffer = encoder.encode(stringified);
@@ -329,6 +383,11 @@ export class Hashery extends Hookified {
 
 		// Use the provider to hash the data synchronously
 		let hash = provider.toHashSync(dataBuffer);
+
+		// Store the full hash in cache before truncation
+		if (this._cache.enabled) {
+			this._cache.set(cacheKey, hash);
+		}
 
 		// if there is a max then change the hash
 		if (options?.maxLength && hash.length > options?.maxLength) {
@@ -426,4 +485,6 @@ export class Hashery extends Hookified {
 	}
 }
 
+export type { CacheOptions } from "./cache.js";
+export { Cache } from "./cache.js";
 export type { WebCryptoHashAlgorithm, HasheryOptions, ParseFn, StringifyFn };

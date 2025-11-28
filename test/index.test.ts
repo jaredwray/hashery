@@ -1487,4 +1487,218 @@ describe("Hashery", () => {
 			expect(hookCalls.length).toBe(1);
 		});
 	});
+
+	describe("cache property", () => {
+		test("should have cache property", () => {
+			const hashery = new Hashery();
+			expect(hashery.cache).toBeDefined();
+		});
+
+		test("should have cache enabled by default", () => {
+			const hashery = new Hashery();
+			expect(hashery.cache.enabled).toBe(true);
+		});
+
+		test("should disable cache via constructor", () => {
+			const hashery = new Hashery({ cache: { enabled: false } });
+			expect(hashery.cache.enabled).toBe(false);
+		});
+
+		test("should set maxSize via constructor", () => {
+			const hashery = new Hashery({ cache: { maxSize: 500 } });
+			expect(hashery.cache.maxSize).toBe(500);
+		});
+
+		test("should toggle cache enabled at runtime", () => {
+			const hashery = new Hashery();
+			expect(hashery.cache.enabled).toBe(true);
+
+			hashery.cache.enabled = false;
+			expect(hashery.cache.enabled).toBe(false);
+
+			hashery.cache.enabled = true;
+			expect(hashery.cache.enabled).toBe(true);
+		});
+
+		test("should access cache store", () => {
+			const hashery = new Hashery();
+			expect(hashery.cache.store).toBeInstanceOf(Map);
+		});
+
+		test("should clear cache", async () => {
+			const hashery = new Hashery();
+			await hashery.toHash({ name: "test" });
+			expect(hashery.cache.size).toBe(1);
+
+			hashery.cache.clear();
+			expect(hashery.cache.size).toBe(0);
+		});
+	});
+
+	describe("cache with toHash", () => {
+		test("should not cache when disabled", async () => {
+			const hashery = new Hashery({ cache: { enabled: false } });
+			await hashery.toHash({ name: "test" });
+			expect(hashery.cache.size).toBe(0);
+		});
+
+		test("should cache by default", async () => {
+			const hashery = new Hashery();
+			await hashery.toHash({ name: "test" });
+			expect(hashery.cache.size).toBe(1);
+		});
+
+		test("should return cached value on repeat call", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test", value: 42 };
+
+			const hash1 = await hashery.toHash(data);
+			const hash2 = await hashery.toHash(data);
+
+			expect(hash1).toBe(hash2);
+			expect(hashery.cache.size).toBe(1);
+		});
+
+		test("should cache different data separately", async () => {
+			const hashery = new Hashery();
+
+			await hashery.toHash({ name: "test1" });
+			await hashery.toHash({ name: "test2" });
+
+			expect(hashery.cache.size).toBe(2);
+		});
+
+		test("should cache same data with different algorithms separately", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			const sha256Hash = await hashery.toHash(data, { algorithm: "SHA-256" });
+			const sha512Hash = await hashery.toHash(data, { algorithm: "SHA-512" });
+
+			expect(hashery.cache.size).toBe(2);
+			expect(sha256Hash).not.toBe(sha512Hash);
+		});
+
+		test("should apply maxLength to cached value", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			// First call caches full hash
+			const fullHash = await hashery.toHash(data);
+			expect(fullHash.length).toBe(64);
+
+			// Second call with maxLength should return truncated cached value
+			const truncatedHash = await hashery.toHash(data, { maxLength: 16 });
+			expect(truncatedHash.length).toBe(16);
+			expect(truncatedHash).toBe(fullHash.substring(0, 16));
+
+			// Only one entry in cache (the full hash)
+			expect(hashery.cache.size).toBe(1);
+		});
+
+		test("should respect maxSize limit", async () => {
+			const hashery = new Hashery({ cache: { maxSize: 3 } });
+
+			await hashery.toHash({ id: 1 });
+			await hashery.toHash({ id: 2 });
+			await hashery.toHash({ id: 3 });
+			expect(hashery.cache.size).toBe(3);
+
+			await hashery.toHash({ id: 4 });
+			expect(hashery.cache.size).toBe(3);
+
+			// First item should be evicted (FIFO)
+			const key1 = `SHA-256:${JSON.stringify({ id: 1 })}`;
+			expect(hashery.cache.has(key1)).toBe(false);
+		});
+
+		test("should use custom stringify function for cache key", async () => {
+			const customStringify = (data: unknown) => {
+				return JSON.stringify(data, Object.keys(data as object).sort());
+			};
+
+			const hashery = new Hashery({
+				stringify: customStringify,
+			});
+
+			// These objects have same content but different key order
+			const data1 = { b: 2, a: 1 };
+			const data2 = { a: 1, b: 2 };
+
+			const hash1 = await hashery.toHash(data1);
+			const hash2 = await hashery.toHash(data2);
+
+			// Should be same hash and only one cache entry
+			expect(hash1).toBe(hash2);
+			expect(hashery.cache.size).toBe(1);
+		});
+	});
+
+	describe("cache with toHashSync", () => {
+		test("should not cache when disabled", () => {
+			const hashery = new Hashery({ cache: { enabled: false } });
+			hashery.toHashSync({ name: "test" });
+			expect(hashery.cache.size).toBe(0);
+		});
+
+		test("should cache by default", () => {
+			const hashery = new Hashery();
+			hashery.toHashSync({ name: "test" });
+			expect(hashery.cache.size).toBe(1);
+		});
+
+		test("should return cached value on repeat call", () => {
+			const hashery = new Hashery();
+			const data = { name: "test", value: 42 };
+
+			const hash1 = hashery.toHashSync(data);
+			const hash2 = hashery.toHashSync(data);
+
+			expect(hash1).toBe(hash2);
+			expect(hashery.cache.size).toBe(1);
+		});
+
+		test("should cache same data with different algorithms separately", () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			const djb2Hash = hashery.toHashSync(data, { algorithm: "djb2" });
+			const fnv1Hash = hashery.toHashSync(data, { algorithm: "fnv1" });
+
+			expect(hashery.cache.size).toBe(2);
+			expect(djb2Hash).not.toBe(fnv1Hash);
+		});
+
+		test("should apply maxLength to cached value", () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			// First call caches full hash
+			const fullHash = hashery.toHashSync(data);
+
+			// Second call with maxLength should return truncated cached value
+			const truncatedHash = hashery.toHashSync(data, { maxLength: 4 });
+			expect(truncatedHash.length).toBe(4);
+			expect(truncatedHash).toBe(fullHash.substring(0, 4));
+
+			// Only one entry in cache
+			expect(hashery.cache.size).toBe(1);
+		});
+
+		test("should share cache between toHash and toHashSync", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			// Use async toHash first
+			const asyncHash = await hashery.toHash(data, { algorithm: "djb2" });
+			expect(hashery.cache.size).toBe(1);
+
+			// Use sync toHashSync with same data and algorithm
+			const syncHash = hashery.toHashSync(data, { algorithm: "djb2" });
+
+			// Should return cached value, same hash
+			expect(syncHash).toBe(asyncHash);
+			expect(hashery.cache.size).toBe(1);
+		});
+	});
 });

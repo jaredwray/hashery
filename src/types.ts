@@ -1,4 +1,5 @@
 import type { HookifiedOptions } from "hookified";
+import type { CacheOptions } from "./cache.js";
 
 /**
  * Configuration options for Hashery instances.
@@ -95,6 +96,20 @@ export type HasheryOptions = {
 	 * ```
 	 */
 	defaultAlgorithmSync?: string;
+
+	/**
+	 * Cache configuration options.
+	 * Pass { enabled: true } to enable caching of hash results.
+	 * @example
+	 * ```ts
+	 * const hashery = new Hashery({
+	 *   cache: { enabled: true, maxSize: 500 }
+	 * });
+	 *
+	 * // Hashes will be cached and reused for identical inputs
+	 * ```
+	 */
+	cache?: CacheOptions;
 } & HookifiedOptions;
 
 /**
