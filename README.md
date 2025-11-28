@@ -37,6 +37,7 @@ Browser / Nodejs Compatible Object Hashing
   - [Hash to Number Synchronous](#hash-to-number-synchronous)
   - [Browser Usage](#browser-usage)
 - [Hooks](#hooks)
+- [Caching](#caching)
 - [Web Crypto](#web-crypto)
 - [DJB2 Hashing](#djb2-hashing)
 - [FNV1 Hashing](#fnv1-hashing)
@@ -1130,7 +1131,7 @@ Overall view of the current algorithm's and their performance using simple hashi
 |  SHA-384 Async  |   -89%    |      62K  |     17µs  |  ±0.45%  |      59K  |
 |  SHA-512 Async  |   -89%    |      59K  |     18µs  |  ±0.63%  |      55K  |
 
-Caching is enabled by default and is a simple FIFO with default max keys at `4000`. The performance gain is greater than 20%+ on average.
+Caching is enabled by default and is a simple FIFO with default max keys at `4000`. The performance gain is greater than 20%+ on average. Some of the biggest gains are on `SHA` hashing which 10x when caching is enabled.
 
 # Code of Conduct and Contributing
 Please use our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines for development and testing. We appreciate your contributions!
