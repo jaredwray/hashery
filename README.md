@@ -510,6 +510,54 @@ hashery2.onHook('before:toHash', async (context) => {
 const hash = await hashery2.toHash({ data: 'example' }); // Returns hash successfully
 ```
 
+# Caching
+
+Hashery includes a built-in FIFO (First In, First Out) cache that stores computed hash values. When the same data is hashed with the same algorithm, the cached result is returned instead of recomputing.
+
+- **Enabled by Default** - Caching works out of the box
+- **FIFO Eviction** - Oldest entries removed when `maxSize` is reached (default: 4000)
+- **Shared Cache** - Both sync and async methods share the same cache
+
+## Configuration
+
+```typescript
+import { Hashery } from 'hashery';
+
+// Default: cache enabled with maxSize of 4000
+const hashery = new Hashery();
+
+// Custom configuration
+const hashery2 = new Hashery({
+  cache: {
+    enabled: true,   // default: true
+    maxSize: 10000   // default: 4000
+  }
+});
+
+// Disable cache
+const hashery3 = new Hashery({ cache: { enabled: false } });
+
+// Toggle at runtime
+hashery.cache.enabled = false;
+hashery.cache.enabled = true;
+```
+
+## Cache Properties and Methods
+
+```typescript
+const hashery = new Hashery();
+
+hashery.cache.enabled;  // boolean - is caching enabled
+hashery.cache.maxSize;  // number - maximum entries (default: 4000)
+hashery.cache.size;     // number - current cached entries
+hashery.cache.store;    // Map<string, string> - underlying store
+hashery.cache.clear();  // Clear all cached entries
+```
+
+## Memory Considerations
+
+The default `maxSize` of 4000 provides a good balance (~1-2 MB memory). JavaScript Maps can hold up to 2^24 (~16.7 million) entries, but practical limits depend on available memory. For most use cases, 4000-10000 entries is sufficient.
+
 # Web Crypto
 
 Hashery is built on top of the Web Crypto API, which provides cryptographic operations in both browser and Node.js environments. This ensures consistent, secure hashing across all platforms.
