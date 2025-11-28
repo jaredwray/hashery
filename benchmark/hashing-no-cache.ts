@@ -3,8 +3,8 @@ import { Bench } from "tinybench";
 import { faker } from "@faker-js/faker";
 import { Hashery } from "../src/index.js";
 
-const bench = new Bench({ name: "Hashing", iterations: 10_000 });
-const hashery = new Hashery();
+const bench = new Bench({ name: "Hashing without Caching", iterations: 10_000 });
+const hashery = new Hashery({ cache: { enabled: false } });
 
 // Create an array of fake objects before running the benchmark
 const fakeObjects = Array.from({ length: 4000 }, () => ({
