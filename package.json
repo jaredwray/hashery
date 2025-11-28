@@ -31,7 +31,7 @@
     "clean": "rimraf ./dist ./coverage ./node_modules ./pnpm-lock.yaml ./site/README.md ./site/dist",
     "build": "rimraf ./dist && tsup",
     "prepare": "pnpm build",
-    "benchmark": "tsx benchmark/hashing.ts",
+    "benchmark": "tsx benchmark/hashing.ts && tsx benchmark/hashing-no-cache.ts",
     "lint": "biome check --write --error-on-warnings",
     "test": "pnpm lint && vitest run --coverage",
     "test:ci": "biome check --error-on-warnings && vitest run --coverage",

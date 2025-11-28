@@ -1098,21 +1098,39 @@ hashery.loadProviders([customProvider], { includeBase: false });
 
 Overall view of the current algorithm's and their performance using simple hashing with random data. `Sync` is when we use `toHashSync` and `Async` is the `toHash` function which requires `await`.
 
+**NOTE: Many of these are not secure and should be used only for object hashing. Read about each one in the documentation and pick what works best for your use case.**
+
+## Hashing
 |      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
 |-----------------|:---------:|----------:|----------:|:--------:|----------:|
-|  DJB2 Sync      |    🥇     |     589K  |      2µs  |  ±0.21%  |     574K  |
-|  MURMER Sync    |   -5.1%   |     559K  |      2µs  |  ±0.20%  |     546K  |
-|  FNV1 Sync      |   -7.3%   |     546K  |      2µs  |  ±0.22%  |     532K  |
-|  MURMER Async   |   -12%    |     521K  |      2µs  |  ±0.87%  |     504K  |
-|  DJB2 Async     |   -12%    |     519K  |      2µs  |  ±0.21%  |     506K  |
-|  CRC32 Sync     |   -14%    |     505K  |      2µs  |  ±0.18%  |     495K  |
-|  FNV1 Async     |   -17%    |     492K  |      2µs  |  ±4.13%  |     439K  |
-|  CRC32 Async    |   -22%    |     461K  |      2µs  |  ±0.18%  |     451K  |
-|  SHA-256 Async  |   -83%    |     101K  |     10µs  |  ±1.26%  |      99K  |
-|  SHA-384 Async  |   -84%    |      93K  |     11µs  |  ±2.43%  |      90K  |
-|  SHA-512 Async  |   -85%    |      88K  |     12µs  |  ±0.26%  |      86K  |
+|  DJB2 Sync      |    🥇     |     708K  |      1µs  |  ±1.54%  |     669K  |
+|  FNV1 Sync      |  -0.21%   |     707K  |      2µs  |  ±1.30%  |     665K  |
+|  MURMER Sync    |   -1.2%   |     700K  |      2µs  |  ±0.60%  |     653K  |
+|  CRC32 Sync     |   -1.2%   |     700K  |      2µs  |  ±1.55%  |     652K  |
+|  CRC32 Async    |   -11%    |     630K  |      2µs  |  ±0.50%  |     598K  |
+|  DJB2 Async     |   -11%    |     629K  |      2µs  |  ±0.55%  |     597K  |
+|  FNV1 Async     |   -12%    |     623K  |      2µs  |  ±0.82%  |     581K  |
+|  SHA-512 Async  |   -14%    |     612K  |      2µs  |  ±0.47%  |     548K  |
+|  SHA-384 Async  |   -14%    |     611K  |      2µs  |  ±0.51%  |     549K  |
+|  MURMER Async   |   -14%    |     608K  |      2µs  |  ±0.61%  |     569K  |
+|  SHA-256 Async  |   -16%    |     593K  |      2µs  |  ±0.52%  |     522K  |
 
-**NOTE: Many of these are not secure and should be used only for object hashing. Read about each one in the documentation and pick what works best for your use case.**
+## Hashing without Caching
+|      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
+|-----------------|:---------:|----------:|----------:|:--------:|----------:|
+|  DJB2 Sync      |    🥇     |     542K  |      2µs  |  ±0.28%  |     514K  |
+|  MURMER Sync    |   -1.5%   |     533K  |      2µs  |  ±0.71%  |     499K  |
+|  FNV1 Sync      |   -12%    |     478K  |      2µs  |  ±0.33%  |     456K  |
+|  DJB2 Async     |   -12%    |     477K  |      2µs  |  ±0.38%  |     451K  |
+|  MURMER Async   |   -13%    |     471K  |      2µs  |  ±0.40%  |     447K  |
+|  FNV1 Async     |   -22%    |     425K  |      2µs  |  ±1.32%  |     403K  |
+|  CRC32 Sync     |   -37%    |     342K  |      3µs  |  ±0.84%  |     329K  |
+|  CRC32 Async    |   -38%    |     338K  |      3µs  |  ±0.34%  |     326K  |
+|  SHA-256 Async  |   -88%    |      67K  |     16µs  |  ±0.69%  |      63K  |
+|  SHA-384 Async  |   -89%    |      62K  |     17µs  |  ±0.45%  |      59K  |
+|  SHA-512 Async  |   -89%    |      59K  |     18µs  |  ±0.63%  |      55K  |
+
+Caching is enabled by default and is a simple FIFO with default max keys at `4000`. The performance gain is greater than 20%+ on average.
 
 # Code of Conduct and Contributing
 Please use our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines for development and testing. We appreciate your contributions!
