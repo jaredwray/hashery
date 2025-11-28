@@ -1181,6 +1181,21 @@ Overall view of the current algorithm's and their performance using simple hashi
 
 Caching is enabled by default and is a simple FIFO with default max keys at `4000`. The performance gain is greater than 20%+ on average. Some of the biggest gains are on `SHA` hashing which 10x when caching is enabled.
 
+## Hashery Web Crypto vs Node Crypto
+|           name            |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
+|---------------------------|:---------:|----------:|----------:|:--------:|----------:|
+|  Hashery SHA-256 (Cache)  |    🥇     |     622K  |      2µs  |  ±0.27%  |     578K  |
+|  Hashery SHA-384 (Cache)  |  -0.43%   |     619K  |      2µs  |  ±0.44%  |     565K  |
+|  Hashery SHA-512 (Cache)  |  -0.62%   |     618K  |      2µs  |  ±0.50%  |     556K  |
+|  node:crypto SHA-256      |   -1.2%   |     615K  |      2µs  |  ±4.04%  |     535K  |
+|  node:crypto SHA-384      |   -3.8%   |     598K  |      2µs  |  ±2.88%  |     554K  |
+|  node:crypto SHA-512      |   -4.9%   |     591K  |      2µs  |  ±4.54%  |     499K  |
+|  Hashery SHA-256          |   -89%    |      69K  |     15µs  |  ±0.75%  |      65K  |
+|  Hashery SHA-384          |   -89%    |      66K  |     16µs  |  ±1.48%  |      63K  |
+|  Hashery SHA-512          |   -90%    |      61K  |     17µs  |  ±0.35%  |      58K  |
+
+In this benchmark it shows the performance gap that happens between web crypto and the standard `node:crypto`. By default `node:crypto` has significant performance natively and doesnt use `async/await` to perform its hash. With caching enabled we start to see the performance become more similar.
+
 # Code of Conduct and Contributing
 Please use our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines for development and testing. We appreciate your contributions!
 
