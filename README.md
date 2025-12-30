@@ -1152,47 +1152,47 @@ Overall view of the current algorithm's and their performance using simple hashi
 ## Hashing
 |      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
 |-----------------|:---------:|----------:|----------:|:--------:|----------:|
-|  DJB2 Sync      |    🥇     |     708K  |      1µs  |  ±1.54%  |     669K  |
-|  FNV1 Sync      |  -0.21%   |     707K  |      2µs  |  ±1.30%  |     665K  |
-|  MURMER Sync    |   -1.2%   |     700K  |      2µs  |  ±0.60%  |     653K  |
-|  CRC32 Sync     |   -1.2%   |     700K  |      2µs  |  ±1.55%  |     652K  |
-|  CRC32 Async    |   -11%    |     630K  |      2µs  |  ±0.50%  |     598K  |
-|  DJB2 Async     |   -11%    |     629K  |      2µs  |  ±0.55%  |     597K  |
-|  FNV1 Async     |   -12%    |     623K  |      2µs  |  ±0.82%  |     581K  |
-|  SHA-512 Async  |   -14%    |     612K  |      2µs  |  ±0.47%  |     548K  |
-|  SHA-384 Async  |   -14%    |     611K  |      2µs  |  ±0.51%  |     549K  |
-|  MURMER Async   |   -14%    |     608K  |      2µs  |  ±0.61%  |     569K  |
-|  SHA-256 Async  |   -16%    |     593K  |      2µs  |  ±0.52%  |     522K  |
+|  MURMER Sync    |    🥇     |     726K  |      1µs  |  ±0.02%  |     707K  |
+|  CRC32 Sync     |   -1.9%   |     713K  |      1µs  |  ±0.02%  |     672K  |
+|  DJB2 Sync      |   -2.7%   |     707K  |      1µs  |  ±0.03%  |     672K  |
+|  FNV1 Sync      |   -2.9%   |     705K  |      1µs  |  ±0.03%  |     670K  |
+|  CRC32 Async    |   -8.8%   |     663K  |      2µs  |  ±0.02%  |     647K  |
+|  MURMER Async   |   -11%    |     649K  |      2µs  |  ±0.03%  |     620K  |
+|  SHA-512 Async  |   -11%    |     647K  |      2µs  |  ±0.03%  |     596K  |
+|  SHA-384 Async  |   -11%    |     645K  |      2µs  |  ±0.03%  |     589K  |
+|  SHA-256 Async  |   -12%    |     642K  |      2µs  |  ±0.03%  |     583K  |
+|  FNV1 Async     |   -12%    |     641K  |      2µs  |  ±0.03%  |     615K  |
+|  DJB2 Async     |   -12%    |     639K  |      2µs  |  ±0.03%  |     613K  |
 
 ## Hashing without Caching
 |      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
 |-----------------|:---------:|----------:|----------:|:--------:|----------:|
-|  DJB2 Sync      |    🥇     |     542K  |      2µs  |  ±0.28%  |     514K  |
-|  MURMER Sync    |   -1.5%   |     533K  |      2µs  |  ±0.71%  |     499K  |
-|  FNV1 Sync      |   -12%    |     478K  |      2µs  |  ±0.33%  |     456K  |
-|  DJB2 Async     |   -12%    |     477K  |      2µs  |  ±0.38%  |     451K  |
-|  MURMER Async   |   -13%    |     471K  |      2µs  |  ±0.40%  |     447K  |
-|  FNV1 Async     |   -22%    |     425K  |      2µs  |  ±1.32%  |     403K  |
-|  CRC32 Sync     |   -37%    |     342K  |      3µs  |  ±0.84%  |     329K  |
-|  CRC32 Async    |   -38%    |     338K  |      3µs  |  ±0.34%  |     326K  |
-|  SHA-256 Async  |   -88%    |      67K  |     16µs  |  ±0.69%  |      63K  |
-|  SHA-384 Async  |   -89%    |      62K  |     17µs  |  ±0.45%  |      59K  |
-|  SHA-512 Async  |   -89%    |      59K  |     18µs  |  ±0.63%  |      55K  |
+|  DJB2 Sync      |    🥇     |     507K  |      2µs  |  ±0.04%  |     475K  |
+|  MURMER Sync    |   -0.6%   |     504K  |      2µs  |  ±0.04%  |     476K  |
+|  DJB2 Async     |   -3.6%   |     489K  |      2µs  |  ±0.04%  |     463K  |
+|  MURMER Async   |   -4.4%   |     484K  |      2µs  |  ±0.04%  |     457K  |
+|  FNV1 Sync      |   -6.6%   |     474K  |      2µs  |  ±0.04%  |     447K  |
+|  FNV1 Async     |   -14%    |     436K  |      2µs  |  ±0.04%  |     412K  |
+|  CRC32 Sync     |   -31%    |     349K  |      3µs  |  ±0.04%  |     334K  |
+|  CRC32 Async    |   -31%    |     347K  |      3µs  |  ±0.04%  |     336K  |
+|  SHA-256 Async  |   -86%    |      69K  |     15µs  |  ±0.11%  |      66K  |
+|  SHA-384 Async  |   -87%    |      64K  |     17µs  |  ±0.14%  |      60K  |
+|  SHA-512 Async  |   -88%    |      61K  |     17µs  |  ±0.12%  |      58K  |
 
 Caching is enabled by default and is a simple FIFO with default max keys at `4000`. The performance gain is greater than 20%+ on average. Some of the biggest gains are on `SHA` hashing which 10x when caching is enabled.
 
 ## Hashery Web Crypto vs Node Crypto
 |           name            |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
 |---------------------------|:---------:|----------:|----------:|:--------:|----------:|
-|  Hashery SHA-256 (Cache)  |    🥇     |     622K  |      2µs  |  ±0.27%  |     578K  |
-|  Hashery SHA-384 (Cache)  |  -0.43%   |     619K  |      2µs  |  ±0.44%  |     565K  |
-|  Hashery SHA-512 (Cache)  |  -0.62%   |     618K  |      2µs  |  ±0.50%  |     556K  |
-|  node:crypto SHA-256      |   -1.2%   |     615K  |      2µs  |  ±4.04%  |     535K  |
-|  node:crypto SHA-384      |   -3.8%   |     598K  |      2µs  |  ±2.88%  |     554K  |
-|  node:crypto SHA-512      |   -4.9%   |     591K  |      2µs  |  ±4.54%  |     499K  |
-|  Hashery SHA-256          |   -89%    |      69K  |     15µs  |  ±0.75%  |      65K  |
-|  Hashery SHA-384          |   -89%    |      66K  |     16µs  |  ±1.48%  |      63K  |
-|  Hashery SHA-512          |   -90%    |      61K  |     17µs  |  ±0.35%  |      58K  |
+|  Hashery SHA-384 (Cache)  |    🥇     |     646K  |      2µs  |  ±0.03%  |     596K  |
+|  Hashery SHA-256 (Cache)  |  -0.42%   |     643K  |      2µs  |  ±0.03%  |     594K  |
+|  Hashery SHA-512 (Cache)  |  -0.71%   |     641K  |      2µs  |  ±0.03%  |     589K  |
+|  node:crypto SHA-256      |   -1.2%   |     638K  |      2µs  |  ±0.02%  |     588K  |
+|  node:crypto SHA-384      |   -6.9%   |     602K  |      2µs  |  ±0.03%  |     507K  |
+|  node:crypto SHA-512      |   -7.3%   |     599K  |      2µs  |  ±0.03%  |     525K  |
+|  Hashery SHA-256          |   -89%    |      69K  |     15µs  |  ±0.10%  |      66K  |
+|  Hashery SHA-384          |   -90%    |      65K  |     16µs  |  ±0.11%  |      62K  |
+|  Hashery SHA-512          |   -91%    |      61K  |     17µs  |  ±0.11%  |      59K  |
 
 In this benchmark it shows the performance gap that happens between web crypto and the standard `node:crypto`. By default `node:crypto` has significant performance natively and doesnt use `async/await` to perform its hash. With caching enabled we start to see the performance become more similar.
 
