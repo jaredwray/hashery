@@ -39,6 +39,8 @@ Browser / Nodejs Compatible Object Hashing
 - [Hooks](#hooks)
 - [Caching](#caching)
 - [Web Crypto](#web-crypto)
+  - [Browser Support](#browser-support)
+  - [Node.js Support](#nodejs-support)
 - [DJB2 Hashing](#djb2-hashing)
 - [FNV1 Hashing](#fnv1-hashing)
 - [CRC Hashing](#crc-hashing)
@@ -572,7 +574,7 @@ The Web Crypto API is supported in all modern browsers:
 
 ## Node.js Support
 
-Node.js 15+ includes the Web Crypto API via the `crypto.webcrypto` global. Hashery automatically detects and uses the appropriate crypto implementation for your environment.
+Web Crypto API was introduced in Node.js 15.0.0. Hashery is tested against Node.js LTS 20+ and automatically detects and uses the appropriate crypto implementation for your environment via the `crypto.webcrypto` global.
 
 ## Available Algorithms
 
