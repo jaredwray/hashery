@@ -162,13 +162,26 @@ describe("Hashery Sync Methods", () => {
 			expect(emptyObjectHash).not.toBe(emptyArrayHash);
 		});
 
-		test("should throw error when provider not found", () => {
-			const hashery = new Hashery({ includeBase: false });
-			const data = { name: "test" };
+		test("should fallback to default sync algorithm and emit warning when provider not found", () => {
+			const hashery = new Hashery();
+			const warnings: string[] = [];
 
-			expect(() => {
-				hashery.toHashSync(data, { algorithm: "djb2" });
-			}).toThrow("Hash provider 'djb2' not found");
+			hashery.on("warn", (message: string) => {
+				warnings.push(message);
+			});
+
+			const data = { name: "test" };
+			const hash = hashery.toHashSync(data, { algorithm: "invalid-algo" });
+
+			// Should still produce a hash (using fallback djb2)
+			expect(hash).toBeDefined();
+			expect(typeof hash).toBe("string");
+
+			// Should have emitted exactly one warning
+			expect(warnings.length).toBe(1);
+			expect(warnings[0]).toContain("invalid-algo");
+			expect(warnings[0]).toContain("djb2");
+			expect(warnings[0]).toContain("Invalid algorithm");
 		});
 
 		test("should throw error when provider does not support sync", () => {
@@ -179,6 +192,29 @@ describe("Hashery Sync Methods", () => {
 				hashery.toHashSync(data, { algorithm: "SHA-256" });
 			}).toThrow(
 				"Hash provider 'SHA-256' does not support synchronous hashing",
+			);
+		});
+
+		test("should throw error when default sync algorithm is not found", () => {
+			const hashery = new Hashery({ includeBase: false });
+			const data = { name: "test" };
+
+			expect(() => {
+				hashery.toHashSync(data, { algorithm: "invalid-algo" });
+			}).toThrow("Hash provider 'djb2' (default) not found");
+		});
+
+		test("should still throw error if fallback algorithm doesn't support sync", () => {
+			const hashery = new Hashery();
+			// Set default sync algorithm to an async-only algorithm
+			hashery.defaultAlgorithmSync = "SHA-256";
+
+			const data = { name: "test" };
+
+			expect(() => {
+				hashery.toHashSync(data, { algorithm: "invalid-algo" });
+			}).toThrow(
+				"Hash provider 'invalid-algo' does not support synchronous hashing",
 			);
 		});
 

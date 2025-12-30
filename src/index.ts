@@ -177,6 +177,12 @@ export class Hashery extends Hookified {
 	 * Generates a cryptographic hash of the provided data using the Web Crypto API.
 	 * The data is first stringified using the configured stringify function, then hashed.
 	 *
+	 * If an invalid algorithm is provided, a 'warn' event is emitted and the method falls back
+	 * to the default algorithm. You can listen to these warnings:
+	 * ```ts
+	 * hashery.on('warn', (message) => console.log(message));
+	 * ```
+	 *
 	 * @param data - The data to hash (will be stringified before hashing)
 	 * @param options - Optional configuration object
 	 * @param options.algorithm - The hash algorithm to use (defaults to 'SHA-256')
@@ -229,6 +235,12 @@ export class Hashery extends Hookified {
 		// Get the provider for the specified algorithm
 		let provider = this._providers.get(context.algorithm);
 		if (!provider) {
+			// Emit warning for invalid algorithm
+			this.emit(
+				"warn",
+				`Invalid algorithm '${context.algorithm}' not found. Falling back to default algorithm '${this._defaultAlgorithm}'.`,
+			);
+
 			provider = new WebCrypto({
 				algorithm: this._defaultAlgorithm as WebCryptoHashAlgorithm,
 			});
@@ -317,6 +329,12 @@ export class Hashery extends Hookified {
 	 * Note: This method only works with synchronous hash providers (djb2, fnv1, murmer, crc32).
 	 * WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported and will throw an error.
 	 *
+	 * If an invalid algorithm is provided, a 'warn' event is emitted and the method falls back
+	 * to the default synchronous algorithm. You can listen to these warnings:
+	 * ```ts
+	 * hashery.on('warn', (message) => console.log(message));
+	 * ```
+	 *
 	 * @param data - The data to hash (will be stringified before hashing)
 	 * @param options - Optional configuration object
 	 * @param options.algorithm - The hash algorithm to use (defaults to 'djb2')
@@ -324,6 +342,7 @@ export class Hashery extends Hookified {
 	 * @returns The hexadecimal string representation of the hash
 	 *
 	 * @throws {Error} If the specified algorithm does not support synchronous hashing
+	 * @throws {Error} If the default algorithm is not found
 	 *
 	 * @example
 	 * ```ts
@@ -369,9 +388,23 @@ export class Hashery extends Hookified {
 		const dataBuffer = encoder.encode(stringified);
 
 		// Get the provider for the specified algorithm
-		const provider = this._providers.get(algorithm);
+		let provider = this._providers.get(algorithm);
 		if (!provider) {
-			throw new Error(`Hash provider '${algorithm}' not found`);
+			// Emit warning for invalid algorithm
+			this.emit(
+				"warn",
+				`Invalid algorithm '${algorithm}' not found. Falling back to default algorithm '${this._defaultAlgorithmSync}'.`,
+			);
+
+			// Fallback to default sync algorithm
+			provider = this._providers.get(this._defaultAlgorithmSync);
+
+			// If default algorithm is also not found, throw error
+			if (!provider) {
+				throw new Error(
+					`Hash provider '${this._defaultAlgorithmSync}' (default) not found`,
+				);
+			}
 		}
 
 		// Check if provider supports synchronous hashing

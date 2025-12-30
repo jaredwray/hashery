@@ -527,9 +527,15 @@ describe("Hashery", () => {
 			expect(emptyObjectHash).not.toBe(emptyArrayHash);
 		});
 
-		test("should fallback to WebCrypto SHA-256 when provider not found", async () => {
+		test("should fallback to WebCrypto SHA-256 when provider not found and emit warning", async () => {
 			// Create a Hashery instance with no base providers
 			const hashery = new Hashery({ includeBase: false });
+			const warnings: string[] = [];
+
+			// Listen for warning events
+			hashery.on("warn", (message: string) => {
+				warnings.push(message);
+			});
 
 			// Verify no providers are loaded
 			expect(hashery.providers.providers.size).toBe(0);
@@ -547,6 +553,12 @@ describe("Hashery", () => {
 			// Verify the hash is consistent
 			const hash2 = await hashery.toHash(data, { algorithm: "SHA-256" });
 			expect(hash).toBe(hash2);
+
+			// Verify warning was emitted (only once because second call is cached)
+			expect(warnings.length).toBeGreaterThanOrEqual(1);
+			expect(warnings[0]).toContain("SHA-256");
+			expect(warnings[0]).toContain("not found");
+			expect(warnings[0]).toContain("Falling back");
 		});
 
 		test("should fallback to SHA-256 for custom provider when not loaded", async () => {
@@ -571,6 +583,27 @@ describe("Hashery", () => {
 
 			// Should NOT be the custom provider's output
 			expect(hash).not.toBe("custom-hash-output");
+		});
+
+		test("should emit warn event with correct message for invalid algorithm", async () => {
+			const hashery = new Hashery();
+			const warnings: string[] = [];
+
+			hashery.on("warn", (message: string) => {
+				warnings.push(message);
+			});
+
+			const data = { name: "test" };
+			const hash = await hashery.toHash(data, { algorithm: "invalid-algo" });
+
+			// Should still produce a hash (using fallback)
+			expect(hash).toBeDefined();
+
+			// Should have emitted exactly one warning
+			expect(warnings.length).toBe(1);
+			expect(warnings[0]).toContain("invalid-algo");
+			expect(warnings[0]).toContain("SHA-256");
+			expect(warnings[0]).toContain("Invalid algorithm");
 		});
 
 		test("should truncate hash when maxLength is specified", async () => {

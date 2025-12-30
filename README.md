@@ -37,6 +37,7 @@ Browser / Nodejs Compatible Object Hashing
   - [Hash to Number Synchronous](#hash-to-number-synchronous)
   - [Browser Usage](#browser-usage)
 - [Hooks](#hooks)
+  - [Warning Events for Invalid Algorithms](#warning-events-for-invalid-algorithms)
 - [Caching](#caching)
 - [Web Crypto](#web-crypto)
   - [Browser Support](#browser-support)
@@ -463,6 +464,90 @@ Synchronous methods are designed for maximum performance. Making hooks blocking 
 - Maintaining the synchronous contract of the method
 
 If you need hooks that modify data or behavior, use the async methods (`toHash`, `toNumber`).
+
+## Warning Events for Invalid Algorithms
+
+When an invalid or unknown hash algorithm is provided to `toHash()` or `toHashSync()`, Hashery emits a 'warn' event and automatically falls back to the default algorithm instead of throwing an error. This ensures your application continues to work even when invalid algorithms are specified.
+
+### Listening to Warnings
+
+```typescript
+import { Hashery } from 'hashery';
+
+const hashery = new Hashery();
+
+// Listen for warning events
+hashery.on('warn', (message: string) => {
+  console.log('Warning:', message);
+});
+
+// Using an invalid algorithm will trigger the warning
+const hash = await hashery.toHash({ data: 'test' }, { algorithm: 'invalid-algo' });
+// Warning: Invalid algorithm 'invalid-algo' not found. Falling back to default algorithm 'SHA-256'.
+
+// Hash is still generated using SHA-256 (the default)
+console.log(hash); // Valid SHA-256 hash
+```
+
+### Behavior
+
+**For async methods (`toHash`, `toNumber`):**
+- Emits 'warn' event with descriptive message
+- Falls back to `defaultAlgorithm` (SHA-256 by default)
+- Returns a valid hash using the fallback algorithm
+
+**For sync methods (`toHashSync`, `toNumberSync`):**
+- Emits 'warn' event with descriptive message
+- Falls back to `defaultAlgorithmSync` (djb2 by default)
+- Returns a valid hash using the fallback algorithm
+- **Note:** If the default sync algorithm is also not found, an error will be thrown
+
+### Warning Message Format
+
+The warning message includes both the invalid algorithm name and the fallback algorithm being used:
+
+```
+Invalid algorithm '<requested-algorithm>' not found. Falling back to default algorithm '<default-algorithm>'.
+```
+
+### Example Use Cases
+
+**Development/Debugging:**
+```typescript
+const hashery = new Hashery();
+
+hashery.on('warn', (message) => {
+  console.error('[Hashery Warning]', message);
+  // Log to monitoring service, etc.
+});
+```
+
+**Production Monitoring:**
+```typescript
+const hashery = new Hashery();
+
+hashery.on('warn', (message) => {
+  // Send to error tracking service
+  errorTracker.captureMessage(message, 'warning');
+});
+```
+
+**Graceful Degradation:**
+```typescript
+const hashery = new Hashery();
+let hasWarnings = false;
+
+hashery.on('warn', () => {
+  hasWarnings = true;
+});
+
+const hash = await hashery.toHash(userData, { algorithm: userPreferredAlgo });
+
+if (hasWarnings) {
+  // Notify user that their preferred algorithm is not available
+  console.log('Using default algorithm instead of your preference');
+}
+```
 
 ## Removing Hooks
 
