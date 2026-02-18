@@ -1,4 +1,4 @@
-<img src="./site/logo.svg" />
+<div align="center"><img src="./site/logo.svg" width="80%" height="80%" /></div>
 
 # hashery
 Browser / Nodejs Compatible Object Hashing
