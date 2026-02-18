@@ -58,6 +58,8 @@ Browser / Nodejs Compatible Object Hashing
   - [toNumber(data, options?)](#tonumberdata-options)
   - [toNumberSync(data, options?)](#tonumbersyncdata-options)
   - [loadProviders(providers?, options?)](#loadprovidersproviders-options)
+- [API - Types](#api---types)
+  - [HashAlgorithm](#hashalgorithm)
 - [Benchmarks](#benchmarks)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
 - [License and Copyright](#license-and-copyright)
@@ -1188,6 +1190,27 @@ hashery.loadProviders([customProvider]);
 
 // Load without base providers
 hashery.loadProviders([customProvider], { includeBase: false });
+```
+
+# API - Types
+
+## `HashAlgorithm`
+
+A string literal union type representing all built-in hash algorithm names. Provides autocomplete in IDEs while still accepting custom provider names as strings.
+
+**Type:** `"SHA-256" | "SHA-384" | "SHA-512" | "djb2" | "fnv1" | "murmer" | "crc32"`
+
+```typescript
+import { Hashery, type HashAlgorithm } from 'hashery';
+
+const hashery = new Hashery();
+
+// Use the type for your own variables and functions
+const algorithm: HashAlgorithm = 'SHA-256';
+const hash = await hashery.toHash({ data: 'example' }, { algorithm });
+
+// All option fields accept HashAlgorithm with full autocomplete
+const hashery2 = new Hashery({ defaultAlgorithm: 'SHA-512' }); // autocomplete for algorithm names
 ```
 
 # Benchmarks

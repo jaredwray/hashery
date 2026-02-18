@@ -7,6 +7,7 @@ import { FNV1 } from "./providers/fnv1.js";
 import { Murmer } from "./providers/murmer.js";
 import { HashProviders } from "./providers.js";
 import type {
+	HashAlgorithm,
 	HasheryLoadProviderOptions,
 	HasheryOptions,
 	HasheryToHashOptions,
@@ -538,4 +539,10 @@ export class Hashery extends Hookified {
 
 export type { CacheOptions } from "./cache.js";
 export { Cache } from "./cache.js";
-export type { WebCryptoHashAlgorithm, HasheryOptions, ParseFn, StringifyFn };
+export type {
+	HashAlgorithm,
+	WebCryptoHashAlgorithm,
+	HasheryOptions,
+	ParseFn,
+	StringifyFn,
+};
