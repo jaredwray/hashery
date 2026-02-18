@@ -1303,82 +1303,67 @@ Overall view of the current algorithm's and their performance using simple hashi
 
 **NOTE: Many of these are not secure and should be used only for object hashing. Read about each one in the documentation and pick what works best for your use case.**
 
-## Hashing
+## toHash
 |      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
 |-----------------|:---------:|----------:|----------:|:--------:|----------:|
-|  MURMUR Sync    |    🥇     |     726K  |      1µs  |  ±0.02%  |     707K  |
-|  CRC32 Sync     |   -1.9%   |     713K  |      1µs  |  ±0.02%  |     672K  |
-|  DJB2 Sync      |   -2.7%   |     707K  |      1µs  |  ±0.03%  |     672K  |
-|  FNV1 Sync      |   -2.9%   |     705K  |      1µs  |  ±0.03%  |     670K  |
-|  CRC32 Async    |   -8.8%   |     663K  |      2µs  |  ±0.02%  |     647K  |
-|  MURMUR Async   |   -11%    |     649K  |      2µs  |  ±0.03%  |     620K  |
-|  SHA-512 Async  |   -11%    |     647K  |      2µs  |  ±0.03%  |     596K  |
-|  SHA-384 Async  |   -11%    |     645K  |      2µs  |  ±0.03%  |     589K  |
-|  SHA-256 Async  |   -12%    |     642K  |      2µs  |  ±0.03%  |     583K  |
-|  FNV1 Async     |   -12%    |     641K  |      2µs  |  ±0.03%  |     615K  |
-|  DJB2 Async     |   -12%    |     639K  |      2µs  |  ±0.03%  |     613K  |
-
-## Hashing without Caching
-|      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
-|-----------------|:---------:|----------:|----------:|:--------:|----------:|
-|  DJB2 Sync      |    🥇     |     507K  |      2µs  |  ±0.04%  |     475K  |
-|  MURMUR Sync    |   -0.6%   |     504K  |      2µs  |  ±0.04%  |     476K  |
-|  DJB2 Async     |   -3.6%   |     489K  |      2µs  |  ±0.04%  |     463K  |
-|  MURMUR Async   |   -4.4%   |     484K  |      2µs  |  ±0.04%  |     457K  |
-|  FNV1 Sync      |   -6.6%   |     474K  |      2µs  |  ±0.04%  |     447K  |
-|  FNV1 Async     |   -14%    |     436K  |      2µs  |  ±0.04%  |     412K  |
-|  CRC32 Sync     |   -31%    |     349K  |      3µs  |  ±0.04%  |     334K  |
-|  CRC32 Async    |   -31%    |     347K  |      3µs  |  ±0.04%  |     336K  |
-|  SHA-256 Async  |   -86%    |      69K  |     15µs  |  ±0.11%  |      66K  |
-|  SHA-384 Async  |   -87%    |      64K  |     17µs  |  ±0.14%  |      60K  |
-|  SHA-512 Async  |   -88%    |      61K  |     17µs  |  ±0.12%  |      58K  |
-
-Caching is enabled by default and is a simple FIFO with default max keys at `4000`. The performance gain is greater than 20%+ on average. Some of the biggest gains are on `SHA` hashing which 10x when caching is enabled.
-
-## Hashery Web Crypto vs Node Crypto
-|           name            |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
-|---------------------------|:---------:|----------:|----------:|:--------:|----------:|
-|  Hashery SHA-384 (Cache)  |    🥇     |     646K  |      2µs  |  ±0.03%  |     596K  |
-|  Hashery SHA-256 (Cache)  |  -0.42%   |     643K  |      2µs  |  ±0.03%  |     594K  |
-|  Hashery SHA-512 (Cache)  |  -0.71%   |     641K  |      2µs  |  ±0.03%  |     589K  |
-|  node:crypto SHA-256      |   -1.2%   |     638K  |      2µs  |  ±0.02%  |     588K  |
-|  node:crypto SHA-384      |   -6.9%   |     602K  |      2µs  |  ±0.03%  |     507K  |
-|  node:crypto SHA-512      |   -7.3%   |     599K  |      2µs  |  ±0.03%  |     525K  |
-|  Hashery SHA-256          |   -89%    |      69K  |     15µs  |  ±0.10%  |      66K  |
-|  Hashery SHA-384          |   -90%    |      65K  |     16µs  |  ±0.11%  |      62K  |
-|  Hashery SHA-512          |   -91%    |      61K  |     17µs  |  ±0.11%  |      59K  |
-
-In this benchmark it shows the performance gap that happens between web crypto and the standard `node:crypto`. By default `node:crypto` has significant performance natively and doesnt use `async/await` to perform its hash. With caching enabled we start to see the performance become more similar.
+|  DJB2 Sync      |    🥇     |     649K  |      2µs  |  ±0.01%  |     645K  |
+|  FNV1 Sync      |  -0.64%   |     644K  |      2µs  |  ±0.01%  |     635K  |
+|  CRC32 Sync     |   -1.4%   |     639K  |      2µs  |  ±0.02%  |     615K  |
+|  MURMUR Sync    |   -2.3%   |     634K  |      2µs  |  ±0.01%  |     629K  |
+|  CRC32 Async    |   -19%    |     524K  |      2µs  |  ±0.02%  |     514K  |
+|  SHA-384 Async  |   -20%    |     519K  |      2µs  |  ±0.03%  |     481K  |
+|  MURMUR Async   |   -20%    |     518K  |      2µs  |  ±0.02%  |     512K  |
+|  SHA-512 Async  |   -21%    |     513K  |      2µs  |  ±0.03%  |     473K  |
+|  SHA-256 Async  |   -21%    |     513K  |      2µs  |  ±0.03%  |     472K  |
+|  DJB2 Async     |   -21%    |     512K  |      2µs  |  ±0.02%  |     504K  |
+|  FNV1 Async     |   -22%    |     508K  |      2µs  |  ±0.02%  |     501K  |
 
 ## toNumber
 |      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
 |-----------------|:---------:|----------:|----------:|:--------:|----------:|
-|  FNV1 Sync      |    🥇     |     601K  |      2µs  |  ±0.01%  |     598K  |
-|  DJB2 Sync      |   -0.4%   |     599K  |      2µs  |  ±0.01%  |     589K  |
-|  MURMUR Sync    |   -0.4%   |     599K  |      2µs  |  ±0.01%  |     596K  |
-|  CRC32 Sync     |   -1.4%   |     593K  |      2µs  |  ±0.02%  |     584K  |
-|  MURMUR Async   |   -24%    |     457K  |      2µs  |  ±0.02%  |     451K  |
-|  FNV1 Async     |   -25%    |     453K  |      2µs  |  ±0.02%  |     445K  |
-|  DJB2 Async     |   -25%    |     452K  |      2µs  |  ±0.02%  |     435K  |
-|  CRC32 Async    |   -26%    |     444K  |      2µs  |  ±0.03%  |     413K  |
-|  SHA-384 Async  |   -27%    |     437K  |      2µs  |  ±0.03%  |     404K  |
-|  SHA-512 Async  |   -27%    |     436K  |      2µs  |  ±0.03%  |     403K  |
-|  SHA-256 Async  |   -29%    |     429K  |      3µs  |  ±0.04%  |     398K  |
+|  CRC32 Sync     |    🥇     |     601K  |      2µs  |  ±0.01%  |     591K  |
+|  DJB2 Sync      |  -0.51%   |     598K  |      2µs  |  ±0.01%  |     588K  |
+|  MURMUR Sync    |   -1.4%   |     593K  |      2µs  |  ±0.02%  |     582K  |
+|  FNV1 Sync      |    -2%    |     589K  |      2µs  |  ±0.01%  |     583K  |
+|  CRC32 Async    |   -24%    |     457K  |      2µs  |  ±0.02%  |     446K  |
+|  DJB2 Async     |   -25%    |     449K  |      2µs  |  ±0.02%  |     441K  |
+|  MURMUR Async   |   -25%    |     448K  |      2µs  |  ±0.02%  |     434K  |
+|  SHA-512 Async  |   -27%    |     439K  |      2µs  |  ±0.03%  |     404K  |
+|  SHA-384 Async  |   -27%    |     437K  |      2µs  |  ±0.03%  |     406K  |
+|  SHA-256 Async  |   -28%    |     433K  |      2µs  |  ±0.03%  |     404K  |
+|  FNV1 Async     |   -35%    |     392K  |      3µs  |  ±0.08%  |     296K  |
 
-## toNumber without Caching
+## Hashery vs Others
+|           name            |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
+|---------------------------|:---------:|----------:|----------:|:--------:|----------:|
+|  node:crypto SHA-256      |    🥇     |     529K  |      2µs  |  ±0.03%  |     470K  |
+|  Hashery SHA-512 (Cache)  |   -3.7%   |     509K  |      2µs  |  ±0.03%  |     473K  |
+|  Hashery SHA-384 (Cache)  |   -4.7%   |     505K  |      2µs  |  ±0.03%  |     471K  |
+|  Hashery SHA-256 (Cache)  |   -4.7%   |     504K  |      2µs  |  ±0.03%  |     471K  |
+|  node:crypto SHA-512      |    -5%    |     502K  |      2µs  |  ±0.02%  |     471K  |
+|  node:crypto SHA-384      |   -5.5%   |     500K  |      2µs  |  ±0.02%  |     489K  |
+|  object-hash SHA1         |   -87%    |      71K  |     14µs  |  ±0.04%  |      70K  |
+|  object-hash SHA256       |   -87%    |      70K  |     15µs  |  ±0.04%  |      69K  |
+|  Hashery SHA-256          |   -88%    |      63K  |     16µs  |  ±0.08%  |      61K  |
+|  Hashery SHA-384          |   -89%    |      60K  |     17µs  |  ±0.08%  |      58K  |
+|  Hashery SHA-512          |   -89%    |      56K  |     19µs  |  ±0.09%  |      54K  |
+
+In this benchmark it shows the performance comparison between Hashery, `node:crypto`, and the `object-hash` package. By default `node:crypto` has significant performance natively and doesnt use `async/await` to perform its hash. With caching enabled we start to see the performance become more similar. The `object-hash` package is included for comparison as a popular alternative.
+
+## toNumber
 |      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
 |-----------------|:---------:|----------:|----------:|:--------:|----------:|
-|  DJB2 Sync      |    🥇     |     451K  |      2µs  |  ±0.03%  |     444K  |
-|  MURMUR Sync    |   -3.2%   |     437K  |      2µs  |  ±0.03%  |     426K  |
-|  FNV1 Sync      |   -16%    |     377K  |      3µs  |  ±0.03%  |     372K  |
-|  DJB2 Async     |   -21%    |     354K  |      3µs  |  ±0.03%  |     346K  |
-|  MURMUR Async   |   -23%    |     348K  |      3µs  |  ±0.03%  |     340K  |
-|  FNV1 Async     |   -31%    |     310K  |      3µs  |  ±0.03%  |     298K  |
-|  CRC32 Sync     |   -37%    |     282K  |      4µs  |  ±0.02%  |     279K  |
-|  CRC32 Async    |   -46%    |     242K  |      4µs  |  ±0.03%  |     239K  |
-|  SHA-256 Async  |   -86%    |      63K  |     16µs  |  ±0.06%  |      62K  |
-|  SHA-512 Async  |   -88%    |      55K  |     18µs  |  ±0.06%  |      54K  |
-|  SHA-384 Async  |   -88%    |      55K  |     22µs  |  ±0.17%  |      45K  |
+|  CRC32 Sync     |    🥇     |     601K  |      2µs  |  ±0.01%  |     594K  |
+|  FNV1 Sync      |  -0.67%   |     597K  |      2µs  |  ±0.01%  |     588K  |
+|  MURMUR Sync    |  -0.76%   |     597K  |      2µs  |  ±0.01%  |     592K  |
+|  DJB2 Sync      |   -1.6%   |     592K  |      2µs  |  ±0.02%  |     576K  |
+|  FNV1 Async     |   -24%    |     456K  |      2µs  |  ±0.02%  |     447K  |
+|  CRC32 Async    |   -25%    |     453K  |      2µs  |  ±0.03%  |     426K  |
+|  DJB2 Async     |   -25%    |     451K  |      2µs  |  ±0.02%  |     440K  |
+|  MURMUR Async   |   -28%    |     433K  |      2µs  |  ±0.03%  |     420K  |
+|  SHA-384 Async  |   -28%    |     432K  |      3µs  |  ±0.03%  |     394K  |
+|  SHA-256 Async  |   -29%    |     425K  |      3µs  |  ±0.03%  |     393K  |
+|  SHA-512 Async  |   -29%    |     425K  |      3µs  |  ±0.04%  |     384K  |
 
 # Code of Conduct and Contributing
 Please use our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines for development and testing. We appreciate your contributions!

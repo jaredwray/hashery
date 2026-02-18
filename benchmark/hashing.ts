@@ -3,7 +3,7 @@ import { Bench } from "tinybench";
 import { faker } from "@faker-js/faker";
 import { Hashery } from "../src/index.js";
 
-const bench = new Bench({ name: "Hashing", iterations: 10_000 });
+const bench = new Bench({ name: "toHash", iterations: 10_000 });
 const hashery = new Hashery();
 
 // Create an array of fake objects before running the benchmark
@@ -48,10 +48,52 @@ bench.add(`MURMUR Async`, async () => {
 bench.add(`MURMUR Sync`, async () => {
 	const hash = hashery.toHashSync(getRandomObject(), { algorithm: 'MURMUR' });
 });
-
 await bench.run();
 
 console.log(`## ${bench.name}`);
 const cli = tinybenchPrinter.toMarkdown(bench);
 console.log(cli);
+console.log("");
+
+const benchNumber = new Bench({ name: "toNumber", iterations: 10_000 });
+
+benchNumber.add(`SHA-256 Async`, async () => {
+	const num = await hashery.toNumber(getRandomObject());
+});
+benchNumber.add(`SHA-384 Async`, async () => {
+	const num = await hashery.toNumber(getRandomObject(), { algorithm: 'SHA-384' });
+});
+benchNumber.add(`SHA-512 Async`, async () => {
+	const num = await hashery.toNumber(getRandomObject(), { algorithm: 'SHA-512' });
+});
+benchNumber.add(`CRC32 Async`, async () => {
+	const num = await hashery.toNumber(getRandomObject(), { algorithm: 'CRC32' });
+});
+benchNumber.add(`CRC32 Sync`, async () => {
+	const num = hashery.toNumberSync(getRandomObject(), { algorithm: 'CRC32' });
+});
+benchNumber.add(`DJB2 Async`, async () => {
+	const num = await hashery.toNumber(getRandomObject(), { algorithm: 'DJB2' });
+});
+benchNumber.add(`DJB2 Sync`, async () => {
+	const num = hashery.toNumberSync(getRandomObject(), { algorithm: 'DJB2' });
+});
+benchNumber.add(`FNV1 Async`, async () => {
+	const num = await hashery.toNumber(getRandomObject(), { algorithm: 'FNV1' });
+});
+benchNumber.add(`FNV1 Sync`, async () => {
+	const num = hashery.toNumberSync(getRandomObject(), { algorithm: 'FNV1' });
+});
+benchNumber.add(`MURMUR Async`, async () => {
+	const num = await hashery.toNumber(getRandomObject(), { algorithm: 'MURMUR' });
+});
+benchNumber.add(`MURMUR Sync`, async () => {
+	const num = hashery.toNumberSync(getRandomObject(), { algorithm: 'MURMUR' });
+});
+
+await benchNumber.run();
+
+console.log(`## ${benchNumber.name}`);
+const cliNumber = tinybenchPrinter.toMarkdown(benchNumber);
+console.log(cliNumber);
 console.log("");
