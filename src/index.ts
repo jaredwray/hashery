@@ -355,13 +355,13 @@ export class Hashery extends Hookified {
 	 * ```
 	 */
 	public toHashSync(data: unknown, options?: HasheryToHashSyncOptions): string {
-		// Before hook - allows modification of input data and algorithm (fires asynchronously)
+		// Before hook - allows modification of input data and algorithm (synchronous/blocking)
 		const context = {
 			data,
 			algorithm: options?.algorithm ?? this._defaultAlgorithmSync,
 			maxLength: options?.maxLength,
 		};
-		this.beforeHook("toHashSync", context);
+		this.hookSync("before:toHashSync", context);
 
 		// Get algorithm from context (may have been modified by hook)
 		const algorithm = context.algorithm;
@@ -427,9 +427,9 @@ export class Hashery extends Hookified {
 			hash = hash.substring(0, options.maxLength);
 		}
 
-		// After hook - allows modification/logging of result (fires asynchronously)
+		// After hook - allows modification/logging of result (synchronous/blocking)
 		const result = { hash, data: context.data, algorithm: context.algorithm };
-		this.afterHook("toHashSync", result);
+		this.hookSync("after:toHashSync", result);
 
 		return result.hash;
 	}

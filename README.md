@@ -284,7 +284,7 @@ Fired before synchronous hashing occurs. This hook receives a context object con
 - `algorithm` - The hash algorithm to use (can be modified)
 - `maxLength` - Optional maximum length for the hash output
 
-**Note:** This hook fires asynchronously (non-blocking) to maintain the synchronous nature of `toHashSync()`. Hook execution happens in the background and won't delay the method's return.
+**Note:** This hook executes synchronously (blocking). Only synchronous hook handlers will run; async handlers are skipped.
 
 #### `after:toHashSync`
 
@@ -293,7 +293,7 @@ Fired after synchronous hashing completes. This hook receives a result object co
 - `data` - The data that was hashed
 - `algorithm` - The algorithm that was used
 
-**Note:** This hook fires asynchronously (non-blocking) to maintain the synchronous nature of `toHashSync()`. Hook execution happens in the background.
+**Note:** This hook executes synchronously (blocking). Only synchronous hook handlers will run; async handlers are skipped.
 
 ## Basic Hook Usage
 
