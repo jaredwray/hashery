@@ -862,15 +862,13 @@ describe("Hashery Sync Methods", () => {
 			const hashery = new Hashery();
 
 			hashery.onHook("after:toHashSync", (result: { hash: string }) => {
-				result.hash = result.hash.toUpperCase();
+				result.hash = "modified-hash";
 			});
 
 			const data = { name: "test" };
 			const hash = hashery.toHashSync(data);
 
-			// Hash should be uppercase
-			expect(hash).toBe(hash.toUpperCase());
-			expect(hash).not.toBe(hash.toLowerCase());
+			expect(hash).toBe("modified-hash");
 		});
 
 		test("should execute multiple hooks in order", () => {
