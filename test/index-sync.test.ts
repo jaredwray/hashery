@@ -45,13 +45,13 @@ describe("Hashery Sync Methods", () => {
 			expect(/^[a-f0-9]+$/.test(hash)).toBe(true);
 		});
 
-		test("should support murmer algorithm", () => {
+		test("should support murmur algorithm", () => {
 			const hashery = new Hashery();
 			const data = { name: "test" };
-			const hash = hashery.toHashSync(data, { algorithm: "murmer" });
+			const hash = hashery.toHashSync(data, { algorithm: "murmur" });
 
 			expect(hash).toBeDefined();
-			expect(hash.length).toBe(8); // murmer produces 8 hex characters
+			expect(hash.length).toBe(8); // murmur produces 8 hex characters
 			expect(/^[a-f0-9]+$/.test(hash)).toBe(true);
 		});
 
@@ -139,16 +139,16 @@ describe("Hashery Sync Methods", () => {
 
 			const djb2Hash = hashery.toHashSync(data, { algorithm: "djb2" });
 			const fnv1Hash = hashery.toHashSync(data, { algorithm: "fnv1" });
-			const murmerHash = hashery.toHashSync(data, { algorithm: "murmer" });
+			const murmurHash = hashery.toHashSync(data, { algorithm: "murmur" });
 			const crc32Hash = hashery.toHashSync(data, { algorithm: "crc32" });
 
 			// All should be different
 			expect(djb2Hash).not.toBe(fnv1Hash);
-			expect(djb2Hash).not.toBe(murmerHash);
+			expect(djb2Hash).not.toBe(murmurHash);
 			expect(djb2Hash).not.toBe(crc32Hash);
-			expect(fnv1Hash).not.toBe(murmerHash);
+			expect(fnv1Hash).not.toBe(murmurHash);
 			expect(fnv1Hash).not.toBe(crc32Hash);
-			expect(murmerHash).not.toBe(crc32Hash);
+			expect(murmurHash).not.toBe(crc32Hash);
 		});
 
 		test("should handle empty objects and arrays", () => {
@@ -528,10 +528,10 @@ describe("Hashery Sync Methods", () => {
 				max,
 				algorithm: "fnv1",
 			});
-			const numMurmer = hashery.toNumberSync(data, {
+			const numMurmur = hashery.toNumberSync(data, {
 				min,
 				max,
-				algorithm: "murmer",
+				algorithm: "murmur",
 			});
 			const numCrc32 = hashery.toNumberSync(data, {
 				min,
@@ -541,11 +541,11 @@ describe("Hashery Sync Methods", () => {
 
 			// Different algorithms should produce different results
 			expect(numDjb2).not.toBe(numFnv1);
-			expect(numDjb2).not.toBe(numMurmer);
+			expect(numDjb2).not.toBe(numMurmur);
 			expect(numDjb2).not.toBe(numCrc32);
 
 			// All should be in range
-			for (const num of [numDjb2, numFnv1, numMurmer, numCrc32]) {
+			for (const num of [numDjb2, numFnv1, numMurmur, numCrc32]) {
 				expect(num).toBeGreaterThanOrEqual(min);
 				expect(num).toBeLessThanOrEqual(max);
 			}

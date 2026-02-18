@@ -38,7 +38,7 @@ describe("Hashery", () => {
 		expect(hashery.providers.providers.has("SHA-384")).toBe(true);
 		expect(hashery.providers.providers.has("SHA-512")).toBe(true);
 		expect(hashery.providers.providers.has("djb2")).toBe(true);
-		expect(hashery.providers.providers.has("murmer")).toBe(true);
+		expect(hashery.providers.providers.has("murmur")).toBe(true);
 	});
 
 	test("should include base providers by default", () => {
@@ -50,7 +50,7 @@ describe("Hashery", () => {
 		expect(hashery.providers.providers.has("SHA-384")).toBe(true);
 		expect(hashery.providers.providers.has("SHA-512")).toBe(true);
 		expect(hashery.providers.providers.has("djb2")).toBe(true);
-		expect(hashery.providers.providers.has("murmer")).toBe(true);
+		expect(hashery.providers.providers.has("murmur")).toBe(true);
 	});
 
 	test("should exclude base providers when includeBase is false", () => {
@@ -100,7 +100,7 @@ describe("Hashery", () => {
 		expect(hashery.providers.providers.has("SHA-384")).toBe(true);
 		expect(hashery.providers.providers.has("SHA-512")).toBe(true);
 		expect(hashery.providers.providers.has("djb2")).toBe(true);
-		expect(hashery.providers.providers.has("murmer")).toBe(true);
+		expect(hashery.providers.providers.has("murmur")).toBe(true);
 	});
 
 	describe("parse property", () => {
@@ -350,8 +350,8 @@ describe("Hashery", () => {
 			const hashery = new Hashery();
 			expect(hashery.defaultAlgorithmSync).toBe("djb2");
 
-			hashery.defaultAlgorithmSync = "murmer";
-			expect(hashery.defaultAlgorithmSync).toBe("murmer");
+			hashery.defaultAlgorithmSync = "murmur";
+			expect(hashery.defaultAlgorithmSync).toBe("murmur");
 		});
 
 		test("should allow runtime change of defaultAlgorithmSync", () => {
@@ -1119,7 +1119,7 @@ describe("Hashery", () => {
 			expect(names).toContain("SHA-512");
 			expect(names).toContain("djb2");
 			expect(names).toContain("fnv1");
-			expect(names).toContain("murmer");
+			expect(names).toContain("murmur");
 		});
 
 		test("should return empty array when no providers loaded", () => {

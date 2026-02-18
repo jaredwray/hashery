@@ -132,7 +132,7 @@ export type HasheryToHashOptions = {
 	/**
 	 * The hash algorithm to use.
 	 * Defaults to 'SHA-256' if not specified.
-	 * Supported algorithms include: 'SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmer', 'crc32'
+	 * Supported algorithms include: 'SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmur', 'crc32'
 	 */
 	algorithm?: HashAlgorithm | (string & {});
 
@@ -171,7 +171,7 @@ export type HasheryToNumberOptions = {
 	/**
 	 * The hash algorithm to use.
 	 * Defaults to 'SHA-256' if not specified.
-	 * Supported algorithms include: 'SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmer', 'crc32'
+	 * Supported algorithms include: 'SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmur', 'crc32'
 	 */
 	algorithm?: HashAlgorithm | (string & {});
 
@@ -230,7 +230,7 @@ export type HasheryToHashSyncOptions = {
 	/**
 	 * The hash algorithm to use.
 	 * Defaults to 'djb2' if not specified.
-	 * Supported synchronous algorithms include: 'djb2', 'fnv1', 'murmer', 'crc32'
+	 * Supported synchronous algorithms include: 'djb2', 'fnv1', 'murmur', 'crc32'
 	 * Note: WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported in sync mode.
 	 */
 	algorithm?: HashAlgorithm | (string & {});
@@ -270,7 +270,7 @@ export type HasheryToNumberSyncOptions = {
 	/**
 	 * The hash algorithm to use.
 	 * Defaults to 'djb2' if not specified.
-	 * Supported synchronous algorithms include: 'djb2', 'fnv1', 'murmer', 'crc32'
+	 * Supported synchronous algorithms include: 'djb2', 'fnv1', 'murmur', 'crc32'
 	 * Note: WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported in sync mode.
 	 */
 	algorithm?: HashAlgorithm | (string & {});
@@ -342,7 +342,7 @@ export type HashAlgorithm =
 	| "SHA-512"
 	| "djb2"
 	| "fnv1"
-	| "murmer"
+	| "murmur"
 	| "crc32";
 
 export type HashProvider = {

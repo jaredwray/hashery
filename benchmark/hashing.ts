@@ -42,11 +42,11 @@ bench.add(`FNV1 Async`, async () => {
 bench.add(`FNV1 Sync`, async () => {
 	const hash = hashery.toHashSync(getRandomObject(), { algorithm: 'FNV1' });
 });
-bench.add(`MURMER Async`, async () => {
-	const hash = await hashery.toHash(getRandomObject(), { algorithm: 'MURMER' });
+bench.add(`MURMUR Async`, async () => {
+	const hash = await hashery.toHash(getRandomObject(), { algorithm: 'MURMUR' });
 });
-bench.add(`MURMER Sync`, async () => {
-	const hash = hashery.toHashSync(getRandomObject(), { algorithm: 'MURMER' });
+bench.add(`MURMUR Sync`, async () => {
+	const hash = hashery.toHashSync(getRandomObject(), { algorithm: 'MURMUR' });
 });
 
 await bench.run();
