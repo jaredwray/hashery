@@ -773,4 +773,147 @@ describe("Hashery Sync Methods", () => {
 			expect(numDefault).toBe(numExplicit16);
 		});
 	});
+
+	describe("toHashSync hooks", () => {
+		test("should fire before:toHashSync hook and receive context", () => {
+			const hashery = new Hashery();
+			const hookData: Array<{ data: unknown; algorithm: string }> = [];
+
+			hashery.onHook(
+				"before:toHashSync",
+				(context: { data: unknown; algorithm: string }) => {
+					hookData.push({ data: context.data, algorithm: context.algorithm });
+				},
+			);
+
+			const data = { name: "test", value: 42 };
+			hashery.toHashSync(data, { algorithm: "djb2" });
+
+			expect(hookData.length).toBe(1);
+			expect(hookData[0].data).toEqual(data);
+			expect(hookData[0].algorithm).toBe("djb2");
+		});
+
+		test("should fire after:toHashSync hook and receive result", () => {
+			const hashery = new Hashery();
+			const hookData: Array<{
+				hash: string;
+				data: unknown;
+				algorithm: string;
+			}> = [];
+
+			hashery.onHook(
+				"after:toHashSync",
+				(result: { hash: string; data: unknown; algorithm: string }) => {
+					hookData.push({
+						hash: result.hash,
+						data: result.data,
+						algorithm: result.algorithm,
+					});
+				},
+			);
+
+			const data = { name: "test", value: 42 };
+			const hash = hashery.toHashSync(data, { algorithm: "djb2" });
+
+			expect(hookData.length).toBe(1);
+			expect(hookData[0].hash).toBe(hash);
+			expect(hookData[0].data).toEqual(data);
+			expect(hookData[0].algorithm).toBe("djb2");
+		});
+
+		test("should allow before:toHashSync hook to modify input data (blocking)", () => {
+			const hashery = new Hashery();
+
+			hashery.onHook("before:toHashSync", (context: { data: unknown }) => {
+				context.data = { modified: true, original: context.data };
+			});
+
+			const data = { name: "test" };
+			const hash1 = hashery.toHashSync(data);
+
+			// Hash without the hook should be different
+			const hashery2 = new Hashery();
+			const hash2 = hashery2.toHashSync(data);
+
+			expect(hash1).not.toBe(hash2);
+		});
+
+		test("should allow before:toHashSync hook to modify algorithm (blocking)", () => {
+			const hashery = new Hashery();
+
+			hashery.onHook("before:toHashSync", (context: { algorithm: string }) => {
+				context.algorithm = "fnv1";
+			});
+
+			const data = { name: "test" };
+			const hash = hashery.toHashSync(data, { algorithm: "djb2" });
+
+			// Should match fnv1 hash, not djb2
+			const hashery2 = new Hashery();
+			const fnv1Hash = hashery2.toHashSync(data, { algorithm: "fnv1" });
+			const djb2Hash = hashery2.toHashSync(data, { algorithm: "djb2" });
+
+			expect(hash).toBe(fnv1Hash);
+			expect(hash).not.toBe(djb2Hash);
+		});
+
+		test("should allow after:toHashSync hook to modify result hash (blocking)", () => {
+			const hashery = new Hashery();
+
+			hashery.onHook("after:toHashSync", (result: { hash: string }) => {
+				result.hash = "modified-hash";
+			});
+
+			const data = { name: "test" };
+			const hash = hashery.toHashSync(data);
+
+			expect(hash).toBe("modified-hash");
+		});
+
+		test("should execute multiple hooks in order", () => {
+			const hashery = new Hashery();
+			const executionOrder: string[] = [];
+
+			hashery.onHook("before:toHashSync", (_context: unknown) => {
+				executionOrder.push("before1");
+			});
+
+			hashery.onHook("before:toHashSync", (_context: unknown) => {
+				executionOrder.push("before2");
+			});
+
+			hashery.onHook("after:toHashSync", (_result: unknown) => {
+				executionOrder.push("after1");
+			});
+
+			hashery.onHook("after:toHashSync", (_result: unknown) => {
+				executionOrder.push("after2");
+			});
+
+			hashery.toHashSync({ name: "test" });
+
+			expect(executionOrder).toEqual([
+				"before1",
+				"before2",
+				"after1",
+				"after2",
+			]);
+		});
+
+		test("should run after:toHashSync hook on cache hits", () => {
+			const hashery = new Hashery({ cache: { enabled: true } });
+
+			hashery.onHook("after:toHashSync", (result: { hash: string }) => {
+				result.hash = "modified-hash";
+			});
+
+			const data = { name: "test" };
+			const hash1 = hashery.toHashSync(data);
+			const hash2 = hashery.toHashSync(data); // cache hit
+
+			expect(hash1).toBe("modified-hash");
+			expect(hash2).toBe("modified-hash");
+		});
+	});
 });

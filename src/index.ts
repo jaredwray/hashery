@@ -219,12 +219,21 @@ export class Hashery extends Hookified {
 		if (this._cache.enabled) {
 			const cached = this._cache.get(cacheKey);
 			if (cached !== undefined) {
+				let cachedHash = cached;
 				// Apply maxLength if specified
-				if (options?.maxLength && cached.length > options.maxLength) {
-					return cached.substring(0, options.maxLength);
+				if (options?.maxLength && cachedHash.length > options.maxLength) {
+					cachedHash = cachedHash.substring(0, options.maxLength);
 				}
 
-				return cached;
+				// After hook - run even on cache hits for consistent behavior
+				const result = {
+					hash: cachedHash,
+					data: context.data,
+					algorithm: context.algorithm,
+				};
+				await this.afterHook("toHash", result);
+
+				return result.hash;
 			}
 		}
 
@@ -355,13 +364,13 @@ export class Hashery extends Hookified {
 	 * ```
 	 */
 	public toHashSync(data: unknown, options?: HasheryToHashSyncOptions): string {
-		// Before hook - allows modification of input data and algorithm (fires asynchronously)
+		// Before hook - allows modification of input data and algorithm (synchronous/blocking)
 		const context = {
 			data,
 			algorithm: options?.algorithm ?? this._defaultAlgorithmSync,
 			maxLength: options?.maxLength,
 		};
-		this.beforeHook("toHashSync", context);
+		this.hookSync("before:toHashSync", context);
 
 		// Get algorithm from context (may have been modified by hook)
 		const algorithm = context.algorithm;
@@ -374,12 +383,21 @@ export class Hashery extends Hookified {
 		if (this._cache.enabled) {
 			const cached = this._cache.get(cacheKey);
 			if (cached !== undefined) {
+				let cachedHash = cached;
 				// Apply maxLength if specified
-				if (options?.maxLength && cached.length > options.maxLength) {
-					return cached.substring(0, options.maxLength);
+				if (options?.maxLength && cachedHash.length > options.maxLength) {
+					cachedHash = cachedHash.substring(0, options.maxLength);
 				}
 
-				return cached;
+				// After hook - run even on cache hits for consistent behavior
+				const result = {
+					hash: cachedHash,
+					data: context.data,
+					algorithm,
+				};
+				this.hookSync("after:toHashSync", result);
+
+				return result.hash;
 			}
 		}
 
@@ -427,9 +445,9 @@ export class Hashery extends Hookified {
 			hash = hash.substring(0, options.maxLength);
 		}
 
-		// After hook - allows modification/logging of result (fires asynchronously)
+		// After hook - allows modification/logging of result (synchronous/blocking)
 		const result = { hash, data: context.data, algorithm: context.algorithm };
-		this.afterHook("toHashSync", result);
+		this.hookSync("after:toHashSync", result);
 
 		return result.hash;
 	}

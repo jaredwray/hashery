@@ -1499,6 +1499,21 @@ describe("Hashery", () => {
 			expect(results[2]).toEqual({ algorithm: "SHA-512", hashLength: 128 });
 		});
 
+		test("should run after:toHash hook on cache hits", async () => {
+			const hashery = new Hashery({ cache: { enabled: true } });
+
+			hashery.onHook("after:toHash", async (result: { hash: string }) => {
+				result.hash = "modified-hash";
+			});
+
+			const data = { name: "test" };
+			const hash1 = await hashery.toHash(data);
+			const hash2 = await hashery.toHash(data); // cache hit
+
+			expect(hash1).toBe("modified-hash");
+			expect(hash2).toBe("modified-hash");
+		});
+
 		test("should allow removing hooks", async () => {
 			const hashery = new Hashery();
 			const hookCalls: string[] = [];
