@@ -151,8 +151,10 @@ const fnv1Hash = fnv1.toHashSync(data);
 
 // Use Murmur directly (with optional seed)
 const murmur = new Murmur(); // default seed: 0
-const murmurSeeded = new Murmur(42); // custom seed
 const murmurHash = murmur.toHashSync(data);
+
+const murmurSeeded = new Murmur(42); // custom seed
+const murmurSeededHash = murmurSeeded.toHashSync(data);
 
 // Use CRC32 directly
 const crc = new CRC();
