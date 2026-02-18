@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { tinybenchPrinter } from "@monstermann/tinybench-pretty-printer";
 import { Bench } from "tinybench";
 import { faker } from "@faker-js/faker";
+import objectHash from "object-hash";
 import { Hashery } from "../src/index.js";
 
 // Helper function to hash objects using node:crypto
@@ -10,7 +11,7 @@ const nodeHash = (data: unknown, algorithm: string): string => {
 	return createHash(algorithm).update(serialized).digest("hex");
 };
 
-const bench = new Bench({ name: "Hashery Web Crypto vs Node Crypto", iterations: 10_000 });
+const bench = new Bench({ name: "Hashery vs Others", iterations: 10_000 });
 const hashery = new Hashery({ cache: { enabled: false } });
 const hasheryCached = new Hashery();
 
@@ -54,6 +55,14 @@ bench.add(`Hashery SHA-512 (Cache)`, async () => {
 });
 bench.add(`node:crypto SHA-512`, () => {
 	nodeHash(getRandomObject(), "sha512");
+});
+
+// object-hash comparison
+bench.add(`object-hash SHA1`, () => {
+	objectHash(getRandomObject());
+});
+bench.add(`object-hash SHA256`, () => {
+	objectHash(getRandomObject(), { algorithm: "sha256" });
 });
 
 await bench.run();
