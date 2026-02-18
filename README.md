@@ -31,6 +31,7 @@ Browser / Nodejs Compatible Object Hashing
   - [Basic Hashing](#basic-hashing)
   - [Synchronous Hashing](#synchronous-hashing)
   - [Using Different Hash Algorithms](#using-different-hash-algorithms)
+  - [Using Providers Directly](#using-providers-directly)
   - [Setting a Default Algorithm](#setting-a-default-algorithm)
   - [Truncating Hash Output](#truncating-hash-output)
   - [Hash to Number (Great for Slot Management)](#hash-to-number-great-for-slot-management)
@@ -129,6 +130,81 @@ const hash512 = await hashery.toHash({ data: 'example' }, { algorithm: 'SHA-512'
 
 // Use non-crypto hash algorithms
 const fastHash = await hashery.toHash({ data: 'example' }, { algorithm: 'djb2' });
+```
+
+## Using Providers Directly
+
+You can import and use the hash provider classes directly without the `Hashery` wrapper. This gives you direct access to the underlying hash algorithms.
+
+```typescript
+import { DJB2, FNV1, Murmur, CRC, WebCrypto } from 'hashery';
+
+// Use DJB2 directly
+const djb2 = new DJB2();
+const encoder = new TextEncoder();
+const data = encoder.encode('hello world');
+const hash = djb2.toHashSync(data); // "7c9dc9e0"
+
+// Use FNV1 directly
+const fnv1 = new FNV1();
+const fnv1Hash = fnv1.toHashSync(data);
+
+// Use Murmur directly (with optional seed)
+const murmur = new Murmur(); // default seed: 0
+const murmurSeeded = new Murmur(42); // custom seed
+const murmurHash = murmur.toHashSync(data);
+
+// Use CRC32 directly
+const crc = new CRC();
+const crcHash = crc.toHashSync(data);
+
+// Use WebCrypto directly (async only)
+const sha256 = new WebCrypto({ algorithm: 'SHA-256' });
+const sha512 = new WebCrypto({ algorithm: 'SHA-512' });
+const cryptoHash = await sha256.toHash(data);
+```
+
+### Managing Providers with HashProviders
+
+You can also import the `HashProviders` class to manage a collection of providers:
+
+```typescript
+import { HashProviders, DJB2, FNV1, Murmur } from 'hashery';
+
+const providers = new HashProviders();
+providers.add(new DJB2());
+providers.add(new FNV1());
+providers.add(new Murmur());
+
+// Get a provider by name (supports fuzzy matching)
+const djb2Provider = providers.get('djb2');
+const alsoWorks = providers.get('DJB2'); // case-insensitive
+
+// List all provider names
+console.log(providers.names); // ['djb2', 'fnv1', 'murmur']
+```
+
+### Creating Custom Providers
+
+Implement the `HashProvider` interface to create your own providers:
+
+```typescript
+import { Hashery, type HashProvider } from 'hashery';
+
+const myProvider: HashProvider = {
+  name: 'my-hash',
+  async toHash(data: BufferSource): Promise<string> {
+    // Your hashing logic here
+    return 'custom-hash-value';
+  },
+  toHashSync(data: BufferSource): string {
+    // Optional: synchronous version
+    return 'custom-hash-value';
+  }
+};
+
+const hashery = new Hashery({ providers: [myProvider] });
+const hash = await hashery.toHash({ data: 'test' }, { algorithm: 'my-hash' });
 ```
 
 ## Setting a Default Algorithm

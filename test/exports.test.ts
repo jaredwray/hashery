@@ -130,6 +130,101 @@ describe("Package Exports", () => {
 		});
 	});
 
+	describe("Provider Exports (ESM)", () => {
+		test("should export DJB2 provider class", async () => {
+			const { DJB2 } = await import("hashery");
+			expect(DJB2).toBeDefined();
+			const djb2 = new DJB2();
+			expect(djb2.name).toBe("djb2");
+			const data = new TextEncoder().encode("hello");
+			const hash = djb2.toHashSync(data);
+			expect(typeof hash).toBe("string");
+			expect(hash.length).toBe(8);
+		});
+
+		test("should export FNV1 provider class", async () => {
+			const { FNV1 } = await import("hashery");
+			expect(FNV1).toBeDefined();
+			const fnv1 = new FNV1();
+			expect(fnv1.name).toBe("fnv1");
+			const data = new TextEncoder().encode("hello");
+			const hash = fnv1.toHashSync(data);
+			expect(typeof hash).toBe("string");
+			expect(hash.length).toBe(8);
+		});
+
+		test("should export Murmur provider class", async () => {
+			const { Murmur } = await import("hashery");
+			expect(Murmur).toBeDefined();
+			const murmur = new Murmur();
+			expect(murmur.name).toBe("murmur");
+			const data = new TextEncoder().encode("hello");
+			const hash = murmur.toHashSync(data);
+			expect(typeof hash).toBe("string");
+			expect(hash.length).toBe(8);
+		});
+
+		test("should export CRC provider class", async () => {
+			const { CRC } = await import("hashery");
+			expect(CRC).toBeDefined();
+			const crc = new CRC();
+			expect(crc.name).toBe("crc32");
+			const data = new TextEncoder().encode("hello");
+			const hash = crc.toHashSync(data);
+			expect(typeof hash).toBe("string");
+			expect(hash.length).toBe(8);
+		});
+
+		test("should export WebCrypto provider class", async () => {
+			const { WebCrypto } = await import("hashery");
+			expect(WebCrypto).toBeDefined();
+			const webCrypto = new WebCrypto({ algorithm: "SHA-256" });
+			expect(webCrypto.name).toBe("SHA-256");
+			const data = new TextEncoder().encode("hello");
+			const hash = await webCrypto.toHash(data);
+			expect(typeof hash).toBe("string");
+			expect(hash.length).toBe(64);
+		});
+
+		test("should export HashProviders class", async () => {
+			const { HashProviders, DJB2, FNV1 } = await import("hashery");
+			expect(HashProviders).toBeDefined();
+			const providers = new HashProviders();
+			providers.add(new DJB2());
+			providers.add(new FNV1());
+			expect(providers.names).toEqual(["djb2", "fnv1"]);
+			expect(providers.get("djb2")).toBeDefined();
+		});
+	});
+
+	describe("Provider Exports (CommonJS)", () => {
+		test("should require provider classes", () => {
+			const {
+				DJB2,
+				FNV1,
+				Murmur,
+				CRC,
+				WebCrypto,
+				HashProviders,
+			} = require("hashery");
+			expect(DJB2).toBeDefined();
+			expect(FNV1).toBeDefined();
+			expect(Murmur).toBeDefined();
+			expect(CRC).toBeDefined();
+			expect(WebCrypto).toBeDefined();
+			expect(HashProviders).toBeDefined();
+		});
+
+		test("should create provider instances and hash data via require", () => {
+			const { DJB2 } = require("hashery");
+			const djb2 = new DJB2();
+			const data = new TextEncoder().encode("hello");
+			const hash = djb2.toHashSync(data);
+			expect(typeof hash).toBe("string");
+			expect(hash.length).toBe(8);
+		});
+	});
+
 	describe("Export Consistency", () => {
 		test("main and browser exports should produce same hash", async () => {
 			const { Hashery: MainHashery } = await import("hashery");
