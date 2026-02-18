@@ -7,7 +7,6 @@ import { FNV1 } from "./providers/fnv1.js";
 import { Murmur } from "./providers/murmur.js";
 import { HashProviders } from "./providers.js";
 import type {
-	HashAlgorithm,
 	HasheryLoadProviderOptions,
 	HasheryOptions,
 	HasheryToHashOptions,
@@ -537,12 +536,29 @@ export class Hashery extends Hookified {
 	}
 }
 
+// Types
 export type { CacheOptions } from "./cache.js";
+// Classes
 export { Cache } from "./cache.js";
+export { CRC } from "./providers/crc.js";
+export type { WebCryptoOptions } from "./providers/crypto.js";
+export { WebCrypto } from "./providers/crypto.js";
+export { DJB2 } from "./providers/djb2.js";
+export { FNV1 } from "./providers/fnv1.js";
+export { Murmur } from "./providers/murmur.js";
+export { HashProviders } from "./providers.js";
 export type {
 	HashAlgorithm,
-	WebCryptoHashAlgorithm,
+	HasheryLoadProviderOptions,
 	HasheryOptions,
+	HasheryToHashOptions,
+	HasheryToHashSyncOptions,
+	HasheryToNumberOptions,
+	HasheryToNumberSyncOptions,
+	HashProvider,
+	HashProvidersGetOptions,
+	HashProvidersOptions,
 	ParseFn,
 	StringifyFn,
-};
+	WebCryptoHashAlgorithm,
+} from "./types.js";
