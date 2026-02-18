@@ -900,5 +900,20 @@ describe("Hashery Sync Methods", () => {
 				"after2",
 			]);
 		});
+
+		test("should run after:toHashSync hook on cache hits", () => {
+			const hashery = new Hashery({ cache: { enabled: true } });
+
+			hashery.onHook("after:toHashSync", (result: { hash: string }) => {
+				result.hash = "modified-hash";
+			});
+
+			const data = { name: "test" };
+			const hash1 = hashery.toHashSync(data);
+			const hash2 = hashery.toHashSync(data); // cache hit
+
+			expect(hash1).toBe("modified-hash");
+			expect(hash2).toBe("modified-hash");
+		});
 	});
 });
