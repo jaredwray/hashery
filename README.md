@@ -369,24 +369,6 @@ const hash = await hashery.toHash({ data: 'example' });
 console.log(hash); // Hash will be in uppercase
 ```
 
-## Implementing Caching with Hooks
-
-Use hooks to implement a caching layer:
-
-```typescript
-const hashery = new Hashery();
-const cache = new Map<string, string>();
-
-// Store hashes in cache after generation
-hashery.onHook('after:toHash', async (result) => {
-  const cacheKey = `${result.algorithm}:${JSON.stringify(result.data)}`;
-  cache.set(cacheKey, result.hash);
-});
-
-// Later you can check the cache before hashing
-// (Note: You would need to implement cache lookup logic in your application)
-```
-
 ## Logging and Debugging
 
 Hooks are perfect for logging and debugging:
@@ -602,13 +584,7 @@ const hash = await hashery2.toHash({ data: 'example' }); // Returns hash success
 
 # Caching
 
-Hashery includes a built-in FIFO (First In, First Out) cache that stores computed hash values. When the same data is hashed with the same algorithm, the cached result is returned instead of recomputing.
-
-- **Enabled by Default** - Caching works out of the box
-- **FIFO Eviction** - Oldest entries removed when `maxSize` is reached (default: 4000)
-- **Shared Cache** - Both sync and async methods share the same cache
-
-## Configuration
+Hashery includes a built-in FIFO (First In, First Out) cache that stores computed hash values. When the same data is hashed with the same algorithm, the cached result is returned instead of recomputing. Caching is enabled by default with a max size of 4000 entries.
 
 ```typescript
 import { Hashery } from 'hashery';
@@ -616,37 +592,18 @@ import { Hashery } from 'hashery';
 // Default: cache enabled with maxSize of 4000
 const hashery = new Hashery();
 
-// Custom configuration
-const hashery2 = new Hashery({
-  cache: {
-    enabled: true,   // default: true
-    maxSize: 10000   // default: 4000
-  }
-});
+// Or customize cache settings
+const hashery2 = new Hashery({ cache: { enabled: true, maxSize: 10000 } });
 
-// Disable cache
-const hashery3 = new Hashery({ cache: { enabled: false } });
+// Hashing results are automatically cached
+const hash1 = await hashery.toHash({ user: 'john' }); // computed
+const hash2 = await hashery.toHash({ user: 'john' }); // served from cache
 
-// Toggle at runtime
-hashery.cache.enabled = false;
-hashery.cache.enabled = true;
+// Cache management
+hashery.cache.size;           // number of cached entries
+hashery.cache.clear();        // clear all cached entries
+hashery.cache.enabled = false; // disable caching at runtime
 ```
-
-## Cache Properties and Methods
-
-```typescript
-const hashery = new Hashery();
-
-hashery.cache.enabled;  // boolean - is caching enabled
-hashery.cache.maxSize;  // number - maximum entries (default: 4000)
-hashery.cache.size;     // number - current cached entries
-hashery.cache.store;    // Map<string, string> - underlying store
-hashery.cache.clear();  // Clear all cached entries
-```
-
-## Memory Considerations
-
-The default `maxSize` of 4000 provides a good balance (~1-2 MB memory). JavaScript Maps can hold up to 2^24 (~16.7 million) entries, but practical limits depend on available memory. For most use cases, 4000-10000 entries is sufficient.
 
 # Web Crypto
 
