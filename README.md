@@ -1350,6 +1350,36 @@ Caching is enabled by default and is a simple FIFO with default max keys at `400
 
 In this benchmark it shows the performance gap that happens between web crypto and the standard `node:crypto`. By default `node:crypto` has significant performance natively and doesnt use `async/await` to perform its hash. With caching enabled we start to see the performance become more similar.
 
+## toNumber
+|      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
+|-----------------|:---------:|----------:|----------:|:--------:|----------:|
+|  FNV1 Sync      |    🥇     |     601K  |      2µs  |  ±0.01%  |     598K  |
+|  DJB2 Sync      |   -0.4%   |     599K  |      2µs  |  ±0.01%  |     589K  |
+|  MURMUR Sync    |   -0.4%   |     599K  |      2µs  |  ±0.01%  |     596K  |
+|  CRC32 Sync     |   -1.4%   |     593K  |      2µs  |  ±0.02%  |     584K  |
+|  MURMUR Async   |   -24%    |     457K  |      2µs  |  ±0.02%  |     451K  |
+|  FNV1 Async     |   -25%    |     453K  |      2µs  |  ±0.02%  |     445K  |
+|  DJB2 Async     |   -25%    |     452K  |      2µs  |  ±0.02%  |     435K  |
+|  CRC32 Async    |   -26%    |     444K  |      2µs  |  ±0.03%  |     413K  |
+|  SHA-384 Async  |   -27%    |     437K  |      2µs  |  ±0.03%  |     404K  |
+|  SHA-512 Async  |   -27%    |     436K  |      2µs  |  ±0.03%  |     403K  |
+|  SHA-256 Async  |   -29%    |     429K  |      3µs  |  ±0.04%  |     398K  |
+
+## toNumber without Caching
+|      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
+|-----------------|:---------:|----------:|----------:|:--------:|----------:|
+|  DJB2 Sync      |    🥇     |     451K  |      2µs  |  ±0.03%  |     444K  |
+|  MURMUR Sync    |   -3.2%   |     437K  |      2µs  |  ±0.03%  |     426K  |
+|  FNV1 Sync      |   -16%    |     377K  |      3µs  |  ±0.03%  |     372K  |
+|  DJB2 Async     |   -21%    |     354K  |      3µs  |  ±0.03%  |     346K  |
+|  MURMUR Async   |   -23%    |     348K  |      3µs  |  ±0.03%  |     340K  |
+|  FNV1 Async     |   -31%    |     310K  |      3µs  |  ±0.03%  |     298K  |
+|  CRC32 Sync     |   -37%    |     282K  |      4µs  |  ±0.02%  |     279K  |
+|  CRC32 Async    |   -46%    |     242K  |      4µs  |  ±0.03%  |     239K  |
+|  SHA-256 Async  |   -86%    |      63K  |     16µs  |  ±0.06%  |      62K  |
+|  SHA-512 Async  |   -88%    |      55K  |     18µs  |  ±0.06%  |      54K  |
+|  SHA-384 Async  |   -88%    |      55K  |     22µs  |  ±0.17%  |      45K  |
+
 # Code of Conduct and Contributing
 Please use our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines for development and testing. We appreciate your contributions!
 
