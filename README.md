@@ -13,7 +13,7 @@ Browser / Nodejs Compatible Object Hashing
 # Features
 - **Simple and Easy Object Hashing** - Object hashing based on multiple algorithms.
 - **Browser and Node.js Compatible** - Built using `WebCrypto` API for both environments
-- **Multiple Hash Algorithms** - Supports SHA-256, SHA-384, SHA-512 (WebCrypto), plus DJB2, FNV1, Murmer, and CRC32
+- **Multiple Hash Algorithms** - Supports SHA-256, SHA-384, SHA-512 (WebCrypto), plus DJB2, FNV1, Murmur, and CRC32
 - **Synchronous & Asynchronous** - Both sync and async methods for flexible integration
 - **Custom Serialization** - Easily replace JSON `parse` and `stringify` with custom functions
 - **Deterministic Hashing** - Generate consistent hashes for the same input
@@ -58,6 +58,8 @@ Browser / Nodejs Compatible Object Hashing
   - [toNumber(data, options?)](#tonumberdata-options)
   - [toNumberSync(data, options?)](#tonumbersyncdata-options)
   - [loadProviders(providers?, options?)](#loadprovidersproviders-options)
+- [API - Types](#api---types)
+  - [HashAlgorithm](#hashalgorithm)
 - [Benchmarks](#benchmarks)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
 - [License and Copyright](#license-and-copyright)
@@ -91,7 +93,7 @@ const arrayHash = await hashery.toHash([1, 2, 3, 4, 5]);
 
 ## Synchronous Hashing
 
-For performance-critical applications or when you need to avoid async/await, use the synchronous hashing methods. These work with non-cryptographic hash algorithms (djb2, fnv1, murmer, crc32) and are significantly faster than WebCrypto methods.
+For performance-critical applications or when you need to avoid async/await, use the synchronous hashing methods. These work with non-cryptographic hash algorithms (djb2, fnv1, murmur, crc32) and are significantly faster than WebCrypto methods.
 
 ```typescript
 import { Hashery } from 'hashery';
@@ -104,7 +106,7 @@ console.log(hash); // djb2 hash string (8 hex characters)
 
 // Sync with specific algorithm
 const fnv1Hash = hashery.toHashSync({ data: 'example' }, { algorithm: 'fnv1' });
-const murmerHash = hashery.toHashSync({ data: 'example' }, { algorithm: 'murmer' });
+const murmurHash = hashery.toHashSync({ data: 'example' }, { algorithm: 'murmur' });
 const crcHash = hashery.toHashSync({ data: 'example' }, { algorithm: 'crc32' });
 
 // Note: WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are NOT supported in sync mode
@@ -215,7 +217,7 @@ const serverIndex = hashery.toNumberSync(
 // Sharding assignment
 const shardId = hashery.toNumberSync(
   { customerId: 'cust_xyz' },
-  { min: 0, max: 15, algorithm: 'murmer' } // 16 shards
+  { min: 0, max: 15, algorithm: 'murmur' } // 16 shards
 );
 
 // Set default sync algorithm for all sync operations
@@ -635,7 +637,7 @@ These are cryptographically secure and suitable for security-sensitive applicati
 These algorithms support both synchronous and asynchronous operation:
 - **djb2** - Fast hash function by Daniel J. Bernstein (default for sync methods)
 - **fnv1** - Fowler-Noll-Vo hash function
-- **murmer** - MurmurHash algorithm
+- **murmur** - MurmurHash algorithm
 - **crc32** - Cyclic Redundancy Check 32-bit
 
 **Async methods** (`toHash`, `toNumber`):
@@ -645,7 +647,7 @@ These algorithms support both synchronous and asynchronous operation:
 
 **Sync methods** (`toHashSync`, `toNumberSync`):
 - Default to `djb2`
-- Only work with non-crypto algorithms (djb2, fnv1, murmer, crc32)
+- Only work with non-crypto algorithms (djb2, fnv1, murmur, crc32)
 - Return values immediately
 - Throw an error if you try to use WebCrypto algorithms
 
@@ -957,11 +959,11 @@ Gets the names of all registered hash algorithm providers.
 
 **Type:** `Array<string>`
 
-**Returns:** An array of provider names (e.g., ['SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmer', 'crc32'])
+**Returns:** An array of provider names (e.g., ['SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmur', 'crc32'])
 
 ```typescript
 const hashery = new Hashery();
-console.log(hashery.names); // ['SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmer', 'crc32']
+console.log(hashery.names); // ['SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmur', 'crc32']
 ```
 
 ## `defaultAlgorithm`
@@ -1007,8 +1009,8 @@ hashery.defaultAlgorithmSync = 'fnv1';
 const hash = hashery.toHashSync({ data: 'example' });
 
 // You can also set it in the constructor
-const hashery2 = new Hashery({ defaultAlgorithmSync: 'murmer' });
-const hash2 = hashery2.toHashSync({ data: 'test' }); // Uses murmer
+const hashery2 = new Hashery({ defaultAlgorithmSync: 'murmur' });
+const hash2 = hashery2.toHashSync({ data: 'test' }); // Uses murmur
 ```
 
 # API - Functions
@@ -1048,7 +1050,7 @@ const shortHash = await hashery.toHash(
 
 Generates a hash of the provided data synchronously using a non-cryptographic hash algorithm. The data is first stringified using the configured stringify function, then hashed.
 
-**Important:** This method only works with synchronous hash providers (djb2, fnv1, murmer, crc32). WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported and will throw an error.
+**Important:** This method only works with synchronous hash providers (djb2, fnv1, murmur, crc32). WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported and will throw an error.
 
 **Parameters:**
 - `data` (unknown) - The data to hash (will be stringified before hashing)
@@ -1070,7 +1072,7 @@ const hash = hashery.toHashSync({ name: 'John', age: 30 });
 
 // Using a different algorithm
 const hashFnv1 = hashery.toHashSync({ name: 'John' }, { algorithm: 'fnv1' });
-const hashMurmer = hashery.toHashSync({ name: 'John' }, { algorithm: 'murmer' });
+const hashMurmur = hashery.toHashSync({ name: 'John' }, { algorithm: 'murmur' });
 const hashCrc = hashery.toHashSync({ name: 'John' }, { algorithm: 'crc32' });
 
 // Truncating hash output
@@ -1118,7 +1120,7 @@ const num512 = await hashery.toNumber({ user: 'john' }, { min: 0, max: 255, algo
 
 Generates a deterministic number within a specified range based on the hash of the provided data synchronously. This method uses the toHashSync function to create a consistent hash, then maps it to a number between min and max (inclusive).
 
-**Important:** This method only works with synchronous hash providers (djb2, fnv1, murmer, crc32).
+**Important:** This method only works with synchronous hash providers (djb2, fnv1, murmur, crc32).
 
 **Parameters:**
 - `data` (unknown) - The data to hash (will be stringified before hashing)
@@ -1155,7 +1157,7 @@ console.log(variant === 0 ? 'Group A' : 'Group B');
 // Load balancing
 const serverId = hashery.toNumberSync(
   { requestId: 'req_abc' },
-  { min: 0, max: 9, algorithm: 'murmer' } // 10 servers
+  { min: 0, max: 9, algorithm: 'murmur' } // 10 servers
 );
 
 // This will throw an error (WebCrypto not supported in sync mode)
@@ -1190,6 +1192,27 @@ hashery.loadProviders([customProvider]);
 hashery.loadProviders([customProvider], { includeBase: false });
 ```
 
+# API - Types
+
+## `HashAlgorithm`
+
+A string literal union type representing all built-in hash algorithm names. Provides autocomplete in IDEs while still accepting custom provider names as strings.
+
+**Type:** `"SHA-256" | "SHA-384" | "SHA-512" | "djb2" | "fnv1" | "murmur" | "crc32"`
+
+```typescript
+import { Hashery, type HashAlgorithm } from 'hashery';
+
+const hashery = new Hashery();
+
+// Use the type for your own variables and functions
+const algorithm: HashAlgorithm = 'SHA-256';
+const hash = await hashery.toHash({ data: 'example' }, { algorithm });
+
+// All option fields accept HashAlgorithm with full autocomplete
+const hashery2 = new Hashery({ defaultAlgorithm: 'SHA-512' }); // autocomplete for algorithm names
+```
+
 # Benchmarks
 
 Overall view of the current algorithm's and their performance using simple hashing with random data. `Sync` is when we use `toHashSync` and `Async` is the `toHash` function which requires `await`.
@@ -1199,12 +1222,12 @@ Overall view of the current algorithm's and their performance using simple hashi
 ## Hashing
 |      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
 |-----------------|:---------:|----------:|----------:|:--------:|----------:|
-|  MURMER Sync    |    🥇     |     726K  |      1µs  |  ±0.02%  |     707K  |
+|  MURMUR Sync    |    🥇     |     726K  |      1µs  |  ±0.02%  |     707K  |
 |  CRC32 Sync     |   -1.9%   |     713K  |      1µs  |  ±0.02%  |     672K  |
 |  DJB2 Sync      |   -2.7%   |     707K  |      1µs  |  ±0.03%  |     672K  |
 |  FNV1 Sync      |   -2.9%   |     705K  |      1µs  |  ±0.03%  |     670K  |
 |  CRC32 Async    |   -8.8%   |     663K  |      2µs  |  ±0.02%  |     647K  |
-|  MURMER Async   |   -11%    |     649K  |      2µs  |  ±0.03%  |     620K  |
+|  MURMUR Async   |   -11%    |     649K  |      2µs  |  ±0.03%  |     620K  |
 |  SHA-512 Async  |   -11%    |     647K  |      2µs  |  ±0.03%  |     596K  |
 |  SHA-384 Async  |   -11%    |     645K  |      2µs  |  ±0.03%  |     589K  |
 |  SHA-256 Async  |   -12%    |     642K  |      2µs  |  ±0.03%  |     583K  |
@@ -1215,9 +1238,9 @@ Overall view of the current algorithm's and their performance using simple hashi
 |      name       |  summary  |  ops/sec  |  time/op  |  margin  |  samples  |
 |-----------------|:---------:|----------:|----------:|:--------:|----------:|
 |  DJB2 Sync      |    🥇     |     507K  |      2µs  |  ±0.04%  |     475K  |
-|  MURMER Sync    |   -0.6%   |     504K  |      2µs  |  ±0.04%  |     476K  |
+|  MURMUR Sync    |   -0.6%   |     504K  |      2µs  |  ±0.04%  |     476K  |
 |  DJB2 Async     |   -3.6%   |     489K  |      2µs  |  ±0.04%  |     463K  |
-|  MURMER Async   |   -4.4%   |     484K  |      2µs  |  ±0.04%  |     457K  |
+|  MURMUR Async   |   -4.4%   |     484K  |      2µs  |  ±0.04%  |     457K  |
 |  FNV1 Sync      |   -6.6%   |     474K  |      2µs  |  ±0.04%  |     447K  |
 |  FNV1 Async     |   -14%    |     436K  |      2µs  |  ±0.04%  |     412K  |
 |  CRC32 Sync     |   -31%    |     349K  |      3µs  |  ±0.04%  |     334K  |

@@ -1,9 +1,9 @@
 import type { HashProvider } from "../types.ts";
 
 /**
- * Murmer 32-bit hash algorithm implementation.
+ * Murmur 32-bit hash algorithm implementation.
  *
- * Murmer is a non-cryptographic hash function based on MurmurHash3 by Austin Appleby.
+ * Murmur is a non-cryptographic hash function based on MurmurHash3 by Austin Appleby.
  * It produces a 32-bit hash value with excellent distribution and performance,
  * making it suitable for hash tables, bloom filters, and checksums,
  * but NOT for cryptographic purposes.
@@ -13,20 +13,20 @@ import type { HashProvider } from "../types.ts";
  * @example
  * ```typescript
  * import { Hashery } from 'hashery';
- * import { Murmer } from 'hashery/providers/murmer';
+ * import { Murmur } from 'hashery/providers/murmur';
  *
  * const hashery = new Hashery();
- * hashery.providers.add(new Murmer());
+ * hashery.providers.add(new Murmur());
  *
- * const hash = await hashery.toHash({ data: 'hello' }, 'murmer');
+ * const hash = await hashery.toHash({ data: 'hello' }, 'murmur');
  * console.log(hash); // "248bfa47"
  * ```
  */
-export class Murmer implements HashProvider {
+export class Murmur implements HashProvider {
 	private _seed: number;
 
 	/**
-	 * Creates a new Murmer instance.
+	 * Creates a new Murmur instance.
 	 *
 	 * @param seed - Optional seed value for the hash (default: 0)
 	 */
@@ -38,7 +38,7 @@ export class Murmer implements HashProvider {
 	 * The name identifier for this hash provider.
 	 */
 	public get name(): string {
-		return "murmer";
+		return "murmur";
 	}
 
 	/**
@@ -49,16 +49,16 @@ export class Murmer implements HashProvider {
 	}
 
 	/**
-	 * Computes the Murmer 32-bit hash of the provided data synchronously.
+	 * Computes the Murmur 32-bit hash of the provided data synchronously.
 	 *
 	 * @param data - The data to hash (Uint8Array, ArrayBuffer, or DataView)
 	 * @returns An 8-character lowercase hexadecimal string
 	 *
 	 * @example
 	 * ```typescript
-	 * const murmer = new Murmer();
+	 * const murmur = new Murmur();
 	 * const data = new TextEncoder().encode('hello');
-	 * const hash = murmer.toHashSync(data);
+	 * const hash = murmur.toHashSync(data);
 	 * console.log(hash); // "248bfa47"
 	 * ```
 	 */
@@ -142,16 +142,16 @@ export class Murmer implements HashProvider {
 	}
 
 	/**
-	 * Computes the Murmer 32-bit hash of the provided data.
+	 * Computes the Murmur 32-bit hash of the provided data.
 	 *
 	 * @param data - The data to hash (Uint8Array, ArrayBuffer, or DataView)
 	 * @returns A Promise resolving to an 8-character lowercase hexadecimal string
 	 *
 	 * @example
 	 * ```typescript
-	 * const murmer = new Murmer();
+	 * const murmur = new Murmur();
 	 * const data = new TextEncoder().encode('hello');
-	 * const hash = await murmer.toHash(data);
+	 * const hash = await murmur.toHash(data);
 	 * console.log(hash); // "248bfa47"
 	 * ```
 	 */

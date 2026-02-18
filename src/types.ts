@@ -81,7 +81,7 @@ export type HasheryOptions = {
 	 * const hash = await hashery.toHash({ data: 'example' });
 	 * ```
 	 */
-	defaultAlgorithm?: string;
+	defaultAlgorithm?: HashAlgorithm | (string & {});
 
 	/**
 	 * Default synchronous hash algorithm to use when none is specified.
@@ -95,7 +95,7 @@ export type HasheryOptions = {
 	 * // This will use fnv1 for synchronous operations by default
 	 * ```
 	 */
-	defaultAlgorithmSync?: string;
+	defaultAlgorithmSync?: HashAlgorithm | (string & {});
 
 	/**
 	 * Cache configuration options.
@@ -132,9 +132,9 @@ export type HasheryToHashOptions = {
 	/**
 	 * The hash algorithm to use.
 	 * Defaults to 'SHA-256' if not specified.
-	 * Supported algorithms include: 'SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmer', 'crc32'
+	 * Supported algorithms include: 'SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmur', 'crc32'
 	 */
-	algorithm?: string;
+	algorithm?: HashAlgorithm | (string & {});
 
 	/**
 	 * Maximum length for the hash output.
@@ -171,9 +171,9 @@ export type HasheryToNumberOptions = {
 	/**
 	 * The hash algorithm to use.
 	 * Defaults to 'SHA-256' if not specified.
-	 * Supported algorithms include: 'SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmer', 'crc32'
+	 * Supported algorithms include: 'SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmur', 'crc32'
 	 */
-	algorithm?: string;
+	algorithm?: HashAlgorithm | (string & {});
 
 	/**
 	 * The minimum value of the range (inclusive).
@@ -230,10 +230,10 @@ export type HasheryToHashSyncOptions = {
 	/**
 	 * The hash algorithm to use.
 	 * Defaults to 'djb2' if not specified.
-	 * Supported synchronous algorithms include: 'djb2', 'fnv1', 'murmer', 'crc32'
+	 * Supported synchronous algorithms include: 'djb2', 'fnv1', 'murmur', 'crc32'
 	 * Note: WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported in sync mode.
 	 */
-	algorithm?: string;
+	algorithm?: HashAlgorithm | (string & {});
 
 	/**
 	 * Maximum length for the hash output.
@@ -270,10 +270,10 @@ export type HasheryToNumberSyncOptions = {
 	/**
 	 * The hash algorithm to use.
 	 * Defaults to 'djb2' if not specified.
-	 * Supported synchronous algorithms include: 'djb2', 'fnv1', 'murmer', 'crc32'
+	 * Supported synchronous algorithms include: 'djb2', 'fnv1', 'murmur', 'crc32'
 	 * Note: WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported in sync mode.
 	 */
-	algorithm?: string;
+	algorithm?: HashAlgorithm | (string & {});
 
 	/**
 	 * The minimum value of the range (inclusive).
@@ -331,6 +331,19 @@ export type ParseFn = (data: string) => unknown;
  * - SHA-512: Highest security algorithm (512-bit)
  */
 export type WebCryptoHashAlgorithm = "SHA-256" | "SHA-384" | "SHA-512";
+
+/**
+ * All built-in hash algorithm names supported by Hashery.
+ * Includes both WebCrypto (async-only) and non-cryptographic (sync & async) algorithms.
+ */
+export type HashAlgorithm =
+	| "SHA-256"
+	| "SHA-384"
+	| "SHA-512"
+	| "djb2"
+	| "fnv1"
+	| "murmur"
+	| "crc32";
 
 export type HashProvider = {
 	name: string;

@@ -4,9 +4,10 @@ import { CRC } from "./providers/crc.js";
 import { WebCrypto } from "./providers/crypto.js";
 import { DJB2 } from "./providers/djb2.js";
 import { FNV1 } from "./providers/fnv1.js";
-import { Murmer } from "./providers/murmer.js";
+import { Murmur } from "./providers/murmur.js";
 import { HashProviders } from "./providers.js";
 import type {
+	HashAlgorithm,
 	HasheryLoadProviderOptions,
 	HasheryOptions,
 	HasheryToHashOptions,
@@ -143,7 +144,7 @@ export class Hashery extends Hookified {
 
 	/**
 	 * Sets the default synchronous hash algorithm to use when none is specified.
-	 * @param value - The default synchronous algorithm to use (e.g., 'djb2', 'fnv1', 'murmer', 'crc32')
+	 * @param value - The default synchronous algorithm to use (e.g., 'djb2', 'fnv1', 'murmur', 'crc32')
 	 * @example
 	 * ```ts
 	 * const hashery = new Hashery();
@@ -335,7 +336,7 @@ export class Hashery extends Hookified {
 	 * Generates a hash of the provided data synchronously using a non-cryptographic hash algorithm.
 	 * The data is first stringified using the configured stringify function, then hashed.
 	 *
-	 * Note: This method only works with synchronous hash providers (djb2, fnv1, murmer, crc32).
+	 * Note: This method only works with synchronous hash providers (djb2, fnv1, murmur, crc32).
 	 * WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported and will throw an error.
 	 *
 	 * If an invalid algorithm is provided, a 'warn' event is emitted and the method falls back
@@ -428,7 +429,7 @@ export class Hashery extends Hookified {
 		// Check if provider supports synchronous hashing
 		if (!provider.toHashSync) {
 			throw new Error(
-				`Hash provider '${algorithm}' does not support synchronous hashing. Use toHash() instead or choose a different algorithm (djb2, fnv1, murmer, crc32).`,
+				`Hash provider '${algorithm}' does not support synchronous hashing. Use toHash() instead or choose a different algorithm (djb2, fnv1, murmur, crc32).`,
 			);
 		}
 
@@ -457,7 +458,7 @@ export class Hashery extends Hookified {
 	 * This method uses the toHashSync function to create a consistent hash, then maps it to a number
 	 * between min and max (inclusive).
 	 *
-	 * Note: This method only works with synchronous hash providers (djb2, fnv1, murmer, crc32).
+	 * Note: This method only works with synchronous hash providers (djb2, fnv1, murmur, crc32).
 	 *
 	 * @param data - The data to hash (will be stringified before hashing)
 	 * @param options - Configuration options (optional, defaults to min: 0, max: 100)
@@ -531,11 +532,17 @@ export class Hashery extends Hookified {
 			this.providers.add(new CRC());
 			this.providers.add(new DJB2());
 			this.providers.add(new FNV1());
-			this.providers.add(new Murmer());
+			this.providers.add(new Murmur());
 		}
 	}
 }
 
 export type { CacheOptions } from "./cache.js";
 export { Cache } from "./cache.js";
-export type { WebCryptoHashAlgorithm, HasheryOptions, ParseFn, StringifyFn };
+export type {
+	HashAlgorithm,
+	WebCryptoHashAlgorithm,
+	HasheryOptions,
+	ParseFn,
+	StringifyFn,
+};
