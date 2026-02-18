@@ -536,17 +536,16 @@ export class Hashery extends Hookified {
 	}
 }
 
+// Types
 export type { CacheOptions } from "./cache.js";
+// Classes
 export { Cache } from "./cache.js";
 export { CRC } from "./providers/crc.js";
 export type { WebCryptoOptions } from "./providers/crypto.js";
-
-// Provider classes
 export { WebCrypto } from "./providers/crypto.js";
 export { DJB2 } from "./providers/djb2.js";
 export { FNV1 } from "./providers/fnv1.js";
 export { Murmur } from "./providers/murmur.js";
-// Provider manager
 export { HashProviders } from "./providers.js";
 export type {
 	HashAlgorithm,
