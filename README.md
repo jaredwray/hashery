@@ -164,6 +164,7 @@ const crcHash = crc.toHashSync(data);
 const sha256 = new WebCrypto({ algorithm: 'SHA-256' });
 const sha512 = new WebCrypto({ algorithm: 'SHA-512' });
 const cryptoHash = await sha256.toHash(data);
+const cryptoHash512 = await sha512.toHash(data);
 ```
 
 ### Managing Providers with HashProviders
@@ -181,6 +182,10 @@ providers.add(new Murmur());
 // Get a provider by name (supports fuzzy matching)
 const djb2Provider = providers.get('djb2');
 const alsoWorks = providers.get('DJB2'); // case-insensitive
+
+// Both variables point to the same provider instance
+console.log(djb2Provider.name); // 'djb2'
+console.log(alsoWorks.name); // 'djb2'
 
 // List all provider names
 console.log(providers.names); // ['djb2', 'fnv1', 'murmur']
@@ -207,6 +212,7 @@ const myProvider: HashProvider = {
 
 const hashery = new Hashery({ providers: [myProvider] });
 const hash = await hashery.toHash({ data: 'test' }, { algorithm: 'my-hash' });
+console.log(hash); // 'custom-hash-value'
 ```
 
 ## Setting a Default Algorithm
