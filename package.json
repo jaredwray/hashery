@@ -3,13 +3,13 @@
   "version": "2.0.0",
   "description": "Browser Compatible Object Hashing",
   "type": "module",
-  "main": "dist/node/index.js",
-  "types": "dist/node/index.d.ts",
+  "main": "dist/node/index.mjs",
+  "types": "dist/node/index.d.mts",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/node/index.d.ts",
-        "default": "./dist/node/index.js"
+        "types": "./dist/node/index.d.mts",
+        "default": "./dist/node/index.mjs"
       },
       "require": {
         "types": "./dist/node/index.d.cts",
@@ -18,7 +18,7 @@
     },
     "./browser": {
       "import": "./dist/browser/index.js",
-      "default": "./dist/browser/index.global.js"
+      "default": "./dist/browser/index.iife.js"
     }
   },
   "repository": "https://github.com/jaredwray/hashery.git",
@@ -29,7 +29,7 @@
   "license": "MIT",
   "scripts": {
     "clean": "rimraf ./dist ./coverage ./node_modules ./pnpm-lock.yaml ./site/README.md ./site/dist",
-    "build": "rimraf ./dist && tsup",
+    "build": "rimraf ./dist && tsdown",
     "prepare": "pnpm build",
     "benchmark": "pnpm benchmark:main && pnpm benchmark:vs-others",
     "benchmark:main": "tsx benchmark/hashing.ts",
@@ -54,7 +54,7 @@
     "object-hash": "^3.0.0",
     "rimraf": "^6.1.2",
     "tinybench": "^6.0.0",
-    "tsup": "^8.5.1",
+    "tsdown": "^0.21.7",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.1.2"
