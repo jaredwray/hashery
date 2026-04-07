@@ -677,11 +677,26 @@ const hash = await hashery2.toHash({ data: 'example' }); // Returns hash success
 
 ## Migration from v1 to v2
 
-Hashery v2 upgrades its underlying [`hookified`](https://hookified.org) dependency from v1 to v2. Because `HasheryOptions` extends `HookifiedOptions`, options you pass when constructing `new Hashery({ ... })` are affected. The hook event names (`before:toHash`, `after:toHash`, `before:toHashSync`, `after:toHashSync`), the `warn` event, and the `onHook(event, handler)` calling style are **unchanged** — existing code that uses these will continue to work without modification.
+Hashery v2 upgrades its underlying [`hookified`](https://hookified.org) dependency from v1 to v2. Because `HasheryOptions` extends `HookifiedOptions`, the breaking changes in `hookified` v2 also apply to Hashery. The hook event names (`before:toHash`, `after:toHash`, `before:toHashSync`, `after:toHashSync`), the `warn` event, and the `onHook(event, handler)` calling style are **unchanged** — existing code that uses these will continue to work without modification.
+
+### Changed Defaults
+
+The most important behavior change is that `throwOnEmptyListeners` now defaults to `true`. When a hook handler throws, `hookified` internally emits an `error` event; if you have no `'error'` listener attached, that emit will now re-throw. To restore the v1 behavior, either attach an `error` listener or disable the option:
+
+```typescript
+// Option A: opt back into v1 behavior
+const hashery = new Hashery({ throwOnEmptyListeners: false });
+
+// Option B: handle error events explicitly (recommended)
+const hashery = new Hashery();
+hashery.on('error', (err) => {
+  console.error('Hook error:', err);
+});
+```
 
 ### Renamed Options
 
-| v1 (old) | v2 (new) |
+| v1 (deprecated) | v2 (use this) |
 |---|---|
 | `throwHookErrors` | `throwOnHookError` |
 | `logger` | `eventLogger` |
@@ -694,20 +709,20 @@ const hashery = new Hashery({ throwHookErrors: true, logger: myLogger });
 const hashery = new Hashery({ throwOnHookError: true, eventLogger: myLogger });
 ```
 
-### Changed Defaults
+### Changed Method Signatures
 
-| Option | v1 default | v2 default |
-|---|---|---|
-| `throwOnEmptyListeners` | `false` | `true` (only affects emitting an `error` event with no listeners) |
-| `maxListeners` | `100` | `0` (unlimited) |
-
-If you previously relied on the v1 behavior, restore it explicitly:
+`removeHook()` no longer takes positional `(event, handler)` arguments. It now accepts the `IHook` object that `onHook()` returns:
 
 ```typescript
-const hashery = new Hashery({
-  throwOnEmptyListeners: false,
-  maxListeners: 100,
-});
+// Before (v1)
+hashery.onHook('before:toHash', myHandler);
+hashery.removeHook('before:toHash', myHandler);
+
+// After (v2) — onHook returns the stored IHook
+const hook = hashery.onHook('before:toHash', myHandler);
+if (hook) {
+  hashery.removeHook(hook);
+}
 ```
 
 ### Removed Methods
