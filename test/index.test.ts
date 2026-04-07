@@ -1417,7 +1417,10 @@ describe("Hashery", () => {
 		});
 
 		test("should not throw errors in hooks when throwOnEmitError is false", async () => {
-			const hashery = new Hashery({ throwOnEmitError: false });
+			const hashery = new Hashery({
+				throwOnEmitError: false,
+				throwOnEmptyListeners: false,
+			});
 
 			hashery.onHook("before:toHash", async (_context) => {
 				throw new Error("Hook error");
@@ -1522,13 +1525,15 @@ describe("Hashery", () => {
 				hookCalls.push("called");
 			};
 
-			hashery.onHook("before:toHash", hookFn);
+			const hook = hashery.onHook("before:toHash", hookFn);
 			await hashery.toHash({ name: "test1" });
 
 			expect(hookCalls.length).toBe(1);
 
-			// Remove the hook
-			hashery.removeHook("before:toHash", hookFn);
+			// Remove the hook (v2: pass the IHook returned by onHook)
+			if (hook) {
+				hashery.removeHook(hook);
+			}
 			await hashery.toHash({ name: "test2" });
 
 			// Should still be 1, not 2

@@ -39,6 +39,7 @@ Browser / Nodejs Compatible Object Hashing
   - [Browser Usage](#browser-usage)
 - [Hooks](#hooks)
   - [Warning Events for Invalid Algorithms](#warning-events-for-invalid-algorithms)
+  - [Migration from v1 to v2](#migration-from-v1-to-v2)
 - [Caching](#caching)
 - [Web Crypto](#web-crypto)
   - [Browser Support](#browser-support)
@@ -341,7 +342,9 @@ Hashery works seamlessly in the browser using the Web Crypto API. You can includ
 
 # Hooks
 
-Hashery extends [Hookified](https://github.com/jaredwray/hookified) to provide event-based functionality through hooks. Hooks allow you to intercept and modify behavior during the hashing process.
+Hashery extends [Hookified](https://hookified.org) to provide event-based functionality through hooks. Hooks allow you to intercept and modify behavior during the hashing process.
+
+> **v2.0 breaking change:** Hashery v2 upgrades to `hookified` v2. `HasheryOptions` extends `HookifiedOptions`, so the renamed/changed Hookified options below are also breaking for Hashery users. See [Migration from v1 to v2](#migration-from-v1-to-v2) for details.
 
 ## Available Hooks
 
@@ -622,7 +625,7 @@ if (hasWarnings) {
 
 ## Removing Hooks
 
-You can remove hooks when they're no longer needed:
+You can remove hooks when they're no longer needed. `onHook()` returns the stored `IHook` object, which you pass to `removeHook()`:
 
 ```typescript
 const hashery = new Hashery();
@@ -631,15 +634,19 @@ const myHook = async (context: any) => {
   console.log('Hook called');
 };
 
-// Add the hook
-hashery.onHook('before:toHash', myHook);
+// Add the hook — onHook returns the stored IHook
+const hook = hashery.onHook('before:toHash', myHook);
 
-// Remove the hook
-hashery.offHook('before:toHash', myHook);
+// Remove the hook by passing the IHook
+if (hook) {
+  hashery.removeHook(hook);
+}
 
 // Same works for sync hooks
-hashery.onHook('before:toHashSync', myHook);
-hashery.offHook('before:toHashSync', myHook);
+const syncHook = hashery.onHook('before:toHashSync', myHook);
+if (syncHook) {
+  hashery.removeHook(syncHook);
+}
 ```
 
 ## Error Handling in Hooks
@@ -667,6 +674,62 @@ hashery2.onHook('before:toHash', async (context) => {
 // This will not throw, hashing continues
 const hash = await hashery2.toHash({ data: 'example' }); // Returns hash successfully
 ```
+
+## Migration from v1 to v2
+
+Hashery v2 upgrades its underlying [`hookified`](https://hookified.org) dependency from v1 to v2. Because `HasheryOptions` extends `HookifiedOptions`, the breaking changes in `hookified` v2 also apply to Hashery. The hook event names (`before:toHash`, `after:toHash`, `before:toHashSync`, `after:toHashSync`), the `warn` event, and the `onHook(event, handler)` calling style are **unchanged** — existing code that uses these will continue to work without modification.
+
+### Changed Defaults
+
+The most important behavior change is that `throwOnEmptyListeners` now defaults to `true`. When a hook handler throws, `hookified` internally emits an `error` event; if you have no `'error'` listener attached, that emit will now re-throw. To restore the v1 behavior, either attach an `error` listener or disable the option:
+
+```typescript
+// Option A: opt back into v1 behavior
+const hashery = new Hashery({ throwOnEmptyListeners: false });
+
+// Option B: handle error events explicitly (recommended)
+const hashery = new Hashery();
+hashery.on('error', (err) => {
+  console.error('Hook error:', err);
+});
+```
+
+### Renamed Options
+
+| v1 (deprecated) | v2 (use this) |
+|---|---|
+| `throwHookErrors` | `throwOnHookError` |
+| `logger` | `eventLogger` |
+
+```typescript
+// Before (v1)
+const hashery = new Hashery({ throwHookErrors: true, logger: myLogger });
+
+// After (v2)
+const hashery = new Hashery({ throwOnHookError: true, eventLogger: myLogger });
+```
+
+### Changed Method Signatures
+
+`removeHook()` no longer takes positional `(event, handler)` arguments. It now accepts the `IHook` object that `onHook()` returns:
+
+```typescript
+// Before (v1)
+hashery.onHook('before:toHash', myHandler);
+hashery.removeHook('before:toHash', myHandler);
+
+// After (v2) — onHook returns the stored IHook
+const hook = hashery.onHook('before:toHash', myHandler);
+if (hook) {
+  hashery.removeHook(hook);
+}
+```
+
+### Removed Methods
+
+- `onHookEntry()` has been removed. Use `onHook()` instead.
+
+For the full list of `hookified` v2 changes, see the [hookified docs](https://hookified.org).
 
 # Caching
 
