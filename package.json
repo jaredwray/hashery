@@ -1,6 +1,6 @@
 {
   "name": "hashery",
-  "version": "1.5.1",
+  "version": "2.0.0",
   "description": "Browser Compatible Object Hashing",
   "type": "module",
   "main": "dist/node/index.js",
@@ -41,7 +41,7 @@
     "website:serve": "rimraf ./site/README.md ./site/dist && pnpm docula serve"
   },
   "dependencies": {
-    "hookified": "^1.15.0"
+    "hookified": "^2.1.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.10",

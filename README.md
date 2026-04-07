@@ -39,6 +39,7 @@ Browser / Nodejs Compatible Object Hashing
   - [Browser Usage](#browser-usage)
 - [Hooks](#hooks)
   - [Warning Events for Invalid Algorithms](#warning-events-for-invalid-algorithms)
+  - [Migration from v1 to v2](#migration-from-v1-to-v2)
 - [Caching](#caching)
 - [Web Crypto](#web-crypto)
   - [Browser Support](#browser-support)
@@ -341,7 +342,9 @@ Hashery works seamlessly in the browser using the Web Crypto API. You can includ
 
 # Hooks
 
-Hashery extends [Hookified](https://github.com/jaredwray/hookified) to provide event-based functionality through hooks. Hooks allow you to intercept and modify behavior during the hashing process.
+Hashery extends [Hookified](https://hookified.org) to provide event-based functionality through hooks. Hooks allow you to intercept and modify behavior during the hashing process.
+
+> **v2.0 breaking change:** Hashery v2 upgrades to `hookified` v2. `HasheryOptions` extends `HookifiedOptions`, so the renamed/changed Hookified options below are also breaking for Hashery users. See [Migration from v1 to v2](#migration-from-v1-to-v2) for details.
 
 ## Available Hooks
 
@@ -667,6 +670,47 @@ hashery2.onHook('before:toHash', async (context) => {
 // This will not throw, hashing continues
 const hash = await hashery2.toHash({ data: 'example' }); // Returns hash successfully
 ```
+
+## Migration from v1 to v2
+
+Hashery v2 upgrades its underlying [`hookified`](https://hookified.org) dependency from v1 to v2. Because `HasheryOptions` extends `HookifiedOptions`, options you pass when constructing `new Hashery({ ... })` are affected. The hook event names (`before:toHash`, `after:toHash`, `before:toHashSync`, `after:toHashSync`), the `warn` event, and the `onHook(event, handler)` calling style are **unchanged** — existing code that uses these will continue to work without modification.
+
+### Renamed Options
+
+| v1 (old) | v2 (new) |
+|---|---|
+| `throwHookErrors` | `throwOnHookError` |
+| `logger` | `eventLogger` |
+
+```typescript
+// Before (v1)
+const hashery = new Hashery({ throwHookErrors: true, logger: myLogger });
+
+// After (v2)
+const hashery = new Hashery({ throwOnHookError: true, eventLogger: myLogger });
+```
+
+### Changed Defaults
+
+| Option | v1 default | v2 default |
+|---|---|---|
+| `throwOnEmptyListeners` | `false` | `true` (only affects emitting an `error` event with no listeners) |
+| `maxListeners` | `100` | `0` (unlimited) |
+
+If you previously relied on the v1 behavior, restore it explicitly:
+
+```typescript
+const hashery = new Hashery({
+  throwOnEmptyListeners: false,
+  maxListeners: 100,
+});
+```
+
+### Removed Methods
+
+- `onHookEntry()` has been removed. Use `onHook()` instead.
+
+For the full list of `hookified` v2 changes, see the [hookified docs](https://hookified.org).
 
 # Caching
 
