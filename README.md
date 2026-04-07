@@ -625,7 +625,7 @@ if (hasWarnings) {
 
 ## Removing Hooks
 
-You can remove hooks when they're no longer needed:
+You can remove hooks when they're no longer needed. `onHook()` returns the stored `IHook` object, which you pass to `removeHook()`:
 
 ```typescript
 const hashery = new Hashery();
@@ -634,15 +634,19 @@ const myHook = async (context: any) => {
   console.log('Hook called');
 };
 
-// Add the hook
-hashery.onHook('before:toHash', myHook);
+// Add the hook — onHook returns the stored IHook
+const hook = hashery.onHook('before:toHash', myHook);
 
-// Remove the hook
-hashery.offHook('before:toHash', myHook);
+// Remove the hook by passing the IHook
+if (hook) {
+  hashery.removeHook(hook);
+}
 
 // Same works for sync hooks
-hashery.onHook('before:toHashSync', myHook);
-hashery.offHook('before:toHashSync', myHook);
+const syncHook = hashery.onHook('before:toHashSync', myHook);
+if (syncHook) {
+  hashery.removeHook(syncHook);
+}
 ```
 
 ## Error Handling in Hooks
