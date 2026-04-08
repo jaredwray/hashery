@@ -140,3 +140,6 @@ vite.config.ts.timestamp-*
 
 # AI
 .claude
+
+# Docula
+.cache

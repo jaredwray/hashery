@@ -38,7 +38,7 @@
     "test": "pnpm lint && vitest run --coverage",
     "test:ci": "biome check --error-on-warnings && vitest run --coverage",
     "website:build": "rimraf ./site/README.md ./site/dist && pnpm docula",
-    "website:serve": "rimraf ./site/README.md ./site/dist && pnpm docula serve"
+    "website:dev": "rimraf ./site/README.md ./site/dist && pnpm docula dev"
   },
   "dependencies": {
     "hookified": "^2.1.1"
@@ -50,7 +50,8 @@
     "@types/node": "^25.5.2",
     "@types/object-hash": "^3.0.6",
     "@vitest/coverage-v8": "^4.1.2",
-    "docula": "^0.40.0",
+    "docula": "^1.12.0",
+    "dotenv": "^17.4.1",
     "object-hash": "^3.0.0",
     "rimraf": "^6.1.2",
     "tinybench": "^6.0.0",
