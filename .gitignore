@@ -143,3 +143,4 @@ vite.config.ts.timestamp-*
 
 # Docula
 .cache
+site/README.md
