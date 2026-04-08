@@ -11,6 +11,7 @@ export default defineConfig([
 	{
 		entry: ["src/index.ts"],
 		format: ["esm", "iife"],
+		globalName: "Hashery",
 		target: "es2020",
 		outDir: "dist/browser",
 		platform: "browser",
@@ -18,6 +19,9 @@ export default defineConfig([
 		sourcemap: true,
 		dts: false,
 		clean: true,
-		noExternal: [/.*/],
+		deps: {
+			alwaysBundle: [/.*/],
+			onlyBundle: false,
+		},
 	},
 ]);
