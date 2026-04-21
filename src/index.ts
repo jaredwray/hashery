@@ -11,6 +11,8 @@ import type {
 	HasheryOptions,
 	HasheryToHashOptions,
 	HasheryToHashSyncOptions,
+	HasheryToModuloOptions,
+	HasheryToModuloSyncOptions,
 	HasheryToNumberOptions,
 	HasheryToNumberSyncOptions,
 	HashProvider,
@@ -513,6 +515,104 @@ export class Hashery extends Hookified {
 		return mapped;
 	}
 
+	/**
+	 * Generates a deterministic non-negative integer in the range `[0, divisor)` by
+	 * computing `hash(data) % divisor`. This is the classic consistent-hashing primitive
+	 * used for sharding, slot assignment, cache bucket selection, and load balancing.
+	 *
+	 * Unlike `toNumber`, the full hash is used via `BigInt` arithmetic so the modulo is
+	 * computed with full precision (no truncation or JavaScript number precision loss).
+	 *
+	 * @param data - The data to hash (will be stringified before hashing)
+	 * @param divisor - A positive integer divisor; result is in the range `[0, divisor)`
+	 * @param options - Optional configuration object
+	 * @param options.algorithm - The hash algorithm to use (defaults to the instance's `defaultAlgorithm`)
+	 * @returns A Promise that resolves to a number in the range `[0, divisor)`
+	 *
+	 * @throws {Error} If `divisor` is not a positive integer
+	 *
+	 * @example
+	 * ```ts
+	 * const hashery = new Hashery();
+	 *
+	 * // Assign a user to one of 16 shards
+	 * const shard = await hashery.toModulo({ userId: 'user@example.com' }, 16);
+	 *
+	 * // Same input always produces the same shard
+	 * const sameShard = await hashery.toModulo({ userId: 'user@example.com' }, 16);
+	 * console.log(shard === sameShard); // true
+	 * ```
+	 */
+	public async toModulo(
+		data: unknown,
+		divisor: number,
+		options: HasheryToModuloOptions = {},
+	): Promise<number> {
+		if (!Number.isInteger(divisor) || divisor <= 0) {
+			throw new Error("divisor must be a positive integer");
+		}
+
+		const { algorithm = this._defaultAlgorithm } = options;
+
+		// Use the full hash to get the best distribution
+		const hash = await this.toHash(data, { algorithm });
+
+		// BigInt avoids precision loss for large hashes (SHA-256/384/512 exceed 2^53)
+		const hashBigInt = BigInt(`0x${hash}`);
+		const result = hashBigInt % BigInt(divisor);
+
+		return Number(result);
+	}
+
+	/**
+	 * Generates a deterministic non-negative integer in the range `[0, divisor)` synchronously
+	 * by computing `hash(data) % divisor`. Great for high-performance sharding and slot
+	 * assignment without async overhead.
+	 *
+	 * Note: This method only works with synchronous hash providers (djb2, fnv1, murmur, crc32).
+	 * WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported and will throw an error.
+	 *
+	 * @param data - The data to hash (will be stringified before hashing)
+	 * @param divisor - A positive integer divisor; result is in the range `[0, divisor)`
+	 * @param options - Optional configuration object
+	 * @param options.algorithm - The hash algorithm to use (defaults to the instance's `defaultAlgorithmSync`)
+	 * @returns A number in the range `[0, divisor)`
+	 *
+	 * @throws {Error} If `divisor` is not a positive integer
+	 * @throws {Error} If the specified algorithm does not support synchronous hashing
+	 *
+	 * @example
+	 * ```ts
+	 * const hashery = new Hashery();
+	 *
+	 * // Fast synchronous sharding across 10 servers
+	 * const serverIndex = hashery.toModuloSync({ requestId: 'req_abc123' }, 10);
+	 *
+	 * // Using a specific sync algorithm
+	 * const bucket = hashery.toModuloSync({ key: 'example' }, 256, { algorithm: 'fnv1' });
+	 * ```
+	 */
+	public toModuloSync(
+		data: unknown,
+		divisor: number,
+		options: HasheryToModuloSyncOptions = {},
+	): number {
+		if (!Number.isInteger(divisor) || divisor <= 0) {
+			throw new Error("divisor must be a positive integer");
+		}
+
+		const { algorithm = this._defaultAlgorithmSync } = options;
+
+		// Use the full hash to get the best distribution
+		const hash = this.toHashSync(data, { algorithm });
+
+		// BigInt keeps the modulo precise even if the hash exceeds JS safe integer range
+		const hashBigInt = BigInt(`0x${hash}`);
+		const result = hashBigInt % BigInt(divisor);
+
+		return Number(result);
+	}
+
 	public loadProviders(
 		providers?: Array<HashProvider>,
 		options: HasheryLoadProviderOptions = { includeBase: true },
@@ -553,6 +653,8 @@ export type {
 	HasheryOptions,
 	HasheryToHashOptions,
 	HasheryToHashSyncOptions,
+	HasheryToModuloOptions,
+	HasheryToModuloSyncOptions,
 	HasheryToNumberOptions,
 	HasheryToNumberSyncOptions,
 	HashProvider,

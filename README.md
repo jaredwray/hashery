@@ -36,6 +36,7 @@ Browser / Nodejs Compatible Object Hashing
   - [Truncating Hash Output](#truncating-hash-output)
   - [Hash to Number (Great for Slot Management)](#hash-to-number-great-for-slot-management)
   - [Hash to Number Synchronous](#hash-to-number-synchronous)
+  - [Hash to Modulo (Sharding and Slot Assignment)](#hash-to-modulo-sharding-and-slot-assignment)
   - [Browser Usage](#browser-usage)
 - [Hooks](#hooks)
   - [Warning Events for Invalid Algorithms](#warning-events-for-invalid-algorithms)
@@ -63,6 +64,8 @@ Browser / Nodejs Compatible Object Hashing
   - [toHashSync(data, options?)](#toHashsyncdata-options)
   - [toNumber(data, options?)](#tonumberdata-options)
   - [toNumberSync(data, options?)](#tonumbersyncdata-options)
+  - [toModulo(data, divisor, options?)](#tomodulodata-divisor-options)
+  - [toModuloSync(data, divisor, options?)](#tomodulosyncdata-divisor-options)
   - [loadProviders(providers?, options?)](#loadprovidersproviders-options)
 - [API - Types](#api---types)
   - [HashAlgorithm](#hashalgorithm)
@@ -313,6 +316,45 @@ const shardId = hashery.toNumberSync(
 const hashery2 = new Hashery({ defaultAlgorithmSync: 'fnv1' });
 const num = hashery2.toNumberSync({ data: 'test' }); // Uses fnv1 by default
 ```
+
+## Hash to Modulo (Sharding and Slot Assignment)
+
+`toModulo` and `toModuloSync` compute `hash(data) % divisor` and return an integer in the range `[0, divisor)`. This is the classic consistent-hashing primitive for sharding, slot assignment, cache bucket selection, and load balancing.
+
+The full hash is used via `BigInt` arithmetic so the modulo is computed with full precision — there's no truncation or JavaScript number precision loss.
+
+```typescript
+import { Hashery } from 'hashery';
+
+const hashery = new Hashery();
+
+// Pick one of 16 shards for a user (async)
+const shard = await hashery.toModulo({ userId: 'user@example.com' }, 16);
+console.log(shard); // Deterministic integer in [0, 16)
+
+// Same input always maps to the same shard
+const sameShard = await hashery.toModulo({ userId: 'user@example.com' }, 16);
+console.log(shard === sameShard); // true
+
+// Fast synchronous sharding (defaults to djb2)
+const serverIndex = hashery.toModuloSync({ requestId: 'req_abc123' }, 10);
+
+// Choose a specific algorithm
+const bucket = hashery.toModuloSync(
+  { key: 'example' },
+  256,
+  { algorithm: 'fnv1' }
+);
+
+// Works with any supported algorithm in the async method
+const cryptoShard = await hashery.toModulo(
+  { customerId: 'cust_xyz' },
+  64,
+  { algorithm: 'SHA-512' }
+);
+```
+
+The divisor must be a positive integer; otherwise an error is thrown.
 
 ## Browser Usage
 
@@ -1313,6 +1355,70 @@ const serverId = hashery.toNumberSync(
 
 // This will throw an error (WebCrypto not supported in sync mode)
 // const invalid = hashery.toNumberSync({ user: 'john' }, { algorithm: 'SHA-256' }); // ❌
+```
+
+## `toModulo(data, divisor, options?)`
+
+Generates a deterministic non-negative integer in the range `[0, divisor)` by computing `hash(data) % divisor` (async). The full hash is used via `BigInt` arithmetic, so the modulo is computed with full precision — no truncation or JavaScript number precision loss.
+
+**Parameters:**
+- `data` (unknown) - The data to hash (will be stringified before hashing)
+- `divisor` (number) - A positive integer. Result is in the range `[0, divisor)`
+- `options` (object, optional) - Configuration options
+  - `algorithm` (string, optional) - The hash algorithm to use (defaults to `defaultAlgorithm`)
+
+**Returns:** `Promise<number>` - A Promise that resolves to an integer in the range `[0, divisor)`
+
+**Throws:** `Error` if `divisor` is not a positive integer
+
+**Example:**
+
+```typescript
+const hashery = new Hashery();
+
+// Assign a user to one of 16 shards
+const shard = await hashery.toModulo({ userId: 'user@example.com' }, 16);
+
+// Use a specific algorithm
+const bucket = await hashery.toModulo(
+  { key: 'example' },
+  1024,
+  { algorithm: 'SHA-512' }
+);
+```
+
+## `toModuloSync(data, divisor, options?)`
+
+Generates a deterministic non-negative integer in the range `[0, divisor)` synchronously by computing `hash(data) % divisor`. Uses `BigInt` arithmetic for full-precision modulo.
+
+**Important:** This method only works with synchronous hash providers (djb2, fnv1, murmur, crc32). WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported and will throw an error.
+
+**Parameters:**
+- `data` (unknown) - The data to hash (will be stringified before hashing)
+- `divisor` (number) - A positive integer. Result is in the range `[0, divisor)`
+- `options` (object, optional) - Configuration options
+  - `algorithm` (string, optional) - The hash algorithm to use (defaults to `defaultAlgorithmSync`)
+
+**Returns:** `number` - An integer in the range `[0, divisor)`
+
+**Throws:**
+- `Error` if `divisor` is not a positive integer
+- `Error` if the specified algorithm does not support synchronous hashing
+
+**Example:**
+
+```typescript
+const hashery = new Hashery();
+
+// Fast synchronous sharding across 10 servers
+const serverIndex = hashery.toModuloSync({ requestId: 'req_abc' }, 10);
+
+// Use a specific sync algorithm
+const bucket = hashery.toModuloSync(
+  { key: 'example' },
+  256,
+  { algorithm: 'fnv1' }
+);
 ```
 
 ## `loadProviders(providers?, options?)`

@@ -311,6 +311,59 @@ export type HasheryToNumberSyncOptions = {
 };
 
 /**
+ * Options for the toModulo method.
+ * @example
+ * ```ts
+ * const hashery = new Hashery();
+ *
+ * // Classic consistent hashing for sharding
+ * const shard = await hashery.toModulo({ userId: 'user@example.com' }, 16);
+ *
+ * // With a specific algorithm
+ * const slot = await hashery.toModulo(
+ *   { key: 'example' },
+ *   10,
+ *   { algorithm: 'SHA-512' }
+ * );
+ * ```
+ */
+export type HasheryToModuloOptions = {
+	/**
+	 * The hash algorithm to use.
+	 * Defaults to 'SHA-256' if not specified.
+	 * Supported algorithms include: 'SHA-256', 'SHA-384', 'SHA-512', 'djb2', 'fnv1', 'murmur', 'crc32'
+	 */
+	algorithm?: HashAlgorithm | (string & {});
+};
+
+/**
+ * Options for the toModuloSync method.
+ * @example
+ * ```ts
+ * const hashery = new Hashery();
+ *
+ * // Fast synchronous sharding
+ * const shard = hashery.toModuloSync({ userId: 'user@example.com' }, 16);
+ *
+ * // With a specific algorithm
+ * const slot = hashery.toModuloSync(
+ *   { key: 'example' },
+ *   10,
+ *   { algorithm: 'fnv1' }
+ * );
+ * ```
+ */
+export type HasheryToModuloSyncOptions = {
+	/**
+	 * The hash algorithm to use.
+	 * Defaults to 'djb2' if not specified.
+	 * Supported synchronous algorithms include: 'djb2', 'fnv1', 'murmur', 'crc32'
+	 * Note: WebCrypto algorithms (SHA-256, SHA-384, SHA-512) are not supported in sync mode.
+	 */
+	algorithm?: HashAlgorithm | (string & {});
+};
+
+/**
  * Function type for serializing data to a string.
  * @param data - The data to stringify
  * @returns The stringified representation

@@ -1754,4 +1754,281 @@ describe("Hashery", () => {
 			expect(hashery.cache.size).toBe(1);
 		});
 	});
+
+	describe("toModulo method", () => {
+		test("should return a number in the range [0, divisor)", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test", value: 42 };
+
+			const result = await hashery.toModulo(data, 16);
+
+			expect(typeof result).toBe("number");
+			expect(Number.isInteger(result)).toBe(true);
+			expect(result).toBeGreaterThanOrEqual(0);
+			expect(result).toBeLessThan(16);
+		});
+
+		test("should produce consistent results for the same data", async () => {
+			const hashery = new Hashery();
+			const data = { userId: "user@example.com" };
+
+			const result1 = await hashery.toModulo(data, 32);
+			const result2 = await hashery.toModulo(data, 32);
+
+			expect(result1).toBe(result2);
+		});
+
+		test("should produce different results for different data", async () => {
+			const hashery = new Hashery();
+
+			const result1 = await hashery.toModulo({ id: 1 }, 1000);
+			const result2 = await hashery.toModulo({ id: 2 }, 1000);
+
+			expect(result1).not.toBe(result2);
+		});
+
+		test("should always return 0 when divisor is 1", async () => {
+			const hashery = new Hashery();
+
+			const result1 = await hashery.toModulo({ id: 1 }, 1);
+			const result2 = await hashery.toModulo({ id: 2 }, 1);
+
+			expect(result1).toBe(0);
+			expect(result2).toBe(0);
+		});
+
+		test("should support specifying an algorithm", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			const sha256Result = await hashery.toModulo(data, 1000, {
+				algorithm: "SHA-256",
+			});
+			const sha512Result = await hashery.toModulo(data, 1000, {
+				algorithm: "SHA-512",
+			});
+
+			expect(sha256Result).toBeGreaterThanOrEqual(0);
+			expect(sha256Result).toBeLessThan(1000);
+			expect(sha512Result).toBeGreaterThanOrEqual(0);
+			expect(sha512Result).toBeLessThan(1000);
+			// Different algorithms very likely give different results with a large divisor
+			expect(sha256Result).not.toBe(sha512Result);
+		});
+
+		test("should use default algorithm when no options provided", async () => {
+			const hashery = new Hashery({ defaultAlgorithm: "SHA-512" });
+			const data = { name: "test" };
+
+			const implicit = await hashery.toModulo(data, 1000);
+			const explicit = await hashery.toModulo(data, 1000, {
+				algorithm: "SHA-512",
+			});
+
+			expect(implicit).toBe(explicit);
+		});
+
+		test("should throw when divisor is zero", async () => {
+			const hashery = new Hashery();
+
+			await expect(hashery.toModulo({ id: 1 }, 0)).rejects.toThrow(
+				"divisor must be a positive integer",
+			);
+		});
+
+		test("should throw when divisor is negative", async () => {
+			const hashery = new Hashery();
+
+			await expect(hashery.toModulo({ id: 1 }, -5)).rejects.toThrow(
+				"divisor must be a positive integer",
+			);
+		});
+
+		test("should throw when divisor is not an integer", async () => {
+			const hashery = new Hashery();
+
+			await expect(hashery.toModulo({ id: 1 }, 1.5)).rejects.toThrow(
+				"divisor must be a positive integer",
+			);
+		});
+
+		test("should throw when divisor is NaN", async () => {
+			const hashery = new Hashery();
+
+			await expect(hashery.toModulo({ id: 1 }, Number.NaN)).rejects.toThrow(
+				"divisor must be a positive integer",
+			);
+		});
+
+		test("should distribute values across the divisor space", async () => {
+			const hashery = new Hashery();
+			const divisor = 8;
+			const buckets = new Set<number>();
+
+			for (let i = 0; i < 200; i++) {
+				const bucket = await hashery.toModulo({ value: i }, divisor);
+				buckets.add(bucket);
+			}
+
+			// With 200 inputs across 8 buckets we expect every bucket to be populated
+			expect(buckets.size).toBe(divisor);
+		});
+
+		test("should handle large divisors without precision loss", async () => {
+			const hashery = new Hashery();
+			const divisor = Number.MAX_SAFE_INTEGER;
+			const data = { name: "test" };
+
+			const result = await hashery.toModulo(data, divisor);
+
+			expect(Number.isInteger(result)).toBe(true);
+			expect(result).toBeGreaterThanOrEqual(0);
+			expect(result).toBeLessThan(divisor);
+		});
+
+		test("should work with sync algorithms via the async method", async () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			const result = await hashery.toModulo(data, 100, { algorithm: "djb2" });
+
+			expect(result).toBeGreaterThanOrEqual(0);
+			expect(result).toBeLessThan(100);
+		});
+	});
+
+	describe("toModuloSync method", () => {
+		test("should return a number in the range [0, divisor)", () => {
+			const hashery = new Hashery();
+			const data = { name: "test", value: 42 };
+
+			const result = hashery.toModuloSync(data, 16);
+
+			expect(typeof result).toBe("number");
+			expect(Number.isInteger(result)).toBe(true);
+			expect(result).toBeGreaterThanOrEqual(0);
+			expect(result).toBeLessThan(16);
+		});
+
+		test("should produce consistent results for the same data", () => {
+			const hashery = new Hashery();
+			const data = { userId: "user@example.com" };
+
+			const result1 = hashery.toModuloSync(data, 32);
+			const result2 = hashery.toModuloSync(data, 32);
+
+			expect(result1).toBe(result2);
+		});
+
+		test("should produce different results for different data", () => {
+			const hashery = new Hashery();
+
+			const result1 = hashery.toModuloSync({ id: "a" }, 1000);
+			const result2 = hashery.toModuloSync({ id: "b" }, 1000);
+
+			expect(result1).not.toBe(result2);
+		});
+
+		test("should always return 0 when divisor is 1", () => {
+			const hashery = new Hashery();
+
+			expect(hashery.toModuloSync({ id: 1 }, 1)).toBe(0);
+			expect(hashery.toModuloSync({ id: 2 }, 1)).toBe(0);
+		});
+
+		test("should support specifying a sync algorithm", () => {
+			const hashery = new Hashery();
+			const data = { name: "test" };
+
+			const djb2Result = hashery.toModuloSync(data, 1000, {
+				algorithm: "djb2",
+			});
+			const fnv1Result = hashery.toModuloSync(data, 1000, {
+				algorithm: "fnv1",
+			});
+
+			expect(djb2Result).toBeGreaterThanOrEqual(0);
+			expect(djb2Result).toBeLessThan(1000);
+			expect(fnv1Result).toBeGreaterThanOrEqual(0);
+			expect(fnv1Result).toBeLessThan(1000);
+		});
+
+		test("should use defaultAlgorithmSync when no options provided", () => {
+			const hashery = new Hashery({ defaultAlgorithmSync: "fnv1" });
+			const data = { name: "test" };
+
+			const implicit = hashery.toModuloSync(data, 1000);
+			const explicit = hashery.toModuloSync(data, 1000, {
+				algorithm: "fnv1",
+			});
+
+			expect(implicit).toBe(explicit);
+		});
+
+		test("should throw when divisor is zero", () => {
+			const hashery = new Hashery();
+
+			expect(() => hashery.toModuloSync({ id: 1 }, 0)).toThrow(
+				"divisor must be a positive integer",
+			);
+		});
+
+		test("should throw when divisor is negative", () => {
+			const hashery = new Hashery();
+
+			expect(() => hashery.toModuloSync({ id: 1 }, -1)).toThrow(
+				"divisor must be a positive integer",
+			);
+		});
+
+		test("should throw when divisor is not an integer", () => {
+			const hashery = new Hashery();
+
+			expect(() => hashery.toModuloSync({ id: 1 }, 2.7)).toThrow(
+				"divisor must be a positive integer",
+			);
+		});
+
+		test("should throw when divisor is NaN", () => {
+			const hashery = new Hashery();
+
+			expect(() => hashery.toModuloSync({ id: 1 }, Number.NaN)).toThrow(
+				"divisor must be a positive integer",
+			);
+		});
+
+		test("should throw when using an async-only algorithm", () => {
+			const hashery = new Hashery();
+
+			expect(() =>
+				hashery.toModuloSync({ id: 1 }, 10, { algorithm: "SHA-256" }),
+			).toThrow("does not support synchronous hashing");
+		});
+
+		test("should distribute values across the divisor space", () => {
+			const hashery = new Hashery();
+			const divisor = 8;
+			const buckets = new Set<number>();
+
+			for (let i = 0; i < 200; i++) {
+				const bucket = hashery.toModuloSync({ value: i }, divisor);
+				buckets.add(bucket);
+			}
+
+			// With 200 inputs across 8 buckets we expect every bucket to be populated
+			expect(buckets.size).toBe(divisor);
+		});
+
+		test("async and sync should agree when using the same sync algorithm", async () => {
+			const hashery = new Hashery();
+			const data = { name: "parity" };
+
+			const asyncResult = await hashery.toModulo(data, 97, {
+				algorithm: "djb2",
+			});
+			const syncResult = hashery.toModuloSync(data, 97, { algorithm: "djb2" });
+
+			expect(asyncResult).toBe(syncResult);
+		});
+	});
 });
