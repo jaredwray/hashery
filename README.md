@@ -39,7 +39,11 @@ Browser / Nodejs Compatible Object Hashing
   - [Browser Usage](#browser-usage)
 - [Hooks](#hooks)
   - [Warning Events for Invalid Algorithms](#warning-events-for-invalid-algorithms)
-  - [Migration from v1 to v2](#migration-from-v1-to-v2)
+- [Migration from v1 to v2](#migration-from-v1-to-v2)
+  - [Changed Defaults](#changed-defaults)
+  - [Renamed Options](#renamed-options)
+  - [Changed Method Signatures](#changed-method-signatures)
+  - [Removed Methods](#removed-methods)
 - [Caching](#caching)
 - [Web Crypto](#web-crypto)
   - [Browser Support](#browser-support)
@@ -675,11 +679,11 @@ hashery2.onHook('before:toHash', async (context) => {
 const hash = await hashery2.toHash({ data: 'example' }); // Returns hash successfully
 ```
 
-## Migration from v1 to v2
+# Migration from v1 to v2
 
 Hashery v2 upgrades its underlying [`hookified`](https://hookified.org) dependency from v1 to v2. Because `HasheryOptions` extends `HookifiedOptions`, the breaking changes in `hookified` v2 also apply to Hashery. The hook event names (`before:toHash`, `after:toHash`, `before:toHashSync`, `after:toHashSync`), the `warn` event, and the `onHook(event, handler)` calling style are **unchanged** — existing code that uses these will continue to work without modification.
 
-### Changed Defaults
+## Changed Defaults
 
 The most important behavior change is that `throwOnEmptyListeners` now defaults to `true`. When a hook handler throws, `hookified` internally emits an `error` event; if you have no `'error'` listener attached, that emit will now re-throw. To restore the v1 behavior, either attach an `error` listener or disable the option:
 
@@ -694,7 +698,7 @@ hashery.on('error', (err) => {
 });
 ```
 
-### Renamed Options
+## Renamed Options
 
 | v1 (deprecated) | v2 (use this) |
 |---|---|
@@ -709,7 +713,7 @@ const hashery = new Hashery({ throwHookErrors: true, logger: myLogger });
 const hashery = new Hashery({ throwOnHookError: true, eventLogger: myLogger });
 ```
 
-### Changed Method Signatures
+## Changed Method Signatures
 
 `removeHook()` no longer takes positional `(event, handler)` arguments. It now accepts the `IHook` object that `onHook()` returns:
 
@@ -725,7 +729,7 @@ if (hook) {
 }
 ```
 
-### Removed Methods
+## Removed Methods
 
 - `onHookEntry()` has been removed. Use `onHook()` instead.
 
