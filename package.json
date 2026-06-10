@@ -50,7 +50,7 @@
     "@types/node": "^24.13.1",
     "@types/object-hash": "^3.0.6",
     "@vitest/coverage-v8": "^4.1.8",
-    "docula": "^1.12.0",
+    "docula": "^2.0.0",
     "dotenv": "^17.4.2",
     "object-hash": "^3.0.0",
     "rimraf": "^6.1.2",
