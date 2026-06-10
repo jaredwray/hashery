@@ -64,12 +64,10 @@ Browser / Nodejs Compatible Object Hashing
 - [Benchmarks](#benchmarks)
 - [Migration from v2 to v3](#migration-from-v2-to-v3)
   - [Node.js Requirements](#nodejs-requirements)
-  - [Updated Dependencies](#updated-dependencies)
 - [Migration from v1 to v2](#migration-from-v1-to-v2)
   - [Changed Defaults](#changed-defaults)
   - [Renamed Options](#renamed-options)
   - [Changed Method Signatures](#changed-method-signatures)
-  - [Removed Methods](#removed-methods)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
 - [License and Copyright](#license-and-copyright)
 
