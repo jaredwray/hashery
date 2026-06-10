@@ -19,7 +19,7 @@ jobs:
       with:
         node-version: 24
     - name: Install Dependencies
-      run: npm install -g pnpm && pnpm install
+      run: corepack enable && pnpm install
     - name: Testing
       run: pnpm test:ci
 
@@ -32,7 +32,7 @@ jobs:
       with:
         node-version: 24
     - name: Install Dependencies
-      run: npm install -g pnpm && pnpm install
+      run: corepack enable && pnpm install
     - name: Build
       run: pnpm build
 
@@ -46,7 +46,7 @@ jobs:
       with:
         node-version: 24
     - name: Install Dependencies
-      run: npm install -g pnpm && pnpm install
+      run: corepack enable && pnpm install
     - name: Build
       run: pnpm build
     - name: Publish
