@@ -24,7 +24,7 @@
   "repository": "https://github.com/jaredwray/hashery.git",
   "author": "Jared Wray <me@jaredwray.com>",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.18"
   },
   "license": "MIT",
   "scripts": {
@@ -41,7 +41,7 @@
     "website:dev": "rimraf ./site/README.md ./site/dist && pnpm docula dev"
   },
   "dependencies": {
-    "hookified": "^2.1.1"
+    "hookified": "^3.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",
