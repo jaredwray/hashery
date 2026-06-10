@@ -39,11 +39,6 @@ Browser / Nodejs Compatible Object Hashing
   - [Browser Usage](#browser-usage)
 - [Hooks](#hooks)
   - [Warning Events for Invalid Algorithms](#warning-events-for-invalid-algorithms)
-- [Migration from v1 to v2](#migration-from-v1-to-v2)
-  - [Changed Defaults](#changed-defaults)
-  - [Renamed Options](#renamed-options)
-  - [Changed Method Signatures](#changed-method-signatures)
-  - [Removed Methods](#removed-methods)
 - [Caching](#caching)
 - [Web Crypto](#web-crypto)
   - [Browser Support](#browser-support)
@@ -67,6 +62,12 @@ Browser / Nodejs Compatible Object Hashing
 - [API - Types](#api---types)
   - [HashAlgorithm](#hashalgorithm)
 - [Benchmarks](#benchmarks)
+- [Migration from v2 to v3](#migration-from-v2-to-v3)
+  - [Node.js Requirements](#nodejs-requirements)
+- [Migration from v1 to v2](#migration-from-v1-to-v2)
+  - [Changed Defaults](#changed-defaults)
+  - [Renamed Options](#renamed-options)
+  - [Changed Method Signatures](#changed-method-signatures)
 - [Code of Conduct and Contributing](#code-of-conduct-and-contributing)
 - [License and Copyright](#license-and-copyright)
 
@@ -679,62 +680,6 @@ hashery2.onHook('before:toHash', async (context) => {
 const hash = await hashery2.toHash({ data: 'example' }); // Returns hash successfully
 ```
 
-# Migration from v1 to v2
-
-Hashery v2 upgrades its underlying [`hookified`](https://hookified.org) dependency from v1 to v2. Because `HasheryOptions` extends `HookifiedOptions`, the breaking changes in `hookified` v2 also apply to Hashery. The hook event names (`before:toHash`, `after:toHash`, `before:toHashSync`, `after:toHashSync`), the `warn` event, and the `onHook(event, handler)` calling style are **unchanged** — existing code that uses these will continue to work without modification.
-
-## Changed Defaults
-
-The most important behavior change is that `throwOnEmptyListeners` now defaults to `true`. When a hook handler throws, `hookified` internally emits an `error` event; if you have no `'error'` listener attached, that emit will now re-throw. To restore the v1 behavior, either attach an `error` listener or disable the option:
-
-```typescript
-// Option A: opt back into v1 behavior
-const hashery = new Hashery({ throwOnEmptyListeners: false });
-
-// Option B: handle error events explicitly (recommended)
-const hashery = new Hashery();
-hashery.on('error', (err) => {
-  console.error('Hook error:', err);
-});
-```
-
-## Renamed Options
-
-| v1 (deprecated) | v2 (use this) |
-|---|---|
-| `throwHookErrors` | `throwOnHookError` |
-| `logger` | `eventLogger` |
-
-```typescript
-// Before (v1)
-const hashery = new Hashery({ throwHookErrors: true, logger: myLogger });
-
-// After (v2)
-const hashery = new Hashery({ throwOnHookError: true, eventLogger: myLogger });
-```
-
-## Changed Method Signatures
-
-`removeHook()` no longer takes positional `(event, handler)` arguments. It now accepts the `IHook` object that `onHook()` returns:
-
-```typescript
-// Before (v1)
-hashery.onHook('before:toHash', myHandler);
-hashery.removeHook('before:toHash', myHandler);
-
-// After (v2) — onHook returns the stored IHook
-const hook = hashery.onHook('before:toHash', myHandler);
-if (hook) {
-  hashery.removeHook(hook);
-}
-```
-
-## Removed Methods
-
-- `onHookEntry()` has been removed. Use `onHook()` instead.
-
-For the full list of `hookified` v2 changes, see the [hookified docs](https://hookified.org).
-
 # Caching
 
 Hashery includes a built-in FIFO (First In, First Out) cache that stores computed hash values. When the same data is hashed with the same algorithm, the cached result is returned instead of recomputing. Caching is enabled by default with a max size of 4000 entries.
@@ -772,7 +717,7 @@ The Web Crypto API is supported in all modern browsers:
 
 ## Node.js Support
 
-Web Crypto API was introduced in Node.js 15.0.0. Hashery is tested against Node.js LTS 20+ and automatically detects and uses the appropriate crypto implementation for your environment via the `crypto.webcrypto` global.
+Web Crypto API was introduced in Node.js 15.0.0. Hashery is tested against Node.js LTS 22+ and automatically detects and uses the appropriate crypto implementation for your environment via the `crypto.webcrypto` global.
 
 ## Available Algorithms
 
@@ -1431,6 +1376,78 @@ In this benchmark it shows the performance comparison between Hashery, `node:cry
 |  SHA-384 Async  |   -28%    |     432K  |      3µs  |  ±0.03%  |     394K  |
 |  SHA-256 Async  |   -29%    |     425K  |      3µs  |  ±0.03%  |     393K  |
 |  SHA-512 Async  |   -29%    |     425K  |      3µs  |  ±0.04%  |     384K  |
+
+# Migration from v2 to v3
+
+Hashery v3 contains **no API changes**. All classes, methods, options, hooks, and events work exactly as they did in v2 — no code changes are required. The breaking changes are limited to runtime requirements.
+
+## Node.js Requirements
+
+Hashery v3 requires Node.js `>= 22.18` (v2 supported Node.js `>= 20`, which has reached end of life). Upgrade your Node.js version if needed, then update the package:
+
+```bash
+npm install hashery@3
+```
+
+## Updated Dependencies
+
+The underlying [`hookified`](https://hookified.org) dependency has been upgraded from v2 to v3. Its public API is unchanged — the hook event names, the `warn` event, `onHook()`/`removeHook()`, and all `HasheryOptions` from v2 continue to work without modification. Browser usage is unaffected.
+
+# Migration from v1 to v2
+
+Hashery v2 upgrades its underlying [`hookified`](https://hookified.org) dependency from v1 to v2. Because `HasheryOptions` extends `HookifiedOptions`, the breaking changes in `hookified` v2 also apply to Hashery. The hook event names (`before:toHash`, `after:toHash`, `before:toHashSync`, `after:toHashSync`), the `warn` event, and the `onHook(event, handler)` calling style are **unchanged** — existing code that uses these will continue to work without modification.
+
+## Changed Defaults
+
+The most important behavior change is that `throwOnEmptyListeners` now defaults to `true`. When a hook handler throws, `hookified` internally emits an `error` event; if you have no `'error'` listener attached, that emit will now re-throw. To restore the v1 behavior, either attach an `error` listener or disable the option:
+
+```typescript
+// Option A: opt back into v1 behavior
+const hashery = new Hashery({ throwOnEmptyListeners: false });
+
+// Option B: handle error events explicitly (recommended)
+const hashery = new Hashery();
+hashery.on('error', (err) => {
+  console.error('Hook error:', err);
+});
+```
+
+## Renamed Options
+
+| v1 (deprecated) | v2 (use this) |
+|---|---|
+| `throwHookErrors` | `throwOnHookError` |
+| `logger` | `eventLogger` |
+
+```typescript
+// Before (v1)
+const hashery = new Hashery({ throwHookErrors: true, logger: myLogger });
+
+// After (v2)
+const hashery = new Hashery({ throwOnHookError: true, eventLogger: myLogger });
+```
+
+## Changed Method Signatures
+
+`removeHook()` no longer takes positional `(event, handler)` arguments. It now accepts the `IHook` object that `onHook()` returns:
+
+```typescript
+// Before (v1)
+hashery.onHook('before:toHash', myHandler);
+hashery.removeHook('before:toHash', myHandler);
+
+// After (v2) — onHook returns the stored IHook
+const hook = hashery.onHook('before:toHash', myHandler);
+if (hook) {
+  hashery.removeHook(hook);
+}
+```
+
+## Removed Methods
+
+- `onHookEntry()` has been removed. Use `onHook()` instead.
+
+For the full list of `hookified` v2 changes, see the [hookified docs](https://hookified.org).
 
 # Code of Conduct and Contributing
 Please use our [Code of Conduct](CODE_OF_CONDUCT.md) and [Contributing](CONTRIBUTING.md) guidelines for development and testing. We appreciate your contributions!
