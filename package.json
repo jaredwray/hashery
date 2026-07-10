@@ -41,7 +41,7 @@
     "website:dev": "rimraf ./site/README.md ./site/dist && pnpm docula dev"
   },
   "dependencies": {
-    "hookified": "^3.0.0"
+    "hookified": "^3.0.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.3",
