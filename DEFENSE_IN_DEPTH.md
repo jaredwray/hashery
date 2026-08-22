@@ -34,15 +34,15 @@ Profile: npm library · public
 - [x] `persist-credentials: false` on checkouts that don't push — PR #74
 - [x] No `pull_request_target` on workflows that run untrusted PR code — verified
 - [x] Artifact-publishing workflows disable `actions/setup-node` default caching (`package-manager-cache: false`) to prevent cache poisoning — PR #74
-- [ ] No npm tokens (or other registry credentials) in Actions secrets — workflow YAML has none (publish uses OIDC `id-token`); Actions secret store not confirmed from this agent
+- [x] No npm tokens (or other registry credentials) in Actions secrets — verified (maintainer; OIDC stage-only, no npm/registry tokens)
 
 ## 5. npm publishing — npm libraries only
 
-- [ ] OIDC trusted publishing configured **stage-only** on npmjs.com for the publish workflow — it can stage, never publish live (manual)
+- [x] OIDC trusted publishing configured **stage-only** on npmjs.com for the publish workflow — it can stage, never publish live — verified (maintainer)
 - [x] `.github/workflows/release.yml` packs then stages with `pnpm stage publish ./packed/*.tgz --no-git-checks` — PR #74
-- [ ] Maintainer promotes staged versions with 2FA (manual)
-- [ ] Drydock connected — staged releases reviewed before promotion (manual)
-- [ ] No direct publish rights: package requires 2FA and disallows tokens (manual)
+- [x] Maintainer promotes staged versions with 2FA — verified (maintainer)
+- [x] Drydock connected — staged releases reviewed before promotion — verified (maintainer)
+- [x] No direct publish rights: package requires 2FA and disallows tokens — verified (maintainer)
 - [x] `package.json` `repository.url` accurate so provenance maps to this repo — verified `https://github.com/jaredwray/hashery.git`
 
 ## 6. Security tooling
@@ -54,5 +54,5 @@ Profile: npm library · public
 ## 7. Repository lockdown
 
 - [ ] `lockdown-repo.sh` applied; `--check` with `--required-checks "tests,zizmor"` and `--allowed-actions "codecov/*"` passes (PRs required on the default branch, merges blocked unless required status checks pass, tag ruleset, immutable releases, fork-PR approval (public repos), read-only workflow tokens, Actions allowlist, secret scanning, Dependabot disabled, private vulnerability reporting (public repos)) (PR #75 pending)
-- [ ] Phishing-resistant 2FA (passkeys / hardware keys) on the GitHub and npm accounts (manual)
-- [ ] Recovery codes stored offline in a password manager (manual)
+- [x] Phishing-resistant 2FA (passkeys / hardware keys) on the GitHub and npm accounts — verified (maintainer)
+- [x] Recovery codes stored offline in a password manager — verified (maintainer)
