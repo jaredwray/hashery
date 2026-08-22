@@ -23,7 +23,7 @@ jobs:
         node-version: 24
 
     - name: Install Dependencies
-      run: corepack enable && pnpm install
+      run: corepack enable && pnpm install --frozen-lockfile
 
     - name: Build    
       run: pnpm build
