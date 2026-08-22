@@ -6,13 +6,13 @@ Profile: npm library · public
 
 ## 1. Security docs
 
-- [ ] `SECURITY.md` present — contact info + "How this repository is secured" summary (PR #71 pending)
-- [ ] `DEFENSE_IN_DEPTH.md` present (this file) (PR #71 pending)
+- [x] `SECURITY.md` present — contact info + "How this repository is secured" summary — PR #71
+- [x] `DEFENSE_IN_DEPTH.md` present (this file) — PR #71
 
 ## 2. CODEOWNERS and cloud bootstrap
 
-- [ ] `.github/CODEOWNERS` covers `/.github/`, `/.cursor/`, `/.devcontainer/`, `/scripts/` with owners the maintainer names
-- [ ] Codespaces and Cursor Cloud Agents bootstrap Aikido Safe Chain via scripts/setup-cloud-environment.sh (--ci shims, frozen lockfile)
+- [ ] `.github/CODEOWNERS` covers `/.github/`, `/.cursor/`, `/.devcontainer/`, `/scripts/` with owners the maintainer names (PR # pending)
+- [ ] Codespaces and Cursor Cloud Agents bootstrap Aikido Safe Chain via scripts/setup-cloud-environment.sh (--ci shims, frozen lockfile) (PR # pending)
 
 ## 3. Dependencies (pnpm)
 
@@ -47,9 +47,9 @@ Profile: npm library · public
 
 ## 6. Security tooling
 
-- [ ] Aikido runs on every build
+- [x] Aikido runs on every build — verified (Aikido Security GitHub app on pull requests)
 - [ ] Aikido release gate: the release workflow's stage-publish job `needs:` a passing `scan-release`
-- [ ] Socket reviews every PR that changes dependencies
+- [x] Socket reviews every PR that changes dependencies — verified (Socket Security GitHub app on pull requests)
 
 ## 7. Repository lockdown
 
