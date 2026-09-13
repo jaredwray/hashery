@@ -8,6 +8,3 @@ trustPolicy: no-downgrade
 
 allowBuilds:
   esbuild: true
-
-overrides:
-  writr: 6.1.5
