@@ -8,6 +8,6 @@ trustPolicy: no-downgrade
 
 allowBuilds:
   esbuild: true
-  # wrangler (Cloudflare Pages deploy) installs sharp and workerd.
+  # wrangler pulls sharp and workerd, and both run install scripts.
   sharp: true
   workerd: true
