@@ -3,6 +3,8 @@
 # hashery
 Browser / Nodejs Compatible Object Hashing
 
+Documentation: [hashery.dev](https://hashery.dev)
+
 [![tests](https://github.com/jaredwray/hashery/actions/workflows/tests.yml/badge.svg)](https://github.com/jaredwray/hashery/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/jaredwray/hashery/branch/main/graph/badge.svg?token=JTuDzWoTRn)](https://codecov.io/gh/jaredwray/hashery)
 [![GitHub license](https://img.shields.io/github/license/jaredwray/hashery)](https://github.com/jaredwray/hashery/blob/main/LICENSE)

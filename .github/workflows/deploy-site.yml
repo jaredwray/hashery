@@ -1,0 +1,112 @@
+name: deploy-site
+
+on:
+  workflow_dispatch:
+  release:
+    types: [released]
+
+permissions:
+  contents: read
+
+jobs:
+  setup-build-deploy:
+    name: Deploy Website
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Socket Firewall
+        uses: SocketDev/action@ba6de6cc0565af1f42295590380973573297e31f # v1.3.2
+        with:
+          mode: firewall-free
+          firewall-version: "1.15.2"
+
+      - name: Use Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Enable Corepack
+        run: |
+          unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy ALL_PROXY all_proxy
+          corepack enable && corepack prepare
+
+      - name: Install Dependencies
+        run: sfw pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Build Website
+        run: pnpm website:build
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      # Creates the Pages project when it is missing, uploads site/dist, then
+      # attaches hashery.dev. This does not create a Worker. The API token needs
+      # Account → Cloudflare Pages → Edit and Zone → DNS → Edit on hashery.dev
+      # so Pages can write the DNS record for the custom domain.
+      - name: Publish to Cloudflare Pages
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PAGES_PROJECT: hashery
+          PAGES_DOMAIN: hashery.dev
+        run: |
+          set -euo pipefail
+          projects_json="$(pnpm exec wrangler pages project list --json)"
+          if ! printf '%s' "$projects_json" | python3 -c 'import json,os,sys; name=os.environ["PAGES_PROJECT"]; raise SystemExit(0 if any(p.get("Project Name")==name for p in json.load(sys.stdin)) else 1)'; then
+            pnpm exec wrangler pages project create "$PAGES_PROJECT" --production-branch main
+          fi
+          pnpm exec wrangler pages deploy site/dist --project-name="$PAGES_PROJECT" --branch=main
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+
+          token = os.environ["CLOUDFLARE_API_TOKEN"]
+          account = os.environ["CLOUDFLARE_ACCOUNT_ID"]
+          project = os.environ["PAGES_PROJECT"]
+          domain = os.environ["PAGES_DOMAIN"]
+          base = f"https://api.cloudflare.com/client/v4/accounts/{account}/pages/projects/{project}/domains"
+
+          def request(method, url, body=None):
+              data = None if body is None else json.dumps(body).encode()
+              req = urllib.request.Request(
+                  url,
+                  data=data,
+                  method=method,
+                  headers={
+                      "Authorization": f"Bearer {token}",
+                      "Content-Type": "application/json",
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(req) as response:
+                      return response.status, json.load(response)
+              except urllib.error.HTTPError as error:
+                  raw = error.read().decode()
+                  try:
+                      payload = json.loads(raw)
+                  except json.JSONDecodeError:
+                      payload = {"raw": raw}
+                  return error.code, payload
+
+          status, listed = request("GET", base)
+          if status != 200 or not listed.get("success"):
+              raise SystemExit(f"Failed to list Pages domains: {status} {listed}")
+          names = {item.get("name") for item in listed.get("result") or []}
+          if domain in names:
+              print(f"{domain} is already attached")
+          else:
+              status, created = request("POST", base, {"name": domain})
+              if status >= 300 or not created.get("success"):
+                  raise SystemExit(f"Failed to attach {domain}: {created}")
+              print(f"Attached {domain}")
+          PY
