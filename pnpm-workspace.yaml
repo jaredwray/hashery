@@ -1,6 +1,6 @@
-# Keep one lockfile document so GitHub's dependency graph can read it.
-# Corepack still enforces packageManager. pnpm 12 records its own binary
-# in a leading document unless this is ignore.
+# Keep one lockfile document so GitHub can read the dependency graph.
+# Corepack still enforces packageManager.
+# pnpm 12 writes a second document unless pmOnFail equals ignore.
 pmOnFail: ignore
 
 minimumReleaseAge: 10080
