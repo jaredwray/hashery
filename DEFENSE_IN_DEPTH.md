@@ -16,7 +16,7 @@ Profile: npm library · public
 
 ## 3. Dependencies (pnpm)
 
-- [x] `packageManager: pnpm@11.3+` pinned in `package.json` — verified `pnpm@11.5.3`
+- [x] `packageManager: pnpm@11.3+` pinned in `package.json` — verified `pnpm@12.9.1`
 - [x] 7-day cooldown: `minimumReleaseAge: 10080`, `minimumReleaseAgeStrict: true`, `minimumReleaseAgeIgnoreMissingTime: false`; no first-party `minimumReleaseAgeExclude` — PR #73
 - [x] `trustPolicy: no-downgrade`; no first-party `trustPolicyExclude` — PR #73
 - [x] Lifecycle scripts blocked: `strictDepBuilds: true`, `dangerouslyAllowAllBuilds: false`, `allowBuilds: {}` baseline — PR #73 (third-party `allowBuilds` exceptions: esbuild, plus sharp and workerd because the wrangler devDependency runs their install scripts)
