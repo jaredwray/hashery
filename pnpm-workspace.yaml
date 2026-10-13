@@ -1,3 +1,8 @@
+# Keep one lockfile document so GitHub can read the dependency graph.
+# Corepack still enforces packageManager.
+# pnpm 12 writes a second document unless pmOnFail equals ignore.
+pmOnFail: ignore
+
 minimumReleaseAge: 10080
 minimumReleaseAgeStrict: true
 minimumReleaseAgeIgnoreMissingTime: false
