@@ -1,3 +1,8 @@
+# Keep one lockfile document so GitHub's dependency graph can read it.
+# Corepack still enforces packageManager. pnpm 12 records its own binary
+# in a leading document unless this is ignore.
+pmOnFail: ignore
+
 minimumReleaseAge: 10080
 minimumReleaseAgeStrict: true
 minimumReleaseAgeIgnoreMissingTime: false
