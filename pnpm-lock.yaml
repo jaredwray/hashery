@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       hookified:
-        specifier: ^3.0.3
-        version: 3.0.3
+        specifier: ^3.0.4
+        version: 3.0.4
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.5.15
@@ -2200,6 +2200,10 @@ packages:
 
   hookified@3.0.3:
     resolution: {integrity: sha512-ZcbRytYgERoKtosiaXolUIPIWMgUCrSiWQEzFZ0kc8etD/LPgpy4/KOrtssFdK7ZXlTTyb4cob2veqj7osv8yA==}
+    engines: {node: '>=22.18.0'}
+
+  hookified@3.0.4:
+    resolution: {integrity: sha512-Uos6DSO6BKv4DeR1C22UosRpeUaaoQgEQ+eDCyoJRll2OGzGpZc708vL7orIvqrYLo6zhVV+pkwO9zKVCsq3PQ==}
     engines: {node: '>=22.18.0'}
 
   html-dom-parser@8.0.2:
@@ -4862,6 +4866,8 @@ snapshots:
   hookified@2.2.0: {}
 
   hookified@3.0.3: {}
+
+  hookified@3.0.4: {}
 
   html-dom-parser@8.0.2:
     dependencies:
