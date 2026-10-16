@@ -11,6 +11,7 @@ Documentation: [hashery.dev](https://hashery.dev)
 [![npm](https://img.shields.io/npm/dm/hashery)](https://npmjs.com/package/hashery)
 [![jsDelivr](https://data.jsdelivr.com/v1/package/npm/hashery/badge)](https://www.jsdelivr.com/package/npm/hashery)
 [![npm](https://img.shields.io/npm/v/hashery)](https://npmjs.com/package/hashery)
+[![Drydock review](https://img.shields.io/endpoint?url=https%3A%2F%2Fdrydock.org%2Fpublic%2Fbadge%2Fnpm%2Fhashery)](https://drydock.org/diff/hashery)
 
 # Features
 - **Simple and Easy Object Hashing** - Object hashing based on multiple algorithms.
