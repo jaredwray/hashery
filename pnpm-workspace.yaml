@@ -11,6 +11,10 @@ strictDepBuilds: true
 dangerouslyAllowAllBuilds: false
 trustPolicy: no-downgrade
 
+# Pin every undici 7 release to 7.30.0. This keeps undici 8.10.2.
+overrides:
+  "undici@7": 7.30.0
+
 allowBuilds:
   esbuild: true
   # wrangler pulls sharp and workerd, and both run install scripts.
