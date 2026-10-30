@@ -11,9 +11,17 @@ strictDepBuilds: true
 dangerouslyAllowAllBuilds: false
 trustPolicy: no-downgrade
 
-# Pin every undici 7 release to 7.30.0. This keeps undici 8.10.2.
+# miniflare requests undici 7.29.1. The 7.x override replaces that request.
+# Parent ranges do not force the other patched versions.
 overrides:
-  "undici@7": 7.30.0
+  # CVE-2026-87018, CVE-2026-109869, and CVE-2026-109383 have a fix in undici 7.30.1.
+  "undici@7": "7.30.1"
+  # CVE-2026-109829 has a fix in undici 8.12.2. docula accepts undici ^8.10.2.
+  "undici@8": ">=8.12.2 <9"
+  # CVE-2026-111758 and CVE-2026-111759 have a fix in markdown-it 15.0.3.
+  "markdown-it@15": "15.0.3"
+  # CVE-2023-54404 has a fix in zod 4.6.7. writr accepts zod ^4.4.3.
+  "zod@4": "4.6.7"
 
 allowBuilds:
   esbuild: true
