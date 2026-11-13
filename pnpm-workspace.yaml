@@ -11,12 +11,6 @@ strictDepBuilds: true
 dangerouslyAllowAllBuilds: false
 trustPolicy: no-downgrade
 
-# miniflare requests undici 7.29.1. The 7.x override replaces that request.
-# Parent ranges do not force the other patched versions.
-overrides:
-  # CVE-2026-87018, CVE-2026-109869, and CVE-2026-109383 have a fix in undici 7.30.1.
-  "undici@7": "7.30.1"
-
 allowBuilds:
   esbuild: true
   # wrangler pulls sharp and workerd, and both run install scripts.
