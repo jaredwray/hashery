@@ -127,7 +127,7 @@ describe("FNV1 Hash Provider", () => {
             const hash = await fnv1.toHash(data);
 
             // Known FNV-1 32-bit hash for "a"
-            expect(hash).toBe("050c5d41");
+            expect(hash).toBe("050c5d7e");
         });
 
         test("should produce correct hash for 'hello'", async () => {
@@ -136,7 +136,7 @@ describe("FNV1 Hash Provider", () => {
             const hash = await fnv1.toHash(data);
 
             // Known FNV-1 32-bit hash for "hello"
-            expect(hash).toBe("a9b7cf6f");
+            expect(hash).toBe("b6fa7167");
         });
 
         test("should produce correct hash for 'hello world'", async () => {
@@ -145,7 +145,7 @@ describe("FNV1 Hash Provider", () => {
             const hash = await fnv1.toHash(data);
 
             // Known FNV-1 32-bit hash for "hello world"
-            expect(hash).toBe("bb249d98");
+            expect(hash).toBe("548da96f");
         });
 
         test("should produce correct hash for 'The quick brown fox jumps over the lazy dog'", async () => {
@@ -154,7 +154,22 @@ describe("FNV1 Hash Provider", () => {
             const hash = await fnv1.toHash(data);
 
             // Known FNV-1 32-bit hash
-            expect(hash).toBe("70ce9897");
+            expect(hash).toBe("e9c86c6e");
+        });
+
+        // Vectors from the FNV reference test suite (test_fnv.c, FNV-1 32-bit)
+        test.each([
+            ["", "811c9dc5"],
+            ["a", "050c5d7e"],
+            ["b", "050c5d7d"],
+            ["c", "050c5d7c"],
+            ["foo", "408f5e13"],
+            ["foobar", "31f0b262"],
+        ])("should match the FNV-1 reference vector for %j", (input, expected) => {
+            const fnv1 = new FNV1();
+            const data = new TextEncoder().encode(input);
+
+            expect(fnv1.toHashSync(data)).toBe(expected);
         });
     });
 
@@ -256,7 +271,7 @@ describe("FNV1 Hash Provider", () => {
             const data = new TextEncoder().encode("hello");
             const hash = fnv1.toHashSync(data);
 
-            expect(hash).toBe("a9b7cf6f");
+            expect(hash).toBe("b6fa7167");
         });
 
         test("should handle empty buffer", () => {
