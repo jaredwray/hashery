@@ -50,7 +50,10 @@ export class FNV1 implements HashProvider {
 
         // Process each byte: hash = (hash * FNV_prime) XOR byte
         for (let i = 0; i < bytes.length; i++) {
-            hash = hash * FNV_PRIME;
+            // Math.imul keeps the multiply exact modulo 2^32. A plain
+            // `hash * FNV_PRIME` goes past Number.MAX_SAFE_INTEGER and
+            // loses the low bits before they are kept.
+            hash = Math.imul(hash, FNV_PRIME);
             hash = hash ^ bytes[i];
             // Keep it as a 32-bit unsigned integer
             hash = hash >>> 0;
