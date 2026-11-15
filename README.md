@@ -839,6 +839,19 @@ This translates to: `hash * 33 + c`, where 5381 is the magic initial value chose
 
 FNV1 (Fowler-Noll-Vo) is a non-cryptographic hash function designed for fast hash table and checksum use. Created by Glenn Fowler, Landon Curt Noll, and Kiem-Phong Vo, it's known for its excellent distribution properties and simplicity.
 
+## Compatibility with version 3.0.6
+
+The FNV-1 arithmetic fix changes hash values from version 3.0.6. For the UTF-8 bytes of `hello`, `FNV1.toHashSync` returns `b6fa7167` instead of `a9b7cf6f`.
+
+This change affects `toHash`, `toHashSync`, `toNumber`, and `toNumberSync` when they use `fnv1`. This includes calls that select `fnv1` through an option or a default algorithm. Stored keys, checksums, and assignments to slots or shards can change.
+
+Before you upgrade:
+
+- Recompute stored FNV-1 hashes from the original data.
+- Clear caches that use old FNV-1 hashes as keys.
+- Plan the migration of slot and shard assignments.
+- Do not mix old and new FNV-1 values in comparisons.
+
 ## Why Use FNV1?
 
 - **Excellent Distribution** - Superior hash distribution reduces collisions

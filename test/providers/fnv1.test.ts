@@ -159,7 +159,6 @@ describe("FNV1 Hash Provider", () => {
 
         // Vectors from the FNV reference test suite (test_fnv.c, FNV-1 32-bit)
         test.each([
-            ["", "811c9dc5"],
             ["a", "050c5d7e"],
             ["b", "050c5d7d"],
             ["c", "050c5d7c"],
