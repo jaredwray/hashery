@@ -157,16 +157,16 @@ describe("FNV1 Hash Provider", () => {
             expect(hash).toBe("e9c86c6e");
         });
 
-        // Vectors from the FNV reference test suite (test_fnv.c, FNV-1 32-bit)
+        const encoder = new TextEncoder();
+        // The expected hashes come from fnv1_32_vector in test_fnv.c.
         test.each([
-            ["a", "050c5d7e"],
-            ["b", "050c5d7d"],
-            ["c", "050c5d7c"],
-            ["foo", "408f5e13"],
-            ["foobar", "31f0b262"],
-        ])("should match the FNV-1 reference vector for %j", (input, expected) => {
+            ["050c5d7d", encoder.encode("b")],
+            ["050c5d7c", encoder.encode("c")],
+            ["408f5e13", encoder.encode("foo")],
+            ["31f0b262", encoder.encode("foobar")],
+            ["b78320a1", Uint8Array.of(0xff, 0x00, 0x00, 0x01)],
+        ])("should match the FNV-1 reference hash %s", (expected, data) => {
             const fnv1 = new FNV1();
-            const data = new TextEncoder().encode(input);
 
             expect(fnv1.toHashSync(data)).toBe(expected);
         });
