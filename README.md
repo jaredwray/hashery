@@ -65,6 +65,7 @@ Documentation: [hashery.dev](https://hashery.dev)
 - [API - Types](#api---types)
   - [HashAlgorithm](#hashalgorithm)
 - [Benchmarks](#benchmarks)
+- [Migration from v3 to v4](#migration-from-v3-to-v4)
 - [Migration from v2 to v3](#migration-from-v2-to-v3)
   - [Node.js Requirements](#nodejs-requirements)
 - [Migration from v1 to v2](#migration-from-v1-to-v2)
@@ -839,6 +840,22 @@ This translates to: `hash * 33 + c`, where 5381 is the magic initial value chose
 
 FNV1 (Fowler-Noll-Vo) is a non-cryptographic hash function designed for fast hash table and checksum use. Created by Glenn Fowler, Landon Curt Noll, and Kiem-Phong Vo, it's known for its excellent distribution properties and simplicity.
 
+## Compatibility with version 3.0.6
+
+Version 4.0.0 corrects the 32-bit FNV-1 calculation. The same input can produce a different hash after the upgrade.
+
+The example below hashes the UTF-8 bytes of `hello`. Version 3.0.6 returns `a9b7cf6f`. Version 4.0.0 returns `b6fa7167`.
+
+```js
+import { FNV1 } from 'hashery';
+
+const bytes = new TextEncoder().encode('hello');
+console.log(new FNV1().toHashSync(bytes));
+```
+
+This change affects `toHash`, `toHashSync`, `toNumber`, and `toNumberSync` when a call or a configured default selects `fnv1`.
+For stored hashes, cache keys, and slot or shard assignments, see [Migration from v3 to v4](#migration-from-v3-to-v4).
+
 ## Why Use FNV1?
 
 - **Excellent Distribution** - Superior hash distribution reduces collisions
@@ -1379,6 +1396,23 @@ In this benchmark it shows the performance comparison between Hashery, `node:cry
 |  SHA-384 Async  |   -28%    |     432K  |      3µs  |  ±0.03%  |     394K  |
 |  SHA-256 Async  |   -29%    |     425K  |      3µs  |  ±0.03%  |     393K  |
 |  SHA-512 Async  |   -29%    |     425K  |      3µs  |  ±0.04%  |     384K  |
+
+# Migration from v3 to v4
+
+If your application stores FNV-1 hashes or uses them to select slots or shards, plan a maintenance window.
+
+1. Pause writes to the affected records.
+2. Use version 4.0.0 to compute new hashes from the original data with the same serialization options.
+3. Store the new keys and checksums separately from the version 3 values.
+4. For slots or shards, compute the new assignments with version 4.0.0 and the same range and `hashLength`.
+5. Copy each record that changes slots or shards to its new location.
+6. Verify that version 4.0.0 can find the records at their new locations.
+7. Switch all readers and writers to the new keys and assignments.
+8. Resume writes.
+
+Keep the old keys and records available until all readers and writers use the new values.
+
+For disposable caches, use a new cache namespace in version 4.0.0. You can also clear the cache after all version 3 processes stop.
 
 # Migration from v2 to v3
 

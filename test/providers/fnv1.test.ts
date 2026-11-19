@@ -127,7 +127,7 @@ describe("FNV1 Hash Provider", () => {
             const hash = await fnv1.toHash(data);
 
             // Known FNV-1 32-bit hash for "a"
-            expect(hash).toBe("050c5d41");
+            expect(hash).toBe("050c5d7e");
         });
 
         test("should produce correct hash for 'hello'", async () => {
@@ -136,7 +136,7 @@ describe("FNV1 Hash Provider", () => {
             const hash = await fnv1.toHash(data);
 
             // Known FNV-1 32-bit hash for "hello"
-            expect(hash).toBe("a9b7cf6f");
+            expect(hash).toBe("b6fa7167");
         });
 
         test("should produce correct hash for 'hello world'", async () => {
@@ -145,7 +145,7 @@ describe("FNV1 Hash Provider", () => {
             const hash = await fnv1.toHash(data);
 
             // Known FNV-1 32-bit hash for "hello world"
-            expect(hash).toBe("bb249d98");
+            expect(hash).toBe("548da96f");
         });
 
         test("should produce correct hash for 'The quick brown fox jumps over the lazy dog'", async () => {
@@ -154,7 +154,21 @@ describe("FNV1 Hash Provider", () => {
             const hash = await fnv1.toHash(data);
 
             // Known FNV-1 32-bit hash
-            expect(hash).toBe("70ce9897");
+            expect(hash).toBe("e9c86c6e");
+        });
+
+        const encoder = new TextEncoder();
+        // The expected hashes come from fnv1_32_vector in test_fnv.c.
+        test.each([
+            ["050c5d7d", encoder.encode("b")],
+            ["050c5d7c", encoder.encode("c")],
+            ["408f5e13", encoder.encode("foo")],
+            ["31f0b262", encoder.encode("foobar")],
+            ["b78320a1", Uint8Array.of(0xff, 0x00, 0x00, 0x01)],
+        ])("should match the FNV-1 reference hash %s", (expected, data) => {
+            const fnv1 = new FNV1();
+
+            expect(fnv1.toHashSync(data)).toBe(expected);
         });
     });
 
@@ -256,7 +270,7 @@ describe("FNV1 Hash Provider", () => {
             const data = new TextEncoder().encode("hello");
             const hash = fnv1.toHashSync(data);
 
-            expect(hash).toBe("a9b7cf6f");
+            expect(hash).toBe("b6fa7167");
         });
 
         test("should handle empty buffer", () => {
