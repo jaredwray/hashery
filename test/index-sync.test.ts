@@ -772,6 +772,24 @@ describe("Hashery Sync Methods", () => {
 
 			expect(numDefault).toBe(numExplicit16);
 		});
+
+		test("should use all the bits of a hash that has more than 13 hex characters", () => {
+			const hashery = new Hashery();
+			hashery.providers.add({
+				name: "long-hex",
+				toHash: async () => "0123456789abcdef",
+				toHashSync: () => "0123456789abcdef",
+			});
+
+			// 0x0123456789abcdef % 256 is 0xef (239)
+			const num = hashery.toNumberSync("data", {
+				min: 0,
+				max: 255,
+				algorithm: "long-hex",
+			});
+
+			expect(num).toBe(239);
+		});
 	});
 
 	describe("toHashSync hooks", () => {
