@@ -318,17 +318,10 @@ export class Hashery extends Hookified {
 
 		// Get the hash as a hex string
 		// Take the first hashLength characters of the hash to convert to a number
-		// This provides good distribution while avoiding precision issues with JavaScript numbers
 		const hash = await this.toHash(data, { algorithm, maxLength: hashLength });
 
-		// Convert hex to a number
-		const hashNumber = Number.parseInt(hash, 16);
-
-		// Map the hash number to the desired range
-		const range = max - min + 1;
-		const mapped = min + (hashNumber % range);
-
-		return mapped;
+		// Map the hash to the desired range
+		return this.mapHashToRange(hash, min, max);
 	}
 
 	/**
@@ -500,17 +493,25 @@ export class Hashery extends Hookified {
 
 		// Get the hash as a hex string
 		// Take the first hashLength characters of the hash to convert to a number
-		// This provides good distribution while avoiding precision issues with JavaScript numbers
 		const hash = this.toHashSync(data, { algorithm, maxLength: hashLength });
 
-		// Convert hex to a number
-		const hashNumber = Number.parseInt(hash, 16);
+		// Map the hash to the desired range
+		return this.mapHashToRange(hash, min, max);
+	}
 
-		// Map the hash number to the desired range
-		const range = max - min + 1;
-		const mapped = min + (hashNumber % range);
-
-		return mapped;
+	/**
+	 * Maps a hex hash to an integer between min and max (inclusive).
+	 * The hash goes into a BigInt because a Number keeps only 53 bits.
+	 * With Number.parseInt, a hash of more than 13 hex characters loses its low bits,
+	 * and then the remainder is almost always 0 for a range that is a power of 2.
+	 * @param hash - The hex hash
+	 * @param min - The minimum value of the range (inclusive)
+	 * @param max - The maximum value of the range (inclusive)
+	 * @returns A number between min and max (inclusive)
+	 */
+	private mapHashToRange(hash: string, min: number, max: number): number {
+		const range = BigInt(max - min + 1);
+		return min + Number(BigInt(`0x${hash}`) % range);
 	}
 
 	public loadProviders(

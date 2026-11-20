@@ -969,6 +969,35 @@ describe("Hashery", () => {
 			expect(booleanNum).toBeGreaterThanOrEqual(min);
 			expect(booleanNum).toBeLessThanOrEqual(max);
 		});
+
+		test("should use each value of a range of 2 with SHA-256", async () => {
+			const hashery = new Hashery();
+			const counts = [0, 0];
+
+			for (let i = 0; i < 200; i++) {
+				const num = await hashery.toNumber(
+					{ userId: `user${i}` },
+					{ min: 0, max: 1 },
+				);
+				counts[num]++;
+			}
+
+			// Each value gets approximately half of the inputs
+			expect(counts[0]).toBeGreaterThan(60);
+			expect(counts[1]).toBeGreaterThan(60);
+		});
+
+		test("should use all the bits of a hash that has more than 13 hex characters", async () => {
+			const hashery = new Hashery();
+			const data = { userId: "user@example.com" };
+
+			const hash = await hashery.toHash(data, { maxLength: 16 });
+			const expected = 1000 + Number(BigInt(`0x${hash}`) % BigInt(256));
+
+			expect(await hashery.toNumber(data, { min: 1000, max: 1255 })).toBe(
+				expected,
+			);
+		});
 	});
 
 	describe("providers property", () => {
