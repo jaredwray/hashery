@@ -200,7 +200,7 @@ export type HasheryToNumberOptions = {
 	/**
 	 * Number of characters from the hash to use for conversion.
 	 * Defaults to 16 if not specified.
-	 * This provides good distribution while avoiding precision issues with JavaScript numbers.
+	 * A hex prefix (`0x` or `0X`) counts as two characters.
 	 * @example
 	 * ```ts
 	 * // Use more hash characters for better distribution
@@ -300,7 +300,7 @@ export type HasheryToNumberSyncOptions = {
 	/**
 	 * Number of characters from the hash to use for conversion.
 	 * Defaults to 16 if not specified.
-	 * This provides good distribution while avoiding precision issues with JavaScript numbers.
+	 * A hex prefix (`0x` or `0X`) counts as two characters.
 	 * @example
 	 * ```ts
 	 * // Use more hash characters for better distribution

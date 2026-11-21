@@ -65,6 +65,7 @@ Documentation: [hashery.dev](https://hashery.dev)
 - [API - Types](#api---types)
   - [HashAlgorithm](#hashalgorithm)
 - [Benchmarks](#benchmarks)
+- [Migration for numeric assignments](#migration-for-numeric-assignments)
 - [Migration from v3 to v4](#migration-from-v3-to-v4)
 - [Migration from v2 to v3](#migration-from-v2-to-v3)
   - [Node.js Requirements](#nodejs-requirements)
@@ -270,6 +271,8 @@ console.log(fullHash); // "3f79bb7b435b05181e4ccf0d4e8..." (64 chars)
 ```
 
 ## Hash to Number (Great for Slot Management)
+
+For upgrades from version 4.0.0, see [Migration for numeric assignments](#migration-for-numeric-assignments).
 
 ```typescript
 import { Hashery } from 'hashery';
@@ -1213,6 +1216,10 @@ Generates a deterministic number within a specified range based on the hash of t
   - `algorithm` (string, optional) - The hash algorithm to use (defaults to 'SHA-256')
   - `hashLength` (number, optional) - Number of characters from hash to use for conversion (defaults to 16)
 
+Both number methods accept finite fractional bounds. If a fractional range gives a result above `max`, the method returns `max`.
+Custom providers can return hex digits with an optional `0x` or `0X` prefix. The prefix counts toward `hashLength`.
+If only the prefix fits, the method returns `min`.
+
 **Returns:** `Promise<number>` - A Promise that resolves to a number between min and max (inclusive)
 
 **Throws:** Error if min is greater than max
@@ -1245,6 +1252,8 @@ Generates a deterministic number within a specified range based on the hash of t
   - `max` (number, optional) - The maximum value of the range (inclusive, defaults to 100)
   - `algorithm` (string, optional) - The hash algorithm to use (defaults to 'djb2')
   - `hashLength` (number, optional) - Number of characters from hash to use for conversion (defaults to 16)
+
+This method accepts the same bounds and hex prefixes as [`toNumber()`](#tonumberdata-options).
 
 **Returns:** `number` - A number between min and max (inclusive)
 
@@ -1396,6 +1405,19 @@ In this benchmark it shows the performance comparison between Hashery, `node:cry
 |  SHA-384 Async  |   -28%    |     432K  |      3µs  |  ±0.03%  |     394K  |
 |  SHA-256 Async  |   -29%    |     425K  |      3µs  |  ±0.03%  |     393K  |
 |  SHA-512 Async  |   -29%    |     425K  |      3µs  |  ±0.04%  |     384K  |
+
+# Migration for numeric assignments
+
+Version 4.0.0 could lose low bits when it converted a long hash to a number. The next release uses all the selected hash digits.
+This change affects the default SHA-256 algorithm in `toNumber()`. It also affects custom providers that return long hex hashes in either number method.
+
+For example, `toNumber({ userId: 'user@example.com' }, { min: 1000, max: 1255 })` returned `1000` in version 4.0.0. The new result is `1120`.
+The SHA-256 hash is the same in both versions.
+
+- For an active experiment, keep each stored group assignment until the experiment ends.
+- For shards, calculate the old and new locations with the same input, algorithm, bounds, and `hashLength`.
+- Copy affected records to their new shards before you switch readers and writers. Keep both copies in sync until the switch.
+- Verify that the new version can read each record at its new location.
 
 # Migration from v3 to v4
 

@@ -318,17 +318,10 @@ export class Hashery extends Hookified {
 
 		// Get the hash as a hex string
 		// Take the first hashLength characters of the hash to convert to a number
-		// This provides good distribution while avoiding precision issues with JavaScript numbers
 		const hash = await this.toHash(data, { algorithm, maxLength: hashLength });
 
-		// Convert hex to a number
-		const hashNumber = Number.parseInt(hash, 16);
-
-		// Map the hash number to the desired range
-		const range = max - min + 1;
-		const mapped = min + (hashNumber % range);
-
-		return mapped;
+		// Map the hash to the desired range
+		return this.mapHashToRange(hash, min, max);
 	}
 
 	/**
@@ -500,17 +493,28 @@ export class Hashery extends Hookified {
 
 		// Get the hash as a hex string
 		// Take the first hashLength characters of the hash to convert to a number
-		// This provides good distribution while avoiding precision issues with JavaScript numbers
 		const hash = this.toHashSync(data, { algorithm, maxLength: hashLength });
 
-		// Convert hex to a number
-		const hashNumber = Number.parseInt(hash, 16);
+		// Map the hash to the desired range
+		return this.mapHashToRange(hash, min, max);
+	}
 
-		// Map the hash number to the desired range
-		const range = max - min + 1;
-		const mapped = min + (hashNumber % range);
+	private mapHashToRange(hash: string, min: number, max: number): number {
+		// A prefix alone represents zero after truncation.
+		const digits = hash.replace(/^0x/i, "0");
+		const value = BigInt(`0x${digits}`);
+		if (Number.isInteger(min) && Number.isInteger(max)) {
+			const start = BigInt(min);
+			const width = BigInt(max) - start + 1n;
+			return Number(start + (value % width));
+		}
 
-		return mapped;
+		// A width of at least one has at most 52 binary fraction bits.
+		// Use a common scale to calculate the remainder with integers.
+		const width = max - min + 1;
+		const scale = Number.isInteger(width) ? 1 : 2 ** 52;
+		const remainder = (value * BigInt(scale)) % BigInt(width * scale);
+		return Math.min(max, min + Number(remainder) / scale);
 	}
 
 	public loadProviders(
