@@ -991,12 +991,8 @@ describe("Hashery", () => {
 			const hashery = new Hashery();
 			const data = { userId: "user@example.com" };
 
-			const hash = await hashery.toHash(data, { maxLength: 16 });
-			const expected = 1000 + Number(BigInt(`0x${hash}`) % BigInt(256));
-
-			expect(await hashery.toNumber(data, { min: 1000, max: 1255 })).toBe(
-				expected,
-			);
+			// The first 16 SHA-256 digits end in 0x78. Slot 1000 + 120 is 1120.
+			expect(await hashery.toNumber(data, { min: 1000, max: 1255 })).toBe(1120);
 		});
 	});
 

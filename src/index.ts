@@ -499,19 +499,20 @@ export class Hashery extends Hookified {
 		return this.mapHashToRange(hash, min, max);
 	}
 
-	/**
-	 * Maps a hex hash to an integer between min and max (inclusive).
-	 * The hash goes into a BigInt because a Number keeps only 53 bits.
-	 * With Number.parseInt, a hash of more than 13 hex characters loses its low bits,
-	 * and then the remainder is almost always 0 for a range that is a power of 2.
-	 * @param hash - The hex hash
-	 * @param min - The minimum value of the range (inclusive)
-	 * @param max - The maximum value of the range (inclusive)
-	 * @returns A number between min and max (inclusive)
-	 */
 	private mapHashToRange(hash: string, min: number, max: number): number {
-		const range = BigInt(max - min + 1);
-		return min + Number(BigInt(`0x${hash}`) % range);
+		const value = BigInt(/^0x/i.test(hash) ? hash : `0x${hash}`);
+		if (Number.isInteger(min) && Number.isInteger(max)) {
+			const start = BigInt(min);
+			const width = BigInt(max) - start + 1n;
+			return Number(start + (value % width));
+		}
+
+		// A width of at least one has at most 52 binary fraction bits.
+		// Use a common scale to calculate the remainder with integers.
+		const width = max - min + 1;
+		const scale = Number.isInteger(width) ? 1 : 2 ** 52;
+		const remainder = (value * BigInt(scale)) % BigInt(width * scale);
+		return Math.min(max, min + Number(remainder) / scale);
 	}
 
 	public loadProviders(
