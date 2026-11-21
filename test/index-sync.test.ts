@@ -777,6 +777,7 @@ describe("Hashery Sync Methods", () => {
 			{ hash: "0123456789abcdef", min: 0, max: 255, expected: 239 },
 			{ hash: "0Xff", min: 0, max: 255, expected: 255 },
 			{ hash: "0x0123456789abcdef", min: 0, max: 255, expected: 205 },
+			{ hash: "0X1234", min: 23, max: 42, hashLength: 2, expected: 23 },
 			{
 				hash: "003fffffffffffff",
 				min: Number.MIN_SAFE_INTEGER,
@@ -793,18 +794,21 @@ describe("Hashery Sync Methods", () => {
 			{ hash: "0020000000000001", min: 0, max: 1.5, expected: 0.5 },
 			{ hash: "02", min: 0, max: 1.5, expected: 1.5 },
 			{ hash: "0123456789abcdef", min: 0.5, max: 1.5, expected: 1.5 },
-		])("maps $hash into [$min, $max]", async ({ hash, min, max, expected }) => {
-			const hashery = new Hashery();
-			hashery.providers.add({
-				name: "fixed-hex",
-				toHash: async () => hash,
-				toHashSync: () => hash,
-			});
+		])(
+			"maps $hash into [$min, $max]",
+			async ({ hash, min, max, hashLength, expected }) => {
+				const hashery = new Hashery();
+				hashery.providers.add({
+					name: "fixed-hex",
+					toHash: async () => hash,
+					toHashSync: () => hash,
+				});
 
-			const options = { algorithm: "fixed-hex", min, max };
-			expect(hashery.toNumberSync("data", options)).toBe(expected);
-			expect(await hashery.toNumber("data", options)).toBe(expected);
-		});
+				const options = { algorithm: "fixed-hex", min, max, hashLength };
+				expect(hashery.toNumberSync("data", options)).toBe(expected);
+				expect(await hashery.toNumber("data", options)).toBe(expected);
+			},
+		);
 	});
 
 	describe("toHashSync hooks", () => {

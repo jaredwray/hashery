@@ -500,7 +500,9 @@ export class Hashery extends Hookified {
 	}
 
 	private mapHashToRange(hash: string, min: number, max: number): number {
-		const value = BigInt(/^0x/i.test(hash) ? hash : `0x${hash}`);
+		// A prefix alone represents zero after truncation.
+		const digits = hash.replace(/^0x/i, "0");
+		const value = BigInt(`0x${digits}`);
 		if (Number.isInteger(min) && Number.isInteger(max)) {
 			const start = BigInt(min);
 			const width = BigInt(max) - start + 1n;

@@ -1218,6 +1218,7 @@ Generates a deterministic number within a specified range based on the hash of t
 
 Both number methods accept finite fractional bounds. If a fractional range gives a result above `max`, the method returns `max`.
 Custom providers can return hex digits with an optional `0x` or `0X` prefix. The prefix counts toward `hashLength`.
+If only the prefix fits, the method returns `min`.
 
 **Returns:** `Promise<number>` - A Promise that resolves to a number between min and max (inclusive)
 
